@@ -73,6 +73,9 @@
     /* 平滑过渡 */
     .sidebar, .preview-panel { transition: background 0.3s, border-color 0.3s; }
 
+    /* 整页深色基底 */
+    body.has-preview { background: #0D1117; }
+    body.has-preview .main { background: #0D1117; }
     /* 顶栏 */
     body.has-preview .topbar { background: #0C111B; border-bottom-color: rgba(255,255,255,0.07); }
     body.has-preview .topbar-title { color: rgba(255,255,255,0.88); }
@@ -148,7 +151,7 @@
 
     /* 奖品图编辑卡片 */
     body.has-preview .prize-editor-card { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.09); }
-    body.has-preview .prize-editor-card .card-preview { background: rgba(0,0,0,0.25); }
+    body.has-preview .prize-editor-card .card-preview { background: rgba(255,255,255,0.05) !important; }
     body.has-preview .prize-editor-card .card-footer { border-top-color: rgba(255,255,255,0.06); }
     body.has-preview .prize-editor-card .card-name { color: rgba(255,255,255,0.85); }
     body.has-preview .prize-editor-card .card-size { color: rgba(255,255,255,0.35); }
@@ -533,8 +536,8 @@
 
     /* ===== 老虎机页暗色高级感主题 ===== */
     #page-slot {
-      background: linear-gradient(145deg, #0D1117 0%, #0F1B2D 45%, #1A1440 100%);
-      min-height: calc(100vh - 56px);
+      background: #0D1117;
+      min-height: 100%;
     }
     /* 入场动画 */
     @keyframes slideIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
@@ -577,7 +580,7 @@
       box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     }
     #page-slot .card-preview {
-      background: rgba(0,0,0,0.25);
+      background: rgba(255,255,255,0.04) !important;
     }
     #page-slot .card-footer {
       border-top-color: rgba(255,255,255,0.07);
@@ -795,7 +798,7 @@
     </div>
     <div class="panel-group-body">
       <div style="font-size:10px;color:#aaa;margin-bottom:6px">选背景色，右侧实时预览效果</div>
-      <div class="swatch-section-label" style="margin-top:0">☀️ 浅色系</div>
+      <div class="swatch-section-label" style="margin-top:0"><svg style="width:13px;height:13px;vertical-align:-2px;margin-right:3px;opacity:.6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>浅色系</div>
       <div class="bg-swatches">
         <div class="bg-swatch" style="background:#ffdceb" title="粉"    onclick="applyBgTheme('#ffdceb',this,'light')"></div>
         <div class="bg-swatch" style="background:#ffdcdc" title="红"    onclick="applyBgTheme('#ffdcdc',this,'light')"></div>
@@ -805,13 +808,13 @@
         <div class="bg-swatch" style="background:#fff6a8" title="黄"    onclick="applyBgTheme('#fff6a8',this,'light')"></div>
         <div class="bg-swatch" style="background:#ffe3c7" title="橙"    onclick="applyBgTheme('#ffe3c7',this,'light')"></div>
       </div>
-      <div class="swatch-section-label">🎉 大促色</div>
+      <div class="swatch-section-label"><svg style="width:13px;height:13px;vertical-align:-2px;margin-right:3px;opacity:.6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>大促色</div>
       <div class="bg-swatches">
         <div class="bg-swatch" style="background:#ff1d5e" onclick="applyBgTheme('#ff1d5e',this,'light')"></div>
         <div class="bg-swatch" style="background:#ff0000" onclick="applyBgTheme('#ff0000',this,'light')"></div>
         <div class="bg-swatch" style="background:#ffdf04" onclick="applyBgTheme('#ffdf04',this,'light')"></div>
       </div>
-      <div class="swatch-section-label">🌙 深色系</div>
+      <div class="swatch-section-label"><svg style="width:13px;height:13px;vertical-align:-2px;margin-right:3px;opacity:.6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>深色系</div>
       <div class="bg-swatches">
         <div class="bg-swatch" style="background:#01732b" onclick="applyBgTheme('#01732b',this,'dark')"></div>
         <div class="bg-swatch" style="background:#331200" onclick="applyBgTheme('#331200',this,'dark')"></div>
@@ -824,7 +827,7 @@
       <hr class="divider">
       <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:6px">会场背景图</div>
       <label class="bg-upload-zone" for="panel-bg-upload-2">
-        <span class="upload-icon">📁</span>
+        <svg style="width:18px;height:18px;opacity:.55" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         <span>上传背景图（750px 宽）</span>
       </label>
       <input type="file" id="panel-bg-upload-2" accept="image/jpeg,image/png" style="display:none" onchange="loadPanelBgImage(this)">
@@ -837,23 +840,23 @@
       <span class="dot"></span>配色预设<span class="arrow">▾</span>
     </div>
     <div class="panel-group-body">
-      <div class="preset-group-label">☀️ 浅色系</div>
+      <div class="preset-group-label"><svg style="width:13px;height:13px;vertical-align:-2px;margin-right:3px;opacity:.6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>浅色系</div>
       <div class="preset-grid" id="preset-grid-light">
-        <button class="preset-btn active" data-preset="pink"   data-tone="light" onclick="applyPreset('pink',this)">🌸 粉红</button>
-        <button class="preset-btn"        data-preset="rose"   data-tone="light" onclick="applyPreset('rose',this)">🌹 玫红</button>
-        <button class="preset-btn"        data-preset="orange" data-tone="light" onclick="applyPreset('orange',this)">🍊 橙色</button>
-        <button class="preset-btn"        data-preset="yellow" data-tone="light" onclick="applyPreset('yellow',this)">🌟 黄橙</button>
-        <button class="preset-btn"        data-preset="green"  data-tone="light" onclick="applyPreset('green',this)">🌿 绿色</button>
-        <button class="preset-btn"        data-preset="teal"   data-tone="light" onclick="applyPreset('teal',this)">🩵 蓝绿</button>
-        <button class="preset-btn"        data-preset="purple" data-tone="light" onclick="applyPreset('purple',this)">💜 蓝紫</button>
+        <button class="preset-btn active" data-preset="pink"   data-tone="light" onclick="applyPreset('pink',this)">粉红</button>
+        <button class="preset-btn"        data-preset="rose"   data-tone="light" onclick="applyPreset('rose',this)">玫红</button>
+        <button class="preset-btn"        data-preset="orange" data-tone="light" onclick="applyPreset('orange',this)">橙色</button>
+        <button class="preset-btn"        data-preset="yellow" data-tone="light" onclick="applyPreset('yellow',this)">黄橙</button>
+        <button class="preset-btn"        data-preset="green"  data-tone="light" onclick="applyPreset('green',this)">绿色</button>
+        <button class="preset-btn"        data-preset="teal"   data-tone="light" onclick="applyPreset('teal',this)">蓝绿</button>
+        <button class="preset-btn"        data-preset="purple" data-tone="light" onclick="applyPreset('purple',this)">蓝紫</button>
       </div>
-      <div class="preset-group-label" style="margin-top:8px">🌙 深色系</div>
+      <div class="preset-group-label" style="margin-top:8px"><svg style="width:13px;height:13px;vertical-align:-2px;margin-right:3px;opacity:.6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>深色系</div>
       <div class="preset-grid" id="preset-grid-dark">
-        <button class="preset-btn preset-disabled" data-preset="dark-red"    data-tone="dark" onclick="applyPreset('dark-red',this)">🔴 深红</button>
-        <button class="preset-btn preset-disabled" data-preset="dark-orange" data-tone="dark" onclick="applyPreset('dark-orange',this)">🟠 深橙</button>
-        <button class="preset-btn preset-disabled" data-preset="dark-green"  data-tone="dark" onclick="applyPreset('dark-green',this)">🟢 深绿</button>
-        <button class="preset-btn preset-disabled" data-preset="dark-blue"   data-tone="dark" onclick="applyPreset('dark-blue',this)">🔵 深蓝</button>
-        <button class="preset-btn preset-disabled" data-preset="dark-purple" data-tone="dark" onclick="applyPreset('dark-purple',this)">🟣 深紫</button>
+        <button class="preset-btn preset-disabled" data-preset="dark-red"    data-tone="dark" onclick="applyPreset('dark-red',this)">深红</button>
+        <button class="preset-btn preset-disabled" data-preset="dark-orange" data-tone="dark" onclick="applyPreset('dark-orange',this)">深橙</button>
+        <button class="preset-btn preset-disabled" data-preset="dark-green"  data-tone="dark" onclick="applyPreset('dark-green',this)">深绿</button>
+        <button class="preset-btn preset-disabled" data-preset="dark-blue"   data-tone="dark" onclick="applyPreset('dark-blue',this)">深蓝</button>
+        <button class="preset-btn preset-disabled" data-preset="dark-purple" data-tone="dark" onclick="applyPreset('dark-purple',this)">深紫</button>
       </div>
     </div>
   </div>
