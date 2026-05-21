@@ -172,6 +172,11 @@
     body.has-preview .bg-swatches { gap: 5px; }
     body.has-preview .bg-swatch { box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
     body.has-preview .swatch-section-label { color: rgba(255,255,255,0.4) !important; }
+    /* 奖品图产品图占位区在暗色背景下 */
+    body.has-preview .prize-product-placeholder {
+      background: rgba(255,200,100,0.12);
+      border: 1px dashed rgba(255,200,100,0.3);
+    }
     /* 预览 mock 框默认隐藏 */
     .page-mock { display: none; }
     .page-mock.visible { display: block; }
@@ -635,8 +640,9 @@
     }
     .prize-card {
       width: 111px; height: 119px;
-      border-radius: 15px;
-      background: linear-gradient(180deg, #FFF7EA 0%, #FFDC9F 100%);
+      border-radius: 14px;
+      background: #FFE9B0;
+      border: 1px solid rgba(180,120,0,0.15);
       position: relative; overflow: hidden;
       display: flex; flex-direction: column; align-items: center;
       font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
@@ -699,7 +705,8 @@
 
     /* --- 虚线边框型（无标签，虚线边框） --- */
     .prize-card.dashed-type {
-      border: 1.5px dashed #FFBB66;
+      background: #FFF4D0;
+      border: 1.5px dashed #F0A830;
     }
 
     /* --- 金额券型 --- */
@@ -719,7 +726,8 @@
 
     /* --- 谢谢参与型 --- */
     .prize-card.thanks-type {
-      background: linear-gradient(180deg, #FFE8A0 0%, #FFD060 100%);
+      background: #FFD060;
+      border: 1px solid rgba(180,120,0,0.2);
       border-radius: 50%;
       width: 111px; height: 111px;
       align-self: center;
