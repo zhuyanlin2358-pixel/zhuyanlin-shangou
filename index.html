@@ -70,6 +70,16 @@
     body.has-preview .main { margin-right: 360px; }
 
     /* ===== 进入老虎机时全局暗色主题 ===== */
+    /* 滚动条暗色（WebKit）*/
+    body.has-preview .sidebar-scroll::-webkit-scrollbar,
+    body.has-preview .preview-panel-body::-webkit-scrollbar { width: 4px; }
+    body.has-preview .sidebar-scroll::-webkit-scrollbar-track,
+    body.has-preview .preview-panel-body::-webkit-scrollbar-track { background: transparent; }
+    body.has-preview .sidebar-scroll::-webkit-scrollbar-thumb,
+    body.has-preview .preview-panel-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+    /* Firefox */
+    body.has-preview .sidebar-scroll { scrollbar-color: rgba(255,255,255,0.18) transparent; scrollbar-width: thin; }
+    body.has-preview .preview-panel-body { scrollbar-color: rgba(255,255,255,0.18) transparent; scrollbar-width: thin; }
     /* 平滑过渡 */
     .sidebar, .preview-panel { transition: background 0.3s, border-color 0.3s; }
 
