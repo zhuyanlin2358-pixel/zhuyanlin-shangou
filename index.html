@@ -43,7 +43,7 @@
     .btn-export-all:hover { opacity: 0.88; }
     .btn-export-all.loading { opacity: 0.6; pointer-events: none; }
 
-    .sidebar { position: fixed; top: 56px; left: 0; width: 260px; height: calc(100vh - 56px); background: #F8F8F8; border-right: 1px solid #EBEBEB; overflow: hidden; padding: 0; z-index: 100; }
+    .sidebar { position: fixed; top: 56px; left: 0; width: 260px; height: calc(100vh - 56px); background: #F8F8F8; border-right: 1px solid #EBEBEB; overflow-y: auto; overflow-x: hidden; padding: 0; z-index: 100; }
     .sidebar h4 { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 12px; }
     .preset-group-label { font-size: 10px; color: #aaa; margin: 6px 0 4px; font-weight: 500; }
     .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 4px; }
@@ -62,7 +62,13 @@
     .main { margin-left: 260px; margin-right: 360px; margin-top: 56px; padding: 0; }
 
     .preview-panel { position: fixed; top: 56px; right: 0; width: 360px; height: calc(100vh - 56px); background: #fff; border-left: 1px solid #EBEBEB; display: flex; flex-direction: column; z-index: 100; }
-    .preview-panel-header { padding: 14px 16px 10px; border-bottom: 1px solid #EBEBEB; flex-shrink: 0; }
+    .preview-panel-header { padding: 12px 14px 10px; border-bottom: 1px solid #F0F0F0; flex-shrink: 0; }
+    /* 预览 mock 框默认隐藏，按需显示 */
+    .page-mock { display: none; }
+    .page-mock.visible { display: block; }
+    /* 右侧空态提示 */
+    .preview-empty-tip { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #CCC; font-size: 12px; gap: 8px; }
+    .preview-empty-tip svg { opacity: 0.3; }
     .preview-panel-header h4 { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 8px; }
     .bg-swatches { display: flex; flex-wrap: wrap; gap: 6px; }
     .bg-swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform 0.15s, border-color 0.15s; flex-shrink: 0; }
@@ -224,15 +230,12 @@
     .preview-panel-tip { font-size: 11px; color: var(--text-3); text-align: center; padding: 8px 0 4px; flex-shrink: 0; }
 
     /* ===== 布局调整 ===== */
-    .sidebar   { left: 0; width: 260px; padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+    /* sidebar 整体一条滚动，无需 flex 分区 */
     .main      { margin-left: 260px; margin-right: 360px; }
 
     /* ===== 组件浏览器 ===== */
-    .comp-browser {
-      flex-shrink: 0; border-bottom: 1px solid var(--border);
-      display: flex; flex-direction: column; max-height: 52vh; min-height: 100px;
-    }
-    .comp-search-wrap { padding: 10px 12px 8px; flex-shrink: 0; }
+    .comp-browser { border-bottom: 1px solid var(--border); }
+    .comp-search-wrap { padding: 10px 12px 8px; }
     .comp-search {
       width: 100%; padding: 7px 10px 7px 30px; font-size: 12px;
       border: none; border-radius: 8px; background: #EFEFEF;
@@ -241,7 +244,7 @@
       background-repeat: no-repeat; background-position: 9px center;
     }
     .comp-search:focus { background-color: #fff; box-shadow: 0 0 0 1px #EBEBEB; }
-    .comp-category-list { overflow-y: auto; flex: 1; }
+    .comp-category-list { }
     .cat-group { }
     .cat-header {
       display: flex; align-items: center; justify-content: space-between;
@@ -273,7 +276,7 @@
     .comp-item-hidden { display: none !important; }
 
     /* ===== 配置面板区 ===== */
-    .comp-config-area { flex: 1; overflow-y: auto; padding: 12px 10px; }
+    .comp-config-area { padding: 10px 8px; }
 
     /* ===== 首页目录 ===== */
     .home-wrap { padding: 36px 40px; max-width: 860px; }
@@ -1071,7 +1074,11 @@
         <div id="panel-slot-inner" style="width:750px;transform:scale(0.3947);transform-origin:top left;pointer-events:none;"></div>
       </div>
     </div>
-    <div class="preview-panel-tip">点击 ① 卡片「预览」将老虎机同步到此窗口</div>
+    <div class="preview-panel-tip" id="preview-panel-tip">点击「预览」将组件同步到此处</div>
+    <div class="preview-empty-tip" id="preview-empty-tip">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="12" y2="15"/></svg>
+      <span>选择组件后<br>在这里预览效果</span>
+    </div>
   </div>
 </div>
 
@@ -1931,6 +1938,21 @@
     // 导出按钮
     const exportBtn = document.getElementById('btn-all');
     if (exportBtn) exportBtn.style.display = compId === 'slot' ? '' : 'none';
+
+    // 右侧预览区：仅需要预览的组件才显示 mock
+    const PREVIEW_COMPS = ['slot']; // 后续完成的组件加到这里
+    const mock = document.getElementById('page-mock');
+    const emptyTip = document.getElementById('preview-empty-tip');
+    const panelTip = document.getElementById('preview-panel-tip');
+    if (PREVIEW_COMPS.includes(compId)) {
+      mock && mock.classList.add('visible');
+      emptyTip && (emptyTip.style.display = 'none');
+      panelTip && (panelTip.style.display = '');
+    } else {
+      mock && mock.classList.remove('visible');
+      emptyTip && (emptyTip.style.display = '');
+      panelTip && (panelTip.style.display = 'none');
+    }
   }
 
   /* ===== 返回首页 ===== */
@@ -1943,6 +1965,13 @@
     document.getElementById('topbar-title').textContent = '闪购会场组件库';
     const exportBtn = document.getElementById('btn-all');
     if (exportBtn) exportBtn.style.display = 'none';
+    // 隐藏预览 mock
+    const mock = document.getElementById('page-mock');
+    mock && mock.classList.remove('visible');
+    const emptyTip = document.getElementById('preview-empty-tip');
+    emptyTip && (emptyTip.style.display = '');
+    const panelTip = document.getElementById('preview-panel-tip');
+    panelTip && (panelTip.style.display = 'none');
   }
 
   // ===== 统一初始化（必须在 COMPONENT_REGISTRY 定义之后）=====
@@ -1953,6 +1982,9 @@
     updatePresetToneState('light');
     renderCompBrowser();
     renderHomePage();
+    // 初始状态：隐藏预览 tip，显示空态提示
+    const panelTip = document.getElementById('preview-panel-tip');
+    if (panelTip) panelTip.style.display = 'none';
     [1, 2, 3].forEach(n => syncPrize(n));
     loadDefaultPrizeImg(1);
     loadDefaultPrizeImg(2);
