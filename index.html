@@ -430,6 +430,76 @@
       font-size: 12px; color: #fff; white-space: nowrap;
     }
 
+    /* ===== 老虎机页暗色高级感主题 ===== */
+    #page-slot {
+      background: linear-gradient(145deg, #0D1117 0%, #0F1B2D 45%, #1A1440 100%);
+      min-height: calc(100vh - 56px);
+    }
+    /* 入场动画 */
+    @keyframes slideIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+    #page-slot .section-header { animation: slideIn 0.3s ease both; }
+    #page-slot .section-header:nth-child(2) { animation-delay: 0.05s; }
+    #page-slot .section-header:nth-child(3) { animation-delay: 0.10s; }
+    #page-slot .section-header:nth-child(4) { animation-delay: 0.15s; }
+    #page-slot .section-header:nth-child(5) { animation-delay: 0.20s; }
+    #page-slot .section-header:nth-child(6) { animation-delay: 0.25s; }
+    /* 页面 header */
+    .slot-page-header {
+      padding: 32px 40px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      margin-bottom: 8px;
+    }
+    .slot-page-tag { font-size: 10px; font-weight: 700; color: #60A5FA; letter-spacing: 0.8px; margin-bottom: 8px; text-transform: uppercase; }
+    .slot-page-title { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .slot-page-desc { font-size: 13px; color: rgba(255,255,255,0.45); }
+    /* section 标题区 */
+    #page-slot .section-label { color: rgba(255,255,255,0.9) !important; }
+    #page-slot .section-sub   { color: rgba(255,255,255,0.4) !important; }
+    #page-slot .section-num   { background: rgba(255,255,255,0.12) !important; color: rgba(255,255,255,0.9) !important; }
+    #page-slot .section-title { color: rgba(255,255,255,0.4); border-bottom-color: rgba(255,255,255,0.06); }
+    /* export-grid padding */
+    #page-slot .export-grid { padding: 0 40px 32px; }
+    #page-slot .section-header { padding: 20px 40px 14px; margin-bottom: 0; border-bottom: none; }
+    /* export 卡片 */
+    #page-slot .export-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+      backdrop-filter: blur(8px);
+      transition: background 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    #page-slot .export-card:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.22);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    #page-slot .card-preview {
+      background: rgba(0,0,0,0.25);
+    }
+    #page-slot .card-footer {
+      border-top-color: rgba(255,255,255,0.07);
+    }
+    #page-slot .card-name { color: rgba(255,255,255,0.88); }
+    #page-slot .card-size { color: rgba(255,255,255,0.35); }
+    /* 按钮 */
+    #page-slot .btn-export-single {
+      background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); color: rgba(255,255,255,0.75);
+    }
+    #page-slot .btn-export-single:hover {
+      background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.3); color: #fff;
+    }
+    #page-slot .btn-preview {
+      background: rgba(255,96,128,0.15); border-color: rgba(255,96,128,0.35); color: #FF8FAA;
+    }
+    #page-slot .btn-preview:hover {
+      background: rgba(255,96,128,0.3); color: #fff; border-color: rgba(255,96,128,0.6);
+    }
+    #page-slot .prize-type-badge { background: rgba(255,48,96,0.2); color: #FF8FAA; }
+    #page-slot .preview-badge { background: rgba(255,48,96,0.85); }
+    #page-slot .preview-card-wrap .export-card { border-color: rgba(255,96,128,0.5); box-shadow: 0 0 0 4px rgba(255,48,96,0.12); }
+
     /* ===== 组件页面切换 ===== */
     .comp-page { display: none; }
     .comp-page.active { display: block; }
@@ -845,7 +915,12 @@
   <!-- 首页目录（默认显示，由 JS 动态生成内容）-->
   <div class="comp-page active" id="page-home"></div>
 
-  <div class="comp-page" id="page-slot" style="padding:24px;">
+  <div class="comp-page" id="page-slot">
+    <div class="slot-page-header">
+      <div class="slot-page-tag">✦ 高达组件 · 互动玩法类</div>
+      <div class="slot-page-title">无门槛老虎机</div>
+      <div class="slot-page-desc">共 6 类切图素材 · 配置后导出 PNG / ZIP，直接用于高达平台配置</div>
+    </div>
 
   <div class="section-header" id="section-preview">
     <div class="section-num">1</div>
