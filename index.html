@@ -73,6 +73,13 @@
     /* 平滑过渡 */
     .sidebar, .preview-panel { transition: background 0.3s, border-color 0.3s; }
 
+    /* 顶栏 */
+    body.has-preview .topbar { background: #0C111B; border-bottom-color: rgba(255,255,255,0.07); }
+    body.has-preview .topbar-title { color: rgba(255,255,255,0.88); }
+    body.has-preview .topbar-back { color: rgba(255,255,255,0.45); }
+    body.has-preview .topbar-back:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.88); }
+    body.has-preview .btn-export-all { background: rgba(255,48,96,0.85); }
+
     /* 左侧侧边栏 */
     body.has-preview .sidebar { background: #0C111B; border-right-color: rgba(255,255,255,0.07); }
     body.has-preview .sidebar-scroll { scrollbar-color: rgba(255,255,255,0.15) transparent; }
@@ -136,6 +143,32 @@
     body.has-preview .page-mock { border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
     body.has-preview .page-mock-nav { background: rgba(255,255,255,0.9); }
     body.has-preview .preview-empty-tip { color: rgba(255,255,255,0.2); }
+    /* 右侧预览面板标题 */
+    body.has-preview .preview-panel-header div { color: rgba(255,255,255,0.4) !important; }
+
+    /* 奖品图编辑卡片 */
+    body.has-preview .prize-editor-card { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.09); }
+    body.has-preview .prize-editor-card .card-preview { background: rgba(0,0,0,0.25); }
+    body.has-preview .prize-editor-card .card-footer { border-top-color: rgba(255,255,255,0.06); }
+    body.has-preview .prize-editor-card .card-name { color: rgba(255,255,255,0.85); }
+    body.has-preview .prize-editor-card .card-size { color: rgba(255,255,255,0.35); }
+
+    /* 配置面板可读性提升 */
+    body.has-preview .panel-group-title { font-size: 12px; letter-spacing: 0.2px; }
+    body.has-preview .color-row label { font-size: 12px; color: rgba(255,255,255,0.65); }
+    body.has-preview .color-row input[type=text],
+    body.has-preview .color-row select {
+      background: rgba(255,255,255,0.08) !important;
+      border-color: rgba(255,255,255,0.14) !important;
+      color: rgba(255,255,255,0.9) !important;
+      border-radius: 6px;
+    }
+    body.has-preview .color-row input[type=text]::placeholder { color: rgba(255,255,255,0.25); }
+    body.has-preview .preset-group-label { font-size: 11px; color: rgba(255,255,255,0.4); }
+    /* 左侧配色预设区域背景色色块 */
+    body.has-preview .bg-swatches { gap: 5px; }
+    body.has-preview .bg-swatch { box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+    body.has-preview .swatch-section-label { color: rgba(255,255,255,0.4) !important; }
     /* 预览 mock 框默认隐藏 */
     .page-mock { display: none; }
     .page-mock.visible { display: block; }
@@ -755,9 +788,52 @@
       <span class="comp-name">老虎机</span>
     </div>
 
+  <!-- 分组 0：会场背景色（与配色预设配合使用）-->
+  <div class="panel-group collapsed" id="pg-bg-slot">
+    <div class="panel-group-title" onclick="toggleGroup('pg-bg-slot')">
+      <span class="dot"></span>会场背景色<span class="arrow">▾</span>
+    </div>
+    <div class="panel-group-body">
+      <div style="font-size:10px;color:#aaa;margin-bottom:6px">选背景色，右侧实时预览效果</div>
+      <div class="swatch-section-label" style="margin-top:0">☀️ 浅色系</div>
+      <div class="bg-swatches">
+        <div class="bg-swatch" style="background:#ffdceb" title="粉"    onclick="applyBgTheme('#ffdceb',this,'light')"></div>
+        <div class="bg-swatch" style="background:#ffdcdc" title="红"    onclick="applyBgTheme('#ffdcdc',this,'light')"></div>
+        <div class="bg-swatch" style="background:#d9f8ff" title="青蓝"  onclick="applyBgTheme('#d9f8ff',this,'light')"></div>
+        <div class="bg-swatch" style="background:#efe9ff" title="蓝紫"  onclick="applyBgTheme('#efe9ff',this,'light')"></div>
+        <div class="bg-swatch" style="background:#f9fed2" title="绿"    onclick="applyBgTheme('#f9fed2',this,'light')"></div>
+        <div class="bg-swatch" style="background:#fff6a8" title="黄"    onclick="applyBgTheme('#fff6a8',this,'light')"></div>
+        <div class="bg-swatch" style="background:#ffe3c7" title="橙"    onclick="applyBgTheme('#ffe3c7',this,'light')"></div>
+      </div>
+      <div class="swatch-section-label">🎉 大促色</div>
+      <div class="bg-swatches">
+        <div class="bg-swatch" style="background:#ff1d5e" onclick="applyBgTheme('#ff1d5e',this,'light')"></div>
+        <div class="bg-swatch" style="background:#ff0000" onclick="applyBgTheme('#ff0000',this,'light')"></div>
+        <div class="bg-swatch" style="background:#ffdf04" onclick="applyBgTheme('#ffdf04',this,'light')"></div>
+      </div>
+      <div class="swatch-section-label">🌙 深色系</div>
+      <div class="bg-swatches">
+        <div class="bg-swatch" style="background:#01732b" onclick="applyBgTheme('#01732b',this,'dark')"></div>
+        <div class="bg-swatch" style="background:#331200" onclick="applyBgTheme('#331200',this,'dark')"></div>
+        <div class="bg-swatch" style="background:#000679" onclick="applyBgTheme('#000679',this,'dark')"></div>
+      </div>
+      <div class="custom-color-row" style="margin-top:6px">
+        <span>自定义</span>
+        <input type="color" value="#ffdcdc" style="width:26px;height:20px;border:1px solid #ddd;border-radius:4px;padding:1px;cursor:pointer" oninput="applyBgTheme(this.value,null)">
+      </div>
+      <hr class="divider">
+      <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:6px">会场背景图</div>
+      <label class="bg-upload-zone" for="panel-bg-upload-2">
+        <span class="upload-icon">📁</span>
+        <span>上传背景图（750px 宽）</span>
+      </label>
+      <input type="file" id="panel-bg-upload-2" accept="image/jpeg,image/png" style="display:none" onchange="loadPanelBgImage(this)">
+    </div>
+  </div>
+
   <!-- 分组 1：配色预设 -->
   <div class="panel-group" id="pg-preset">
-    <div class="panel-group-title" onclick="toggleGroup('pg-preset')">
+    <div class="panel-group-title" onclick="toggleGroup('pg-preset','section-preview')">
       <span class="dot"></span>配色预设<span class="arrow">▾</span>
     </div>
     <div class="panel-group-body">
@@ -784,7 +860,7 @@
 
   <!-- 分组 2：自定义颜色 -->
   <div class="panel-group collapsed" id="pg-color">
-    <div class="panel-group-title" onclick="toggleGroup('pg-color')">
+    <div class="panel-group-title" onclick="toggleGroup('pg-color','section-bg')">
       <span class="dot"></span>自定义颜色<span class="arrow">▾</span>
     </div>
     <div class="panel-group-body">
@@ -806,7 +882,7 @@
 
   <!-- 分组 3：文案设置 -->
   <div class="panel-group" id="pg-text">
-    <div class="panel-group-title" onclick="toggleGroup('pg-text')">
+    <div class="panel-group-title" onclick="toggleGroup('pg-text','section-bg')">
       <span class="dot"></span>文案设置<span class="arrow">▾</span>
     </div>
     <div class="panel-group-body">
@@ -817,7 +893,7 @@
 
   <!-- 分组 4：空态页设置 -->
   <div class="panel-group collapsed" id="pg-empty">
-    <div class="panel-group-title" onclick="toggleGroup('pg-empty')">
+    <div class="panel-group-title" onclick="toggleGroup('pg-empty','section-empty')">
       <span class="dot"></span>空态页设置<span class="arrow">▾</span>
     </div>
     <div class="panel-group-body">
@@ -842,7 +918,7 @@
 
   <!-- 分组 5：奖品图设置 -->
   <div class="panel-group" id="pg-prize">
-    <div class="panel-group-title" onclick="toggleGroup('pg-prize')">
+    <div class="panel-group-title" onclick="toggleGroup('pg-prize','section-prize')">
       <span class="dot"></span>奖品图设置<span class="arrow">▾</span>
     </div>
     <div class="panel-group-body">
@@ -1032,7 +1108,7 @@
     </div>
   </div>
 
-  <div class="section-header">
+  <div class="section-header" id="section-bg">
     <div class="section-num">2</div>
     <div><div class="section-label">老虎机背景</div><div class="section-sub">含主标题，不带商品图 · 750 × 242 px</div></div>
   </div>
@@ -1052,7 +1128,7 @@
     </div>
   </div>
 
-  <div class="section-header">
+  <div class="section-header" id="section-empty">
     <div class="section-num">3</div>
     <div><div class="section-label">老虎机空态页</div><div class="section-sub">854 × 284 px @2x</div></div>
   </div>
@@ -1074,7 +1150,7 @@
     </div>
   </div>
 
-  <div class="section-header">
+  <div class="section-header" id="section-btn">
     <div class="section-num">4</div>
     <div><div class="section-label">抽奖按钮</div><div class="section-sub">194 × 80 px</div></div>
   </div>
@@ -1097,7 +1173,7 @@
     </div>
   </div>
 
-  <div class="section-header">
+  <div class="section-header" id="section-link">
     <div class="section-num">5</div>
     <div><div class="section-label">链接文字</div><div class="section-sub">透明背景</div></div>
   </div>
@@ -1120,7 +1196,7 @@
     </div>
   </div>
 
-  <div class="section-header">
+  <div class="section-header" id="section-prize">
     <div class="section-num">6</div>
     <div><div class="section-label">奖品图</div><div class="section-sub">124 × 124 px · 可编辑模板</div></div>
   </div>
@@ -1277,60 +1353,8 @@
 
 <!-- 右侧页面预览窗口 -->
 <div class="preview-panel" id="preview-panel">
-  <div class="preview-panel-header">
-
-    <!-- 分组：纯色背景 -->
-    <div class="panel-group" id="pg-bg-color">
-      <div class="panel-group-title" onclick="toggleGroup('pg-bg-color')">
-        <span class="dot"></span>纯色背景<span class="arrow">▾</span>
-      </div>
-      <div class="panel-group-body" id="panel-color-section">
-        <div class="swatch-section-label">☀️ 浅色系</div>
-        <div class="bg-swatches">
-          <div class="bg-swatch" style="background:#ffdceb" title="粉"    onclick="applyBgTheme('#ffdceb',this,'light')"></div>
-          <div class="bg-swatch" style="background:#ffdcdc" title="红"    onclick="applyBgTheme('#ffdcdc',this,'light')"></div>
-          <div class="bg-swatch" style="background:#d9f8ff" title="青蓝"  onclick="applyBgTheme('#d9f8ff',this,'light')"></div>
-          <div class="bg-swatch" style="background:#efe9ff" title="蓝紫"  onclick="applyBgTheme('#efe9ff',this,'light')"></div>
-          <div class="bg-swatch" style="background:#f9fed2" title="绿"    onclick="applyBgTheme('#f9fed2',this,'light')"></div>
-          <div class="bg-swatch" style="background:#fff6a8" title="黄"    onclick="applyBgTheme('#fff6a8',this,'light')"></div>
-          <div class="bg-swatch" style="background:#ffe3c7" title="橙"    onclick="applyBgTheme('#ffe3c7',this,'light')"></div>
-        </div>
-        <div class="swatch-section-label">🎉 大促色</div>
-        <div class="bg-swatches">
-          <div class="bg-swatch" style="background:#ff1d5e" title="玫红"  onclick="applyBgTheme('#ff1d5e',this,'light')"></div>
-          <div class="bg-swatch" style="background:#ff0000" title="深红"  onclick="applyBgTheme('#ff0000',this,'light')"></div>
-          <div class="bg-swatch" style="background:#ffdf04" title="闪购黄" onclick="applyBgTheme('#ffdf04',this,'light')"></div>
-        </div>
-        <div class="swatch-section-label">🌙 深色系</div>
-        <div class="bg-swatches">
-          <div class="bg-swatch" style="background:#01732b" title="墨绿"  onclick="applyBgTheme('#01732b',this,'dark')"></div>
-          <div class="bg-swatch" style="background:#331200" title="深棕"  onclick="applyBgTheme('#331200',this,'dark')"></div>
-          <div class="bg-swatch" style="background:#000679" title="深蓝"  onclick="applyBgTheme('#000679',this,'dark')"></div>
-        </div>
-        <div class="custom-color-row">
-          <span>自定义</span>
-          <input type="color" id="panel-bg-custom" value="#ffdcdc" style="width:26px;height:20px;border:1px solid #ddd;border-radius:4px;padding:1px;cursor:pointer" oninput="applyBgTheme(this.value,null)">
-          <span id="panel-bg-hex">#ffdcdc</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- 分组：会场背景图 -->
-    <div class="panel-group collapsed" id="pg-bg-img">
-      <div class="panel-group-title" onclick="toggleGroup('pg-bg-img')">
-        <span class="dot"></span>会场背景图<span class="arrow">▾</span>
-      </div>
-      <div class="panel-group-body">
-        <label class="bg-upload-zone" id="panel-bg-upload-label" for="panel-bg-upload">
-          <span class="upload-icon">📁</span>
-          <span>上传 JPG / PNG（750px 宽）</span>
-        </label>
-        <input type="file" id="panel-bg-upload" accept="image/jpeg,image/png" style="display:none" onchange="loadPanelBgImage(this)">
-        <div id="panel-bg-img-name" style="font-size:10px;color:#bbb;margin-top:4px;text-align:center">未上传</div>
-        <button id="panel-bg-clear" onclick="clearPanelBgImage()" style="display:none;margin-top:4px;width:100%;padding:3px 0;font-size:11px;color:#999;background:#f5f5f5;border:1px solid #e0e0e0;border-radius:6px;cursor:pointer">✕ 移除，改用纯色</button>
-      </div>
-    </div>
-
+  <div class="preview-panel-header" style="padding:10px 14px 8px;">
+    <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);letter-spacing:0.5px">手机预览</div>
   </div>
   <div class="preview-panel-body">
     <div class="page-mock" id="page-mock">
@@ -1971,9 +1995,17 @@
   // init 合并到下方 COMPONENT_REGISTRY 之后执行
 
   /* ===== 折叠面板 ===== */
-  function toggleGroup(id) {
+  function toggleGroup(id, scrollTarget) {
     const el = document.getElementById(id);
-    if (el) el.classList.toggle('collapsed');
+    if (!el) return;
+    const wasCollapsed = el.classList.contains('collapsed');
+    el.classList.toggle('collapsed');
+    if (wasCollapsed && scrollTarget) {
+      setTimeout(() => {
+        const target = document.getElementById(scrollTarget);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 80);
+    }
   }
 
   /* ===== 组件切换 ===== */
