@@ -43,7 +43,8 @@
     .btn-export-all:hover { opacity: 0.88; }
     .btn-export-all.loading { opacity: 0.6; pointer-events: none; }
 
-    .sidebar { position: fixed; top: 56px; left: 0; width: 260px; height: calc(100vh - 56px); background: #F8F8F8; border-right: 1px solid #EBEBEB; overflow-y: auto; overflow-x: hidden; padding: 0; z-index: 100; }
+    .sidebar { position: fixed; top: 56px; left: 0; width: 260px; height: calc(100vh - 56px); background: #F8F8F8; border-right: 1px solid #EBEBEB; overflow: hidden; padding: 0; z-index: 100; }
+    .sidebar-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0; }
     .sidebar h4 { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 12px; }
     .preset-group-label { font-size: 10px; color: #aaa; margin: 6px 0 4px; font-weight: 500; }
     .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 4px; }
@@ -234,7 +235,7 @@
     .preview-panel-tip { font-size: 11px; color: var(--text-3); text-align: center; padding: 8px 0 4px; flex-shrink: 0; }
 
     /* ===== 布局调整 ===== */
-    /* sidebar 整体一条滚动，无需 flex 分区 */
+    .sidebar { display: flex; flex-direction: column; }
     .main      { margin-left: 260px; margin-right: 0; }
 
     /* ===== 组件浏览器 ===== */
@@ -304,7 +305,7 @@
 
     /* ===== 首页目录 ===== */
     /* ===== 首页目录 ===== */
-    #page-home { display: block; min-height: calc(100vh - 56px); }
+    #page-home.active { display: block; min-height: calc(100vh - 56px); }
     .home-wrap { padding: 40px 56px; }
     .home-greeting { font-size: 22px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px; }
     .home-sub { font-size: 13px; color: #999; margin-bottom: 40px; }
@@ -349,7 +350,7 @@
 
     /* ===== 侧边栏底部导航 ===== */
     .sidebar-bottom {
-      position: sticky; bottom: 0; background: #F8F8F8;
+      flex-shrink: 0; background: #F8F8F8;
       border-top: 1px solid #EFEFEF; padding: 8px 6px;
     }
     .sidebar-bottom-item {
@@ -591,6 +592,7 @@
 
 <!-- 左侧侧边栏：组件浏览器 + 配置面板 -->
 <div class="sidebar">
+<div class="sidebar-scroll">
 
   <!-- 上：组件分类浏览器 -->
   <div class="comp-browser" id="comp-browser">
@@ -825,6 +827,7 @@
   </div>
 
   </div><!-- /comp-config-area -->
+</div><!-- /sidebar-scroll -->
 
   <!-- 侧边栏底部导航（仅浏览模式显示）-->
   <div class="sidebar-bottom" id="sidebar-bottom">
