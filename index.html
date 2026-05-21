@@ -242,9 +242,10 @@
     /* 浏览模式（首页）：只显示目录浏览器 */
     .comp-browser { display: block; }
     .comp-config-area { display: none; }
-    /* 配置模式（组件内）：只显示配置面板 */
+    /* 配置模式（组件内）：只显示配置面板，隐藏底部导航 */
     .sidebar.config-mode .comp-browser { display: none; }
     .sidebar.config-mode .comp-config-area { display: block; }
+    .sidebar.config-mode .sidebar-bottom { display: none; }
     /* 配置模式顶部返回条 */
     .config-mode-bar {
       display: flex; align-items: center; gap: 8px;
@@ -344,6 +345,88 @@
     .home-card-done-badge {
       display: inline-block; margin-top: 4px; font-size: 10px; font-weight: 600;
       color: #27D365; background: #F0FFF5; border-radius: 4px; padding: 1px 6px;
+    }
+
+    /* ===== 侧边栏底部导航 ===== */
+    .sidebar-bottom {
+      position: sticky; bottom: 0; background: #F8F8F8;
+      border-top: 1px solid #EFEFEF; padding: 8px 6px;
+    }
+    .sidebar-bottom-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 14px; border-radius: 8px; cursor: pointer;
+      font-size: 14px; font-weight: 500; color: #1A1A1A;
+      transition: background 0.12s;
+    }
+    .sidebar-bottom-item:hover { background: #EBEBEB; }
+    .sidebar-bottom-item.active { background: #FFF0F3; color: var(--accent); }
+    .sidebar-bottom-item svg { width: 18px; height: 18px; flex-shrink: 0; opacity: 0.6; }
+    .sidebar-bottom-item.active svg { opacity: 1; }
+
+    /* ===== 我的资产页 ===== */
+    .assets-wrap { padding: 32px 40px; }
+    .assets-header { margin-bottom: 24px; }
+    .assets-title { font-size: 20px; font-weight: 700; color: #1A1A1A; margin-bottom: 16px; }
+    .assets-tabs { display: flex; gap: 4px; border-bottom: 1px solid #EBEBEB; }
+    .assets-tab {
+      padding: 8px 16px; font-size: 13px; font-weight: 500; color: #999;
+      cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: color 0.12s, border-color 0.12s;
+    }
+    .assets-tab:hover { color: #555; }
+    .assets-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .assets-empty {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 80px 0; color: #CCC; gap: 12px; font-size: 13px;
+    }
+    .assets-empty svg { opacity: 0.25; width: 48px; height: 48px; }
+    .assets-date-group { margin-bottom: 32px; }
+    .assets-date-label { font-size: 12px; font-weight: 600; color: #999; margin-bottom: 12px; }
+    .assets-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .asset-card {
+      background: #fff; border: 1px solid #EBEBEB; border-radius: 10px;
+      overflow: hidden; transition: box-shadow 0.15s, transform 0.15s;
+    }
+    .asset-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-2px); }
+    .asset-card-thumb {
+      height: 120px; background: #F5F5F7; display: flex; align-items: center;
+      justify-content: center; font-size: 32px; color: #CCC;
+    }
+    .asset-card-body { padding: 10px 12px; }
+    .asset-card-name { font-size: 13px; font-weight: 600; color: #1A1A1A; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .asset-card-meta { font-size: 11px; color: #999; display: flex; align-items: center; justify-content: space-between; }
+    .asset-status-badge {
+      font-size: 10px; font-weight: 600; padding: 1px 7px; border-radius: 20px;
+    }
+    .asset-status-draft   { background: #F5F5F5; color: #999; }
+    .asset-status-pending { background: #FFF7E6; color: #E6960A; }
+    .asset-status-passed  { background: #F0FFF4; color: #27D365; }
+    .asset-card-actions { display: flex; gap: 6px; padding: 8px 12px; border-top: 1px solid #F5F5F5; }
+    .asset-btn {
+      flex: 1; padding: 5px 0; font-size: 11px; border-radius: 6px;
+      border: 1px solid #E8E8E8; background: #FAFAFA; color: #555;
+      cursor: pointer; transition: all 0.12s; text-align: center;
+    }
+    .asset-btn:hover { background: #FFF0F3; border-color: var(--accent); color: var(--accent); }
+    .asset-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .asset-btn.primary:hover { opacity: 0.88; }
+
+    /* ===== AI 生图预留卡片 ===== */
+    .ai-promo-card {
+      background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%);
+      border-radius: 12px; padding: 20px 24px; margin-bottom: 36px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .ai-promo-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(15,52,96,0.3); }
+    .ai-promo-text { }
+    .ai-promo-tag { font-size: 10px; font-weight: 700; color: #60A5FA; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .ai-promo-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .ai-promo-desc { font-size: 12px; color: rgba(255,255,255,0.6); }
+    .ai-promo-btn {
+      flex-shrink: 0; padding: 8px 16px; background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;
+      font-size: 12px; color: #fff; white-space: nowrap;
     }
 
     /* ===== 组件页面切换 ===== */
@@ -742,6 +825,14 @@
   </div>
 
   </div><!-- /comp-config-area -->
+
+  <!-- 侧边栏底部导航（仅浏览模式显示）-->
+  <div class="sidebar-bottom" id="sidebar-bottom">
+    <div class="sidebar-bottom-item" id="assets-nav-item" onclick="switchToAssets()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>
+      <span>我的资产</span>
+    </div>
+  </div>
 </div><!-- /sidebar -->
 
 <!-- 主内容区 -->
@@ -1032,6 +1123,9 @@
       <div class="cs-tag">🚧 即将上线</div>
     </div>
   </div>
+
+  <!-- 我的资产页（内容由 JS 动态渲染）-->
+  <div class="comp-page" id="page-assets"></div>
 
 </div><!-- /main -->
 
@@ -1722,6 +1816,7 @@
     URL.revokeObjectURL(url);
     showToast('\u2705 ZIP \u5DF2\u4E0B\u8F7D\uFF01\u5171 '+tasks.length+' \u4E2A\u6587\u4EF6\uFF08'+(isLight?'\u6D45\u8272':'\u6DF1\u8272')+'\u94FE\u63A5\u6587\u5B57\uFF09');
     allBtn.classList.remove('loading');allBtn.textContent='\u2B07 \u4E00\u952E\u5168\u90E8\u5BFC\u51FA ZIP';
+    recordExport(tasks.map(t => t.name));
   }
 
   function downloadCanvas(canvas,filename){const a=document.createElement('a');a.href=canvas.toDataURL('image/png');a.download=filename;a.click();}
@@ -1842,6 +1937,14 @@
     let html = '<div class="home-wrap">';
     html += '<div class="home-greeting">闪购会场组件库</div>';
     html += '<div class="home-sub">选择组件进行配置和素材导出</div>';
+    html += `<div class="ai-promo-card">
+      <div class="ai-promo-text">
+        <div class="ai-promo-tag">✦ AI 能力预留</div>
+        <div class="ai-promo-title">上传商品图，一键生成资源位</div>
+        <div class="ai-promo-desc">上传商品主图，AI 自动适配各尺寸资源位规范，批量输出可用素材</div>
+      </div>
+      <div class="ai-promo-btn">即将上线 →</div>
+    </div>`;
     COMPONENT_REGISTRY.forEach(cat => {
       const allItems = cat.subgroups
         ? cat.subgroups.flatMap(sg => sg.items)
@@ -1943,6 +2046,8 @@
 
   /* ===== 进入组件视图 ===== */
   function switchComp(compId) {
+    _currentExportComp = compId;
+    document.getElementById('assets-nav-item').classList.remove('active');
     // 主内容区
     document.querySelectorAll('.comp-page').forEach(el => el.classList.remove('active'));
     const page = document.getElementById('page-' + compId);
@@ -2001,6 +2106,152 @@
     }
   }
 
+  /* ===== 我的资产：localStorage 存储 ===== */
+  const ASSET_KEY = 'shangou_asset_records';
+  function loadAssetRecords() {
+    try { return JSON.parse(localStorage.getItem(ASSET_KEY) || '[]'); } catch { return []; }
+  }
+  function saveAssetRecord(record) {
+    const list = loadAssetRecords();
+    list.unshift(record);
+    localStorage.setItem(ASSET_KEY, JSON.stringify(list.slice(0, 200)));
+  }
+  function updateAssetStatus(id, status) {
+    const list = loadAssetRecords();
+    const item = list.find(r => r.id === id);
+    if (item) { item.status = status; localStorage.setItem(ASSET_KEY, JSON.stringify(list)); renderAssetsPage(); }
+  }
+  function deleteAssetRecord(id) {
+    const list = loadAssetRecords().filter(r => r.id !== id);
+    localStorage.setItem(ASSET_KEY, JSON.stringify(list));
+    renderAssetsPage();
+  }
+
+  // 捕获当前老虎机配置快照
+  function captureSlotConfig() {
+    return {
+      titleText: document.getElementById('c-title-text')?.value || '',
+      btnFrom:   document.getElementById('c-btn-from')?.value || '',
+      btnTo:     document.getElementById('c-btn-to')?.value || '',
+      disFrom:   document.getElementById('c-dis-from')?.value || '',
+      disTo:     document.getElementById('c-dis-to')?.value || '',
+      slotFrom:  document.getElementById('c-slot-from')?.value || '',
+      slotTo:    document.getElementById('c-slot-to')?.value || '',
+      linksColor:document.getElementById('c-links-color')?.value || '',
+      titleColor:document.getElementById('c-title-color')?.value || '',
+    };
+  }
+
+  // 单图导出后自动记录
+  let _currentExportComp = 'slot';
+  function recordExport(files) {
+    const meta = ALL_ITEMS.find(i => i.id === _currentExportComp);
+    saveAssetRecord({
+      id: Date.now(),
+      compId: _currentExportComp,
+      compName: meta?.name || _currentExportComp,
+      date: new Date().toISOString().slice(0, 10),
+      files,
+      status: 'draft',
+      config: _currentExportComp === 'slot' ? captureSlotConfig() : null,
+    });
+  }
+
+  let _assetsCurrentTab = 'all';
+
+  function switchToAssets() {
+    document.querySelectorAll('.comp-page').forEach(el => el.classList.remove('active'));
+    document.getElementById('page-assets').classList.add('active');
+    document.querySelectorAll('.sidebar-comp-panel').forEach(el => el.classList.remove('active'));
+    document.querySelector('.sidebar').classList.remove('config-mode');
+    document.querySelectorAll('.comp-nav-link').forEach(el => el.classList.remove('active'));
+    document.getElementById('topbar-back').classList.remove('visible');
+    document.getElementById('topbar-title').textContent = '我的资产';
+    document.getElementById('btn-all').style.display = 'none';
+    document.body.classList.remove('has-preview');
+    document.getElementById('assets-nav-item').classList.add('active');
+    renderAssetsPage();
+  }
+
+  function renderAssetsPage() {
+    const page = document.getElementById('page-assets');
+    if (!page || !page.classList.contains('active')) return;
+    const all = loadAssetRecords();
+    const tabs = [
+      { id: 'all',     label: '我的导出',   filter: r => true },
+      { id: 'pending', label: '待审核',      filter: r => r.status === 'pending' },
+      { id: 'passed',  label: '已通过',      filter: r => r.status === 'passed' },
+    ];
+    const filtered = all.filter(tabs.find(t => t.id === _assetsCurrentTab)?.filter || (() => true));
+    const byDate = {};
+    filtered.forEach(r => { (byDate[r.date] = byDate[r.date] || []).push(r); });
+
+    let html = '<div class="assets-wrap">';
+    html += '<div class="assets-header">';
+    html += '<div class="assets-title">我的资产</div>';
+    html += '<div class="assets-tabs">';
+    tabs.forEach(t => {
+      const count = all.filter(t.filter).length;
+      html += `<div class="assets-tab ${_assetsCurrentTab === t.id ? 'active' : ''}" onclick="setAssetsTab('${t.id}')">${t.label}${count > 0 ? ` <span style="color:#bbb">(${count})</span>` : ''}</div>`;
+    });
+    html += '</div></div>';
+
+    if (filtered.length === 0) {
+      html += `<div class="assets-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        <span>暂无记录，导出组件后自动保存在这里</span>
+      </div>`;
+    } else {
+      Object.entries(byDate).sort((a,b) => b[0].localeCompare(a[0])).forEach(([date, records]) => {
+        html += `<div class="assets-date-group"><div class="assets-date-label">${date}</div><div class="assets-card-grid">`;
+        records.forEach(r => {
+          const statusMap = { draft:'草稿', pending:'待审核', passed:'已通过' };
+          const statusClass = { draft:'draft', pending:'pending', passed:'passed' }[r.status] || 'draft';
+          html += `<div class="asset-card">
+            <div class="asset-card-thumb">🎰</div>
+            <div class="asset-card-body">
+              <div class="asset-card-name">${r.compName}</div>
+              <div class="asset-card-meta">
+                <span>${(r.files||[]).length} 个文件</span>
+                <span class="asset-status-badge asset-status-${statusClass}">${statusMap[r.status]||'草稿'}</span>
+              </div>
+            </div>
+            <div class="asset-card-actions">
+              ${r.status === 'draft' ? `<div class="asset-btn primary" onclick="updateAssetStatus(${r.id},'pending')">送审</div>` : ''}
+              ${r.status === 'pending' ? `<div class="asset-btn" onclick="updateAssetStatus(${r.id},'passed')">通过</div>` : ''}
+              ${r.config ? `<div class="asset-btn" onclick="reuseAssetConfig(${r.id})">复用配置</div>` : ''}
+              <div class="asset-btn" onclick="deleteAssetRecord(${r.id})" style="color:#f00">删除</div>
+            </div>
+          </div>`;
+        });
+        html += '</div></div>';
+      });
+    }
+    html += '</div>';
+    page.innerHTML = html;
+  }
+
+  function setAssetsTab(tab) {
+    _assetsCurrentTab = tab;
+    renderAssetsPage();
+  }
+
+  function reuseAssetConfig(id) {
+    const record = loadAssetRecords().find(r => r.id === id);
+    if (!record?.config) return;
+    const c = record.config;
+    const r = document.documentElement.style;
+    if (c.btnFrom)    { r.setProperty('--btn-active-from', c.btnFrom);   document.getElementById('c-btn-from').value = c.btnFrom; }
+    if (c.btnTo)      { r.setProperty('--btn-active-to', c.btnTo);       document.getElementById('c-btn-to').value = c.btnTo; }
+    if (c.slotFrom)   { r.setProperty('--slot-tint-from', c.slotFrom);   document.getElementById('c-slot-from').value = c.slotFrom; }
+    if (c.slotTo)     { r.setProperty('--slot-tint-to', c.slotTo);       document.getElementById('c-slot-to').value = c.slotTo; }
+    if (c.linksColor) { r.setProperty('--slot-links-color', c.linksColor); document.getElementById('c-links-color').value = c.linksColor; }
+    if (c.titleColor) { r.setProperty('--slot-title-color', c.titleColor); document.getElementById('c-title-color').value = c.titleColor; }
+    if (c.titleText)  { document.getElementById('c-title-text').value = c.titleText; syncTitleText(); }
+    switchComp('slot');
+    showToast('✅ 配置已复用');
+  }
+
   /* ===== 返回首页 ===== */
   function goHome() {
     document.querySelectorAll('.comp-page').forEach(el => el.classList.remove('active'));
@@ -2010,9 +2261,9 @@
     document.querySelector('.sidebar').classList.remove('config-mode');
     document.getElementById('topbar-back').classList.remove('visible');
     document.getElementById('topbar-title').textContent = '闪购会场组件库';
+    document.getElementById('assets-nav-item').classList.remove('active');
     const exportBtn = document.getElementById('btn-all');
     if (exportBtn) exportBtn.style.display = 'none';
-    // 隐藏右侧预览面板
     document.body.classList.remove('has-preview');
     const mock = document.getElementById('page-mock');
     mock && mock.classList.remove('visible');
