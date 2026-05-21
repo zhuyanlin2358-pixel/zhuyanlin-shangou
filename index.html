@@ -234,7 +234,22 @@
     .main      { margin-left: 260px; margin-right: 360px; }
 
     /* ===== 组件浏览器 ===== */
-    .comp-browser { border-bottom: 1px solid var(--border); }
+    /* ===== 侧边栏双模式 ===== */
+    /* 浏览模式（首页）：只显示目录浏览器 */
+    .comp-browser { display: block; }
+    .comp-config-area { display: none; }
+    /* 配置模式（组件内）：只显示配置面板 */
+    .sidebar.config-mode .comp-browser { display: none; }
+    .sidebar.config-mode .comp-config-area { display: block; }
+    /* 配置模式顶部返回条 */
+    .config-mode-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 12px; border-bottom: 1px solid #F0F0F0;
+      font-size: 12px; color: var(--text-3); cursor: pointer;
+      transition: color 0.12s; flex-shrink: 0;
+    }
+    .config-mode-bar:hover { color: var(--accent); }
+    .config-mode-bar .config-comp-name { font-weight: 600; color: var(--text-1); font-size: 13px; }
     .comp-search-wrap { padding: 10px 12px 8px; }
     .comp-search {
       width: 100%; padding: 7px 10px 7px 30px; font-size: 12px;
@@ -330,13 +345,7 @@
     }
 
     /* ===== 侧边栏：组件标题头 ===== */
-    .sidebar-comp-header {
-      display: flex; align-items: center; gap: 8px;
-      padding: 0 4px 10px; margin-bottom: 8px;
-      border-bottom: 1px solid var(--border);
-    }
-    .sidebar-comp-header .comp-icon { font-size: 18px; }
-    .sidebar-comp-header .comp-name { font-size: 13px; font-weight: 700; color: var(--text-1); }
+    .sidebar-comp-header { display: none; }
     .sidebar-comp-panel { display: none; }
     .sidebar-comp-panel.active { display: block; }
 
@@ -492,6 +501,9 @@
 
   <!-- 下：选中组件的配置面板 -->
   <div class="comp-config-area">
+    <div class="config-mode-bar" onclick="goHome()">
+      ← 组件目录 &nbsp;·&nbsp; <span class="config-comp-name" id="config-comp-name">老虎机</span>
+    </div>
 
   <!-- 老虎机配置面板 -->
   <div class="sidebar-comp-panel active" id="panel-slot">
@@ -1930,9 +1942,15 @@
       if (catGroup) catGroup.classList.remove('collapsed');
     }
 
-    // Topbar
+    // 侧边栏切换到配置模式（隐藏目录，显示配置面板）
+    document.querySelector('.sidebar').classList.add('config-mode');
     const meta = ALL_ITEMS.find(i => i.id === compId);
-    document.getElementById('topbar-title').textContent = meta ? meta.name : compId;
+    const compName = meta ? meta.name : compId;
+    const configNameEl = document.getElementById('config-comp-name');
+    if (configNameEl) configNameEl.textContent = compName;
+
+    // Topbar
+    document.getElementById('topbar-title').textContent = compName;
     document.getElementById('topbar-back').classList.add('visible');
 
     // 导出按钮
@@ -1961,6 +1979,7 @@
     document.getElementById('page-home').classList.add('active');
     document.querySelectorAll('.sidebar-comp-panel').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.comp-nav-link').forEach(el => el.classList.remove('active'));
+    document.querySelector('.sidebar').classList.remove('config-mode');
     document.getElementById('topbar-back').classList.remove('visible');
     document.getElementById('topbar-title').textContent = '闪购会场组件库';
     const exportBtn = document.getElementById('btn-all');
