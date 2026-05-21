@@ -302,31 +302,43 @@
     .comp-config-area { padding: 10px 8px; }
 
     /* ===== 首页目录 ===== */
-    .home-wrap { padding: 36px 40px; max-width: 860px; }
+    /* ===== 首页目录 ===== */
+    #page-home { display: flex; align-items: flex-start; justify-content: center; min-height: calc(100vh - 56px); }
+    .home-wrap { padding: 40px 48px; max-width: 800px; width: 100%; }
     .home-greeting { font-size: 22px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px; }
     .home-sub { font-size: 13px; color: #999; margin-bottom: 40px; }
-    .home-section { margin-bottom: 40px; }
+    /* 入场动画 */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    .home-section {
+      margin-bottom: 36px;
+      animation: fadeUp 0.35s ease both;
+    }
+    .home-section:nth-child(2) { animation-delay: 0.04s; }
+    .home-section:nth-child(3) { animation-delay: 0.08s; }
+    .home-section:nth-child(4) { animation-delay: 0.12s; }
+    .home-section:nth-child(5) { animation-delay: 0.16s; }
+    .home-section:nth-child(6) { animation-delay: 0.20s; }
     .home-section-header {
       display: flex; align-items: center; gap: 10px;
-      margin-bottom: 16px; padding-bottom: 12px;
-      border-bottom: 1px solid #EBEBEB;
+      margin-bottom: 14px;
     }
-    .home-section-title { font-size: 18px; font-weight: 700; color: #1A1A1A; }
-    .home-section-count { font-size: 12px; color: #999; }
-    .home-card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .home-section-title { font-size: 15px; font-weight: 600; color: #1A1A1A; }
+    .home-section-count { font-size: 11px; color: #27D365; background: #F0FFF4; border-radius: 4px; padding: 1px 7px; font-weight: 500; }
+    .home-card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
     .home-card {
       background: #fff; border: 1px solid #EBEBEB; border-radius: 10px;
-      padding: 16px; cursor: pointer;
-      transition: box-shadow 0.15s, border-color 0.15s, transform 0.15s;
-      display: flex; flex-direction: column; gap: 5px; height: auto;
+      padding: 14px 16px; cursor: pointer;
+      transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+      display: flex; flex-direction: column; gap: 4px;
     }
     .home-card.done:hover {
       border-color: #FF3060;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(255,48,96,0.1);
+      transform: translateY(-2px);
     }
-    .home-card.coming-soon { opacity: 0.5; }
-    .home-card.coming-soon:hover { border-color: #CCC; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .home-card.done:active { transform: translateY(0); box-shadow: none; }
+    .home-card.coming-soon { opacity: 0.42; }
+    .home-card.coming-soon:hover { transform: none; box-shadow: none; }
     .home-card-name { font-size: 14px; font-weight: 600; color: #1A1A1A; line-height: 1.4; }
     .home-card-tag { font-size: 12px; color: #999; }
     .home-card-done-badge {
