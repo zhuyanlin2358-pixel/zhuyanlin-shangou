@@ -269,7 +269,7 @@
       color: #FF3060; border-left-color: #FF3060;
       background: #FFF0F3; font-weight: 600;
     }
-    .comp-nav-link.coming-soon { opacity: 0.35; cursor: default; pointer-events: none; }
+    .comp-nav-link.coming-soon { opacity: 0.35; }
     .comp-item-hidden { display: none !important; }
 
     /* ===== 配置面板区 ===== */
@@ -299,7 +299,8 @@
       box-shadow: 0 4px 16px rgba(0,0,0,0.08);
       transform: translateY(-1px);
     }
-    .home-card.coming-soon { cursor: default; opacity: 0.4; pointer-events: none; }
+    .home-card.coming-soon { opacity: 0.5; }
+    .home-card.coming-soon:hover { border-color: #CCC; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
     .home-card-name { font-size: 14px; font-weight: 600; color: #1A1A1A; line-height: 1.4; }
     .home-card-tag { font-size: 12px; color: #999; }
     .home-card-done-badge {
@@ -984,6 +985,16 @@
       <div class="cs-title">倒计时</div>
       <div class="cs-desc">包含活动倒计时、开抢倒计时等素材<br>正在设计中，敬请期待</div>
       <div class="cs-tag">🚧 开发中</div>
+    </div>
+  </div>
+
+  <!-- 通用占位页（所有未开发组件共用）-->
+  <div class="comp-page" id="page-generic">
+    <div class="coming-soon-page">
+      <div class="cs-icon" id="generic-cs-icon">🧩</div>
+      <div class="cs-title" id="generic-cs-title">组件开发中</div>
+      <div class="cs-desc">该组件正在设计开发中，敬请期待</div>
+      <div class="cs-tag">🚧 即将上线</div>
     </div>
   </div>
 
@@ -1806,7 +1817,8 @@
       allItems.forEach(item => {
         const isDone = item.status === 'done';
         const cls = `home-card ${isDone ? 'done' : 'coming-soon'}`;
-        const onclick = isDone ? `onclick="switchComp('${item.id}')"` : '';
+        const onclick = `onclick="switchComp('${item.id}')"`;
+
         html += `<div class="${cls}" ${onclick}>`;
         html += `<div class="home-card-name">${item.name}</div>`;
         if (isDone) {
@@ -1853,8 +1865,7 @@
   function renderNavItem(item) {
     const isDone = item.status === 'done';
     const cls = `comp-nav-link${isDone ? '' : ' coming-soon'}`;
-    const onclick = isDone ? `onclick="switchComp('${item.id}')"` : '';
-    return `<div class="${cls}" data-comp="${item.id}" data-name="${item.name}" ${onclick}>${item.name}</div>`;
+    return `<div class="${cls}" data-comp="${item.id}" data-name="${item.name}" onclick="switchComp('${item.id}')">${item.name}</div>`;
   }
 
   function toggleCat(groupId) {
@@ -1887,7 +1898,15 @@
     // 主内容区
     document.querySelectorAll('.comp-page').forEach(el => el.classList.remove('active'));
     const page = document.getElementById('page-' + compId);
-    if (page) page.classList.add('active');
+    if (page) {
+      page.classList.add('active');
+    } else {
+      // 没有专属页面 → 用通用占位页，更新标题
+      const meta = ALL_ITEMS.find(i => i.id === compId);
+      const name = meta ? meta.name : compId;
+      document.getElementById('generic-cs-title').textContent = name;
+      document.getElementById('page-generic').classList.add('active');
+    }
 
     // 配置面板
     document.querySelectorAll('.sidebar-comp-panel').forEach(el => el.classList.remove('active'));
