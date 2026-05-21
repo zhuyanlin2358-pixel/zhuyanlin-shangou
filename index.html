@@ -1618,15 +1618,7 @@
     if (hint) hint.style.display = 'none';
   }
 
-  // 初始化
-  (function init() {
-    renderCompBrowser();
-    renderHomePage();
-    [1, 2, 3].forEach(n => syncPrize(n));
-    loadDefaultPrizeImg(1);
-    loadDefaultPrizeImg(2);
-    setTimeout(syncPrizeToSlot, 50);
-  })();
+  // 初始化（在 COMPONENT_REGISTRY 定义之后，见下方）
 
   async function exportAll(){
     const allBtn=document.getElementById('btn-all');
@@ -1685,12 +1677,7 @@
   function downloadCanvas(canvas,filename){const a=document.createElement('a');a.href=canvas.toDataURL('image/png');a.download=filename;a.click();}
   function canvasToBlob(canvas){return new Promise(resolve=>canvas.toBlob(resolve,'image/png'));}
 
-  (function init(){
-    const r=document.documentElement.style;
-    r.setProperty('--slot-links-color',document.getElementById('c-links-color').value);
-    r.setProperty('--slot-title-color',document.getElementById('c-title-color').value);
-    updatePresetToneState('light');
-  })();
+  // init 合并到下方 COMPONENT_REGISTRY 之后执行
 
   /* ===== 折叠面板 ===== */
   function toggleGroup(id) {
@@ -1938,6 +1925,20 @@
     const exportBtn = document.getElementById('btn-all');
     if (exportBtn) exportBtn.style.display = 'none';
   }
+
+  // ===== 统一初始化（必须在 COMPONENT_REGISTRY 定义之后）=====
+  (function init() {
+    const r = document.documentElement.style;
+    r.setProperty('--slot-links-color', document.getElementById('c-links-color').value);
+    r.setProperty('--slot-title-color', document.getElementById('c-title-color').value);
+    updatePresetToneState('light');
+    renderCompBrowser();
+    renderHomePage();
+    [1, 2, 3].forEach(n => syncPrize(n));
+    loadDefaultPrizeImg(1);
+    loadDefaultPrizeImg(2);
+    setTimeout(syncPrizeToSlot, 50);
+  })();
 </script>
 </body>
 </html>
