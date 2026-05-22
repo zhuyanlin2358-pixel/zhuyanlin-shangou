@@ -455,8 +455,8 @@
     .home-card.done::after {
       content: ''; position: absolute; inset: 0; padding: 1.5px;
       background: radial-gradient(var(--glow-radius) circle at var(--glow-x) var(--glow-y),
-        rgba(255,48,96,calc(var(--glow-intensity)*0.9)) 0%,
-        rgba(255,48,96,calc(var(--glow-intensity)*0.4)) 40%,
+        rgba(255,195,0,calc(var(--glow-intensity)*0.9)) 0%,
+        rgba(255,195,0,calc(var(--glow-intensity)*0.4)) 40%,
         transparent 65%);
       border-radius: inherit;
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -2206,7 +2206,7 @@
     // --- 1. 全局聚光灯 ---
     const spotlight = document.createElement('div');
     spotlight.style.cssText = `position:fixed;width:600px;height:600px;border-radius:50%;pointer-events:none;
-      background:radial-gradient(circle,rgba(255,48,96,0.12) 0%,rgba(255,48,96,0.05) 25%,rgba(255,48,96,0.02) 45%,transparent 65%);
+      background:radial-gradient(circle,rgba(255,195,0,0.12) 0%,rgba(255,195,0,0.05) 25%,rgba(255,195,0,0.02) 45%,transparent 65%);
       z-index:9999;opacity:0;transform:translate(-50%,-50%);mix-blend-mode:normal;will-change:transform,opacity;`;
     document.body.appendChild(spotlight);
     _bentoSpotlight = spotlight;
@@ -2269,7 +2269,7 @@
         const maxD = Math.max(Math.hypot(x, y), Math.hypot(x - r.width, y), Math.hypot(x, y - r.height), Math.hypot(x - r.width, y - r.height));
         const ripple = document.createElement('div');
         ripple.style.cssText = `position:absolute;width:${maxD*2}px;height:${maxD*2}px;border-radius:50%;
-          background:radial-gradient(circle,rgba(255,48,96,0.35) 0%,rgba(255,48,96,0.15) 35%,transparent 65%);
+          background:radial-gradient(circle,rgba(255,195,0,0.5) 0%,rgba(255,195,0,0.2) 35%,transparent 65%);
           left:${x-maxD}px;top:${y-maxD}px;pointer-events:none;z-index:10;`;
         card.appendChild(ripple);
         gsap.fromTo(ripple, { scale: 0, opacity: 1 }, { scale: 1, opacity: 0, duration: 0.7, ease: 'power2.out', onComplete: () => ripple.remove() });
