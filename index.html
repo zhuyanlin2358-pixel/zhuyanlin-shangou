@@ -446,15 +446,26 @@
     .home-card {
       background: #fff; border: 1px solid #EBEBEB; border-radius: 10px;
       padding: 14px 16px; cursor: pointer;
-      transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+      transition: box-shadow 0.2s, transform 0.2s;
       display: flex; flex-direction: column; gap: 4px;
+      position: relative; overflow: hidden;
+      --glow-x: 50%; --glow-y: 50%; --glow-intensity: 0; --glow-radius: 180px;
     }
-    .home-card.done:hover {
-      border-color: #FF3060;
-      box-shadow: 0 6px 20px rgba(255,48,96,0.1);
-      transform: translateY(-2px);
+    /* 边框光晕 */
+    .home-card.done::after {
+      content: ''; position: absolute; inset: 0; padding: 1.5px;
+      background: radial-gradient(var(--glow-radius) circle at var(--glow-x) var(--glow-y),
+        rgba(255,48,96,calc(var(--glow-intensity)*0.9)) 0%,
+        rgba(255,48,96,calc(var(--glow-intensity)*0.4)) 40%,
+        transparent 65%);
+      border-radius: inherit;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      pointer-events: none; z-index: 1;
     }
-    .home-card.done:active { transform: translateY(0); box-shadow: none; }
+    .home-card.done:active { transform: scale(0.98); }
     .home-card.coming-soon { opacity: 0.42; }
     .home-card.coming-soon:hover { transform: none; box-shadow: none; }
     .home-card-name { font-size: 14px; font-weight: 600; color: #1A1A1A; line-height: 1.4; }
@@ -2174,7 +2185,106 @@
       gsap.from('.home-greeting, .home-sub', { opacity: 0, y: -14, duration: 0.5, ease: 'power2.out' });
       gsap.from('.ai-promo-card', { opacity: 0, y: 10, duration: 0.5, delay: 0.1, ease: 'power2.out' });
       gsap.from('.home-section', { opacity: 0, y: 22, duration: 0.45, stagger: 0.07, delay: 0.15, ease: 'power2.out' });
+      setTimeout(initBentoEffects, 300);
     }
+  }
+
+  /* ===== MagicBento 效果移植 ===== */
+  let _bentoSpotlight = null;
+  let _bentoCleanup = [];
+
+  function initBentoEffects() {
+    // 清理旧监听
+    _bentoCleanup.forEach(fn => fn());
+    _bentoCleanup = [];
+    _bentoSpotlight?.parentNode?.removeChild(_bentoSpotlight);
+
+    const cards = document.querySelectorAll('.home-card.done');
+    const homeWrap = document.querySelector('.home-wrap');
+    if (!cards.length || !homeWrap) return;
+
+    // --- 1. 全局聚光灯 ---
+    const spotlight = document.createElement('div');
+    spotlight.style.cssText = `position:fixed;width:600px;height:600px;border-radius:50%;pointer-events:none;
+      background:radial-gradient(circle,rgba(255,48,96,0.12) 0%,rgba(255,48,96,0.05) 25%,rgba(255,48,96,0.02) 45%,transparent 65%);
+      z-index:9999;opacity:0;transform:translate(-50%,-50%);mix-blend-mode:normal;will-change:transform,opacity;`;
+    document.body.appendChild(spotlight);
+    _bentoSpotlight = spotlight;
+
+    const onMouseMove = e => {
+      const rect = homeWrap.getBoundingClientRect();
+      const inside = e.clientX >= rect.left && e.clientX <= rect.right &&
+                     e.clientY >= rect.top  && e.clientY <= rect.bottom;
+
+      if (!inside) {
+        gsap.to(spotlight, { opacity: 0, duration: 0.4 });
+        cards.forEach(c => c.style.setProperty('--glow-intensity', '0'));
+        return;
+      }
+
+      gsap.to(spotlight, { left: e.clientX, top: e.clientY, opacity: 1, duration: 0.15, ease: 'power2.out' });
+
+      // 每张卡片的边框光晕强度
+      cards.forEach(card => {
+        const r = card.getBoundingClientRect();
+        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        const dist = Math.max(0, Math.hypot(e.clientX - cx, e.clientY - cy) - Math.max(r.width, r.height) / 2);
+        const intensity = dist < 120 ? 1 : dist < 220 ? (220 - dist) / 100 : 0;
+        const rx = ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%';
+        const ry = ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%';
+        card.style.setProperty('--glow-x', rx);
+        card.style.setProperty('--glow-y', ry);
+        card.style.setProperty('--glow-intensity', intensity.toFixed(2));
+      });
+    };
+
+    const onMouseLeave = () => {
+      gsap.to(spotlight, { opacity: 0, duration: 0.3 });
+      cards.forEach(c => c.style.setProperty('--glow-intensity', '0'));
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseleave', onMouseLeave);
+    _bentoCleanup.push(
+      () => document.removeEventListener('mousemove', onMouseMove),
+      () => document.removeEventListener('mouseleave', onMouseLeave),
+    );
+
+    // --- 2. 每张卡片：倾斜 + 点击涟漪 ---
+    cards.forEach(card => {
+      const onEnter = () => gsap.to(card, { rotateX: 4, rotateY: 4, scale: 1.02, duration: 0.3, ease: 'power2.out', transformPerspective: 800 });
+      const onLeave = () => gsap.to(card, { rotateX: 0, rotateY: 0, scale: 1, duration: 0.35, ease: 'power2.out' });
+      const onMove = e => {
+        const r = card.getBoundingClientRect();
+        const x = e.clientX - r.left, y = e.clientY - r.top;
+        gsap.to(card, {
+          rotateX: ((y - r.height/2) / r.height) * -8,
+          rotateY: ((x - r.width/2)  / r.width)  *  8,
+          duration: 0.15, ease: 'power2.out', transformPerspective: 800,
+        });
+      };
+      const onClick = e => {
+        const r = card.getBoundingClientRect();
+        const x = e.clientX - r.left, y = e.clientY - r.top;
+        const maxD = Math.max(Math.hypot(x, y), Math.hypot(x - r.width, y), Math.hypot(x, y - r.height), Math.hypot(x - r.width, y - r.height));
+        const ripple = document.createElement('div');
+        ripple.style.cssText = `position:absolute;width:${maxD*2}px;height:${maxD*2}px;border-radius:50%;
+          background:radial-gradient(circle,rgba(255,48,96,0.35) 0%,rgba(255,48,96,0.15) 35%,transparent 65%);
+          left:${x-maxD}px;top:${y-maxD}px;pointer-events:none;z-index:10;`;
+        card.appendChild(ripple);
+        gsap.fromTo(ripple, { scale: 0, opacity: 1 }, { scale: 1, opacity: 0, duration: 0.7, ease: 'power2.out', onComplete: () => ripple.remove() });
+      };
+      card.addEventListener('mouseenter', onEnter);
+      card.addEventListener('mouseleave', onLeave);
+      card.addEventListener('mousemove', onMove);
+      card.addEventListener('click', onClick);
+      _bentoCleanup.push(
+        () => card.removeEventListener('mouseenter', onEnter),
+        () => card.removeEventListener('mouseleave', onLeave),
+        () => card.removeEventListener('mousemove', onMove),
+        () => card.removeEventListener('click', onClick),
+      );
+    });
   }
 
   /* ===== 渲染左侧组件浏览器 ===== */
@@ -2481,6 +2591,7 @@
     if (typeof gsap !== 'undefined') {
       gsap.from('#page-home', { opacity: 0, x: -24, duration: 0.35, ease: 'power2.out' });
       gsap.from('.home-section', { opacity: 0, y: 16, stagger: 0.05, duration: 0.4, delay: 0.05, ease: 'power2.out' });
+      setTimeout(initBentoEffects, 350);
     }
   }
 
