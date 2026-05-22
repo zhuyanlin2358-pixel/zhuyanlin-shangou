@@ -1119,7 +1119,7 @@
   <!-- 侧边栏底部导航（仅浏览模式显示）-->
   <div class="sidebar-bottom" id="sidebar-bottom">
     <div class="sidebar-bottom-item" id="assets-nav-item" onclick="switchToAssets()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>
+      <svg id="assets-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path class="ur-path" d="M20 21a8 8 0 0 0-16 0"/><circle class="ur-circle" cx="12" cy="8" r="5"/></svg>
       <span>我的资产</span>
     </div>
   </div>
@@ -2214,10 +2214,11 @@
       html += '<div class="home-card-grid">';
       allItems.forEach(item => {
         const isDone = item.status === 'done';
-        const cls = `home-card ${isDone ? 'done' : 'coming-soon'}`;
+        const cls = `home-card ${isDone ? 'done border-glow-target' : 'coming-soon'}`;
         const onclick = `onclick="switchComp('${item.id}')"`;
 
-        html += `<div class="${cls}" ${onclick}>`;
+        html += `<div class="${cls}" ${onclick} style="${isDone ? '--bg:#fff;' : ''}">`;
+        if (isDone) html += `<span class="edge-light"></span>`;
         html += `<div class="home-card-name">${item.name}</div>`;
         if (isDone) {
           html += `<div class="home-card-tag">切图素材导出</div>`;
@@ -2706,6 +2707,16 @@
     // 初始状态：隐藏预览 tip，显示空态提示
     const panelTip = document.getElementById('preview-panel-tip');
     if (panelTip) panelTip.style.display = 'none';
+    // 我的资产图标 hover 弹跳
+    if (typeof gsap !== 'undefined') {
+      const assetsNav = document.getElementById('assets-nav-item');
+      if (assetsNav) {
+        assetsNav.addEventListener('mouseenter', () => {
+          gsap.to('#assets-nav-icon .ur-path',   { y: 4, duration: 0.3, yoyo: true, repeat: 1, ease: 'power2.inOut' });
+          gsap.to('#assets-nav-icon .ur-circle', { y: 1, duration: 0.3, yoyo: true, repeat: 1, ease: 'power2.inOut' });
+        });
+      }
+    }
     [1, 2, 3].forEach(n => syncPrize(n));
     loadDefaultPrizeImg(1);
     loadDefaultPrizeImg(2);
