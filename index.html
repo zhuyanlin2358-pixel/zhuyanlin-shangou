@@ -553,7 +553,20 @@
     #page-home.active { display: block; min-height: calc(100vh - 56px); }
     .home-wrap { padding: 48px 56px 40px; }
     .home-greeting { font-size: 28px; font-weight: 700; color: #1A1A1A; margin-bottom: 6px; }
-    .home-sub { font-size: 14px; color: #666; margin-bottom: 40px; }
+    .home-sub { font-size: 14px; color: #666; margin-bottom: 20px; }
+    .home-steps { display: flex; align-items: center; gap: 0; margin-bottom: 36px; }
+    .home-step {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border-radius: 8px; background: #F5F5F5;
+      border: 1px solid #EBEBEB;
+    }
+    .home-step-num {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #FF3060; color: #fff; font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .home-step-text { font-size: 12px; font-weight: 500; color: #333; white-space: nowrap; }
+    .home-step-arrow { font-size: 14px; color: #CCCCCC; padding: 0 6px; flex-shrink: 0; }
     /* 入场动画 */ to { opacity:1; transform:translateY(0); } }
     .home-section {
       margin-bottom: 36px;
@@ -573,8 +586,15 @@
       position: relative; overflow: hidden;
     }
     .home-card.done:active { transform: scale(0.98); }
-    .home-card.coming-soon { opacity: 0.42; }
+    .home-card.coming-soon {
+      opacity: 1; background: #FAFAFA; border: 1px dashed #E0E0E0; cursor: default;
+    }
     .home-card.coming-soon:hover { transform: none; box-shadow: none; }
+    .home-card.coming-soon .home-card-name { color: #BBBBBB; font-weight: 500; }
+    .home-card-plan-icon {
+      position: absolute; top: 10px; right: 10px; opacity: 0.2;
+    }
+    .home-card-plan-tag { font-size: 11px; color: #BBBBBB; }
     /* SpotlightCard 内部聚光效果 */
     .home-card > * { position: relative; z-index: 1; }
     /* AI 预留卡片 spotlight */
@@ -847,6 +867,59 @@
     #page-slot .preview-badge { background: rgba(255,48,96,0.85); }
     #page-slot .preview-card-wrap .export-card { border-color: rgba(255,96,128,0.5); box-shadow: 0 0 0 4px rgba(255,48,96,0.12); }
 
+    /* ===== 老虎机 Stepper 步骤引导 ===== */
+    .slot-stepper { padding: 16px 40px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .stepper-row { display: flex; align-items: flex-start; }
+    .stepper-step {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      cursor: pointer; flex-shrink: 0; min-width: 64px;
+    }
+    .stepper-step:hover .stepper-circle { border-color: rgba(255,48,96,0.45); }
+    .stepper-circle {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(255,255,255,0.07);
+      border: 1.5px solid rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.3);
+      transition: background 0.3s, border-color 0.3s, color 0.3s;
+      flex-shrink: 0; position: relative;
+    }
+    .stepper-label {
+      font-size: 11px; color: rgba(255,255,255,0.28); font-weight: 500;
+      transition: color 0.3s; white-space: nowrap; text-align: center;
+    }
+    .stepper-conn {
+      flex: 1; height: 1.5px; background: rgba(255,255,255,0.1);
+      position: relative; overflow: hidden;
+      margin: 14px 4px 0; flex-shrink: 1;
+    }
+    .stepper-conn-fill {
+      position: absolute; top: 0; left: 0; height: 100%; width: 0;
+      background: rgba(255,48,96,0.7); transition: width 0.4s ease;
+    }
+    /* 当前步骤 */
+    .stepper-step.active .stepper-circle {
+      background: rgba(255,48,96,0.18);
+      border-color: rgba(255,48,96,0.55);
+      color: #FF8FAA;
+    }
+    .stepper-step.active .stepper-label { color: rgba(255,255,255,0.85); font-weight: 600; }
+    /* 已完成步骤 */
+    .stepper-step.done .stepper-circle {
+      background: rgba(255,48,96,0.25);
+      border-color: rgba(255,48,96,0.55);
+      color: transparent;
+    }
+    .stepper-step.done .stepper-circle::after {
+      content: '';
+      display: block; width: 10px; height: 6px;
+      border-left: 2px solid #FF8FAA; border-bottom: 2px solid #FF8FAA;
+      transform: rotate(-45deg) translate(1px, -1px);
+      position: absolute;
+    }
+    .stepper-step.done .stepper-label { color: rgba(255,140,165,0.65); }
+    .stepper-step.done + .stepper-conn .stepper-conn-fill { width: 100%; }
+
     /* ===== 全局深色模式 ===== */
     body.dark-mode { background: #0D1117; }
     body.dark-mode .topbar { background: #0C111B; border-bottom-color: rgba(255,255,255,0.07); }
@@ -873,11 +946,17 @@
     /* 首页 */
     body.dark-mode .home-greeting { color: rgba(255,255,255,0.95); }
     body.dark-mode .home-sub { color: rgba(255,255,255,0.62); }
+    body.dark-mode .home-step { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+    body.dark-mode .home-step-text { color: rgba(255,255,255,0.72); }
+    body.dark-mode .home-step-arrow { color: rgba(255,255,255,0.2); }
     body.dark-mode .home-section-title { color: rgba(255,255,255,0.85); }
     body.dark-mode .home-section-header { border-bottom-color: rgba(255,255,255,0.07); }
     .home-card.done { --bg: #fff; }
     body.dark-mode .home-card { background: rgba(255,255,255,0.04) !important; border-color: rgba(255,255,255,0.08); }
     body.dark-mode .home-card.done { --bg: #111827; }
+    body.dark-mode .home-card.coming-soon { background: rgba(255,255,255,0.02) !important; border-color: rgba(255,255,255,0.07) !important; border-style: dashed !important; }
+    body.dark-mode .home-card-plan-tag { color: rgba(255,255,255,0.22); }
+    body.dark-mode .home-card-plan-icon { opacity: 0.15; }
     body.dark-mode .home-card:hover { border-color: rgba(255,255,255,0.15); }
     body.dark-mode .home-card.done:hover { border-color: rgba(255,96,128,0.4); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
     body.dark-mode .home-card-name { color: rgba(255,255,255,0.88); }
@@ -1429,6 +1508,31 @@
       <div class="slot-page-desc">共 6 类切图素材 · 配置后导出 PNG / ZIP，直接用于高达平台配置</div>
     </div>
 
+    <!-- 使用步骤 Stepper -->
+    <div class="slot-stepper">
+      <div class="stepper-row">
+        <div class="stepper-step active" data-step="1" onclick="goToStep(1)">
+          <div class="stepper-circle"><span>1</span></div>
+          <div class="stepper-label">选配色</div>
+        </div>
+        <div class="stepper-conn"><div class="stepper-conn-fill"></div></div>
+        <div class="stepper-step" data-step="2" onclick="goToStep(2)">
+          <div class="stepper-circle"><span>2</span></div>
+          <div class="stepper-label">设文案</div>
+        </div>
+        <div class="stepper-conn"><div class="stepper-conn-fill"></div></div>
+        <div class="stepper-step" data-step="3" onclick="goToStep(3)">
+          <div class="stepper-circle"><span>3</span></div>
+          <div class="stepper-label">配奖品</div>
+        </div>
+        <div class="stepper-conn"><div class="stepper-conn-fill"></div></div>
+        <div class="stepper-step" data-step="4" onclick="goToStep(4)">
+          <div class="stepper-circle"><span>4</span></div>
+          <div class="stepper-label">导出</div>
+        </div>
+      </div>
+    </div>
+
   <div class="section-header" id="section-preview">
     <div class="section-num">1</div>
     <div><div class="section-label">老虎机未抽奖状态</div><div class="section-sub">含标题 + 奖品图 + 按钮 · 750 × 242 px</div></div>
@@ -1860,6 +1964,32 @@
     const text = document.getElementById('c-title-text').value;
     document.querySelectorAll('.title-layer').forEach(el => el.textContent = text);
     syncPreviewPanel();
+  }
+
+  /* ===== Stepper 步骤引导 ===== */
+  const STEP_MAP = [
+    { panels: ['pg-preset'],           section: 'section-preview', collapse: ['pg-text','pg-empty','pg-prize'] },
+    { panels: ['pg-text'],             section: 'section-bg',      collapse: ['pg-preset','pg-empty','pg-prize'] },
+    { panels: ['pg-prize','pg-empty'], section: 'section-prize',   collapse: ['pg-preset','pg-text'] },
+    { panels: [],                      section: 'section-preview', collapse: [] },
+  ];
+
+  function goToStep(n) {
+    document.querySelectorAll('.stepper-step').forEach((el, i) => {
+      el.classList.remove('active', 'done');
+      if (i + 1 < n) el.classList.add('done');
+      else if (i + 1 === n) el.classList.add('active');
+    });
+    const { panels, section, collapse } = STEP_MAP[n - 1];
+    collapse.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('collapsed'); });
+    panels.forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('collapsed'); });
+    if (panels.length > 0) {
+      const firstPanel = document.getElementById(panels[0]);
+      if (firstPanel) firstPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    const sectionEl = document.getElementById(section);
+    if (sectionEl) sectionEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (n === 4) showToast('步骤 4：点击各素材卡片右下角「↓ 导出 PNG」，或顶栏「一键导出 ZIP」');
   }
 
   function syncEmptyText() {
@@ -2510,7 +2640,14 @@
     if (!home) return;
     let html = '<div class="home-wrap">';
     html += '<div class="home-greeting">闪购会场组件库</div>';
-    html += '<div class="home-sub">选择组件进行配置和素材导出</div>';
+    html += '<div class="home-sub">运营自助配置组件参数，一键导出切图素材</div>';
+    html += `<div class="home-steps">
+      <div class="home-step"><div class="home-step-num">1</div><div class="home-step-text">选组件</div></div>
+      <div class="home-step-arrow">→</div>
+      <div class="home-step"><div class="home-step-num">2</div><div class="home-step-text">配置参数</div></div>
+      <div class="home-step-arrow">→</div>
+      <div class="home-step"><div class="home-step-num">3</div><div class="home-step-text">导出切图</div></div>
+    </div>`;
     html += `<div class="ai-promo-card border-glow-target"><span class="edge-light"></span>
       <div class="ai-promo-text">
         <div class="ai-promo-tag">✦ AI 能力预留</div>
@@ -2532,19 +2669,20 @@
       html += '<div class="chroma-grid-wrap"><div class="chroma-fade"></div><div class="chroma-overlay"></div><div class="home-card-grid">';
       allItems.forEach(item => {
         const isDone = item.status === 'done';
-        const cls = `home-card ${isDone ? 'done border-glow-target' : 'coming-soon'}`;
-        const onclick = `onclick="switchComp('${item.id}')"`;
-
-        html += `<div class="${cls}" ${onclick}>`;
-        if (isDone) html += `<span class="edge-light"></span>`;
-        html += `<div class="home-card-name">${item.name}</div>`;
         if (isDone) {
+          html += `<div class="home-card done border-glow-target" onclick="switchComp('${item.id}')">`;
+          html += `<span class="edge-light"></span>`;
+          html += `<div class="home-card-name">${item.name}</div>`;
           html += `<div class="home-card-tag">切图素材导出</div>`;
           html += `<div class="home-card-done-badge">可用</div>`;
+          html += '</div>';
         } else {
-          html += `<div class="home-card-tag">即将上线</div>`;
+          html += `<div class="home-card coming-soon">`;
+          html += `<svg class="home-card-plan-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
+          html += `<div class="home-card-name">${item.name}</div>`;
+          html += `<div class="home-card-plan-tag">规划中</div>`;
+          html += '</div>';
         }
-        html += '</div>';
       });
       html += '</div></div></div>';  // close home-card-grid + chroma-grid-wrap + home-section
     });
@@ -2552,7 +2690,8 @@
     home.innerHTML = html;
     if (typeof gsap !== 'undefined') {
       gsap.from('.home-greeting, .home-sub', { opacity: 0, y: -14, duration: 0.5, ease: 'power2.out' });
-      gsap.from('.ai-promo-card', { opacity: 0, y: 10, duration: 0.5, delay: 0.1, ease: 'power2.out' });
+      gsap.from('.home-steps', { opacity: 0, y: 8, duration: 0.4, delay: 0.08, ease: 'power2.out' });
+      gsap.from('.ai-promo-card', { opacity: 0, y: 10, duration: 0.5, delay: 0.15, ease: 'power2.out' });
       gsap.from('.home-section', { opacity: 0, y: 22, duration: 0.45, stagger: 0.07, delay: 0.15, ease: 'power2.out' });
       setTimeout(initBentoEffects, 300);
       setTimeout(initSpotlightCards, 100);
@@ -2841,8 +2980,10 @@
       // 老虎机专属：header + section 错落入场
       if (compId === 'slot') {
         gsap.from('.slot-page-header', { opacity: 0, y: -12, duration: 0.4, delay: 0.05, ease: 'power2.out' });
+        gsap.from('.slot-stepper', { opacity: 0, y: -8, duration: 0.4, delay: 0.1, ease: 'power2.out' });
         gsap.from('#page-slot .section-header', { opacity: 0, y: 16, duration: 0.4, stagger: 0.07, delay: 0.15, ease: 'power2.out' });
         setTimeout(initSpotlightCards, 200);
+        goToStep(1);
       }
     }
   }
