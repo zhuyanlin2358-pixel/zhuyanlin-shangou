@@ -449,21 +449,10 @@
       transition: box-shadow 0.2s, transform 0.2s;
       display: flex; flex-direction: column; gap: 4px;
       position: relative; overflow: hidden;
-      --glow-x: 50%; --glow-y: 50%; --glow-intensity: 0; --glow-radius: 180px;
     }
-    /* 边框光晕 */
-    .home-card.done::after {
-      content: ''; position: absolute; inset: 0; padding: 1.5px;
-      background: radial-gradient(var(--glow-radius) circle at var(--glow-x) var(--glow-y),
-        rgba(255,195,0,calc(var(--glow-intensity)*0.9)) 0%,
-        rgba(255,195,0,calc(var(--glow-intensity)*0.4)) 40%,
-        transparent 65%);
-      border-radius: inherit;
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      mask-composite: exclude;
-      pointer-events: none; z-index: 1;
+    .home-card.done:hover {
+      border-color: rgba(255,195,0,0.7);
+      box-shadow: 0 0 0 1px rgba(255,195,0,0.3), 0 6px 20px rgba(255,195,0,0.15);
     }
     .home-card.done:active { transform: scale(0.98); }
     .home-card.coming-soon { opacity: 0.42; }
