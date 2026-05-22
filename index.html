@@ -2855,15 +2855,20 @@
     renderSmContent();
     const overlay = document.getElementById('sm-overlay');
     const panel = document.getElementById('sm-panel');
+    overlay.classList.add('open');
+    if (typeof gsap === 'undefined') {
+      // CSS fallback
+      panel.style.transform = 'translateX(0)';
+      panel.style.transition = 'transform 0.4s ease';
+      return;
+    }
     const prelayers = document.querySelectorAll('.sm-prelayer');
     const items = document.querySelectorAll('.sm-item');
-    overlay.classList.add('open');
+    gsap.set(panel, { xPercent: 100 });
+    gsap.set(prelayers, { xPercent: 100 });
     gsap.set(items, { y: '110%', rotation: 6 });
-    // 预层依次滑入
-    gsap.fromTo(prelayers, { xPercent: 100 }, { xPercent: 0, duration: 0.45, ease: 'power4.out', stagger: 0.06 });
-    // 主面板稍后滑入
-    gsap.fromTo(panel, { xPercent: 100 }, { xPercent: 0, duration: 0.55, ease: 'power4.out', delay: 0.1 });
-    // 菜单项错落弹出
+    gsap.to(prelayers, { xPercent: 0, duration: 0.45, ease: 'power4.out', stagger: 0.06 });
+    gsap.to(panel, { xPercent: 0, duration: 0.55, ease: 'power4.out', delay: 0.1 });
     gsap.to(items, { y: 0, rotation: 0, duration: 0.7, ease: 'power4.out', stagger: 0.06, delay: 0.28 });
   }
 
