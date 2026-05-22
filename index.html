@@ -432,17 +432,10 @@
     .home-wrap { padding: 40px 56px; }
     .home-greeting { font-size: 22px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px; }
     .home-sub { font-size: 13px; color: #666; margin-bottom: 40px; }
-    /* 入场动画 */
-    @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    /* 入场动画 */ to { opacity:1; transform:translateY(0); } }
     .home-section {
       margin-bottom: 36px;
-      animation: fadeUp 0.35s ease both;
     }
-    .home-section:nth-child(2) { animation-delay: 0.04s; }
-    .home-section:nth-child(3) { animation-delay: 0.08s; }
-    .home-section:nth-child(4) { animation-delay: 0.12s; }
-    .home-section:nth-child(5) { animation-delay: 0.16s; }
-    .home-section:nth-child(6) { animation-delay: 0.20s; }
     .home-section-header {
       display: flex; align-items: center; gap: 10px;
       margin-bottom: 14px;
@@ -558,14 +551,8 @@
       background: #0D1117;
       min-height: 100%;
     }
-    /* 入场动画 */
-    @keyframes slideIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
-    #page-slot .section-header { animation: slideIn 0.3s ease both; }
-    #page-slot .section-header:nth-child(2) { animation-delay: 0.05s; }
-    #page-slot .section-header:nth-child(3) { animation-delay: 0.10s; }
-    #page-slot .section-header:nth-child(4) { animation-delay: 0.15s; }
-    #page-slot .section-header:nth-child(5) { animation-delay: 0.20s; }
-    #page-slot .section-header:nth-child(6) { animation-delay: 0.25s; }
+    /* 入场动画 */ to { opacity:1; transform:translateY(0); } }
+    #page-slot .section-header { }
     /* 页面 header */
     .slot-page-header {
       padding: 32px 40px 24px;
@@ -2025,6 +2012,11 @@
     if (!el) return;
     const wasCollapsed = el.classList.contains('collapsed');
     el.classList.toggle('collapsed');
+    // GSAP 展开弹性动画
+    if (wasCollapsed && typeof gsap !== 'undefined') {
+      const body = el.querySelector('.panel-group-body');
+      if (body) gsap.from(body, { opacity: 0, y: -8, duration: 0.3, ease: 'back.out(1.4)' });
+    }
     if (wasCollapsed && scrollTarget) {
       setTimeout(() => {
         const target = document.getElementById(scrollTarget);
@@ -2178,6 +2170,11 @@
     });
     html += '</div>';
     home.innerHTML = html;
+    if (typeof gsap !== 'undefined') {
+      gsap.from('.home-greeting, .home-sub', { opacity: 0, y: -14, duration: 0.5, ease: 'power2.out' });
+      gsap.from('.ai-promo-card', { opacity: 0, y: 10, duration: 0.5, delay: 0.1, ease: 'power2.out' });
+      gsap.from('.home-section', { opacity: 0, y: 22, duration: 0.45, stagger: 0.07, delay: 0.15, ease: 'power2.out' });
+    }
   }
 
   /* ===== 渲染左侧组件浏览器 ===== */
@@ -2306,6 +2303,16 @@
       panelTip && (panelTip.style.display = '');
     } else {
       document.body.classList.remove('has-preview');
+    }
+    // GSAP 页面入场动画
+    if (typeof gsap !== 'undefined') {
+      const activePage = document.querySelector('.comp-page.active');
+      if (activePage) gsap.from(activePage, { opacity: 0, x: 24, duration: 0.38, ease: 'power2.out' });
+      // 老虎机专属：header + section 错落入场
+      if (compId === 'slot') {
+        gsap.from('.slot-page-header', { opacity: 0, y: -12, duration: 0.4, delay: 0.05, ease: 'power2.out' });
+        gsap.from('#page-slot .section-header', { opacity: 0, y: 16, duration: 0.4, stagger: 0.07, delay: 0.15, ease: 'power2.out' });
+      }
     }
   }
 
@@ -2470,6 +2477,11 @@
     document.body.classList.remove('has-preview');
     const mock = document.getElementById('page-mock');
     mock && mock.classList.remove('visible');
+    // GSAP 返回首页动画
+    if (typeof gsap !== 'undefined') {
+      gsap.from('#page-home', { opacity: 0, x: -24, duration: 0.35, ease: 'power2.out' });
+      gsap.from('.home-section', { opacity: 0, y: 16, stagger: 0.05, duration: 0.4, delay: 0.05, ease: 'power2.out' });
+    }
   }
 
   // ===== 统一初始化（必须在 COMPONENT_REGISTRY 定义之后）=====
