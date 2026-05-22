@@ -62,6 +62,10 @@
     .color-row select { flex: 1; min-width: 0; }
 
     .main { margin-left: 260px; margin-right: 360px; margin-top: 56px; padding: 0; }
+    /* 首页隐藏顶栏 */
+    body.on-home .topbar { opacity: 0; pointer-events: none; transform: translateY(-100%); transition: opacity 0.2s, transform 0.25s ease; }
+    body.on-home .main { margin-top: 0; }
+    body.on-home .sidebar { top: 0; height: 100vh; }
 
     .preview-panel { position: fixed; top: 56px; right: 0; width: 360px; height: calc(100vh - 56px); background: #fff; border-left: 1px solid #EBEBEB; display: flex; flex-direction: column; z-index: 100; }
     .preview-panel-header { padding: 12px 14px 10px; border-bottom: 1px solid #F0F0F0; flex-shrink: 0; }
@@ -510,9 +514,9 @@
     /* ===== 首页目录 ===== */
     /* ===== 首页目录 ===== */
     #page-home.active { display: block; min-height: calc(100vh - 56px); }
-    .home-wrap { padding: 40px 56px; }
-    .home-greeting { font-size: 22px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px; }
-    .home-sub { font-size: 13px; color: #666; margin-bottom: 40px; }
+    .home-wrap { padding: 48px 56px 40px; }
+    .home-greeting { font-size: 28px; font-weight: 700; color: #1A1A1A; margin-bottom: 6px; }
+    .home-sub { font-size: 14px; color: #666; margin-bottom: 40px; }
     /* 入场动画 */ to { opacity:1; transform:translateY(0); } }
     .home-section {
       margin-bottom: 36px;
@@ -2648,6 +2652,7 @@
     // Topbar
     document.getElementById('topbar-title').textContent = compName;
     document.getElementById('topbar-back').classList.add('visible');
+    document.body.classList.remove('on-home');
 
     // 导出按钮
     const exportBtn = document.getElementById('btn-all');
@@ -2733,6 +2738,7 @@
   let _assetsCurrentTab = 'all';
 
   function switchToAssets() {
+    document.body.classList.remove('on-home');
     document.querySelectorAll('.comp-page').forEach(el => el.classList.remove('active'));
     document.getElementById('page-assets').classList.add('active');
     document.querySelectorAll('.sidebar-comp-panel').forEach(el => el.classList.remove('active'));
@@ -2892,6 +2898,7 @@
     document.getElementById('topbar-back').classList.remove('visible');
     document.getElementById('topbar-title').textContent = '闪购会场组件库';
     document.getElementById('assets-nav-item').classList.remove('active');
+    document.body.classList.add('on-home');
     const exportBtn = document.getElementById('btn-all');
     if (exportBtn) exportBtn.style.display = 'none';
     document.body.classList.remove('has-preview');
@@ -2912,6 +2919,7 @@
     r.setProperty('--slot-title-color', document.getElementById('c-title-color').value);
     updatePresetToneState('light');
     renderCompBrowser();
+    document.body.classList.add('on-home');
     renderHomePage();
     // 初始状态：隐藏预览 tip，显示空态提示
     const panelTip = document.getElementById('preview-panel-tip');
