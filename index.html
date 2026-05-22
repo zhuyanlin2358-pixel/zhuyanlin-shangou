@@ -49,9 +49,23 @@
     .sidebar h4 { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 12px; }
     .preset-group-label { font-size: 12px; color: #636363; margin: 6px 0 4px; font-weight: 500; }
     .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 4px; }
-    .preset-btn { padding: 6px 4px; border: 1.5px solid #E8E8E8; border-radius: 8px; background: #fff; font-size: 12px; cursor: pointer; transition: all 0.15s; text-align: center; position: relative; overflow: visible; }
+    .preset-btn { display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 4px; border: 1.5px solid #E8E8E8; border-radius: 8px; background: #fff; font-size: 12px; cursor: pointer; transition: all 0.15s; position: relative; overflow: visible; }
     .preset-btn:hover:not(.preset-disabled) { border-color: #FF3060; color: #FF3060; }
     .preset-btn.active { border-color: #FF3060; background: #FFF0F3; color: #FF3060; font-weight: 600; }
+    /* 配色预设色点 */
+    .preset-btn::before { content: ''; display: block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.08); }
+    .preset-btn[data-preset="pink"]::before   { background: #FF5518; }
+    .preset-btn[data-preset="rose"]::before   { background: #FF1C18; }
+    .preset-btn[data-preset="orange"]::before { background: #FF5E00; }
+    .preset-btn[data-preset="yellow"]::before { background: #FFC000; }
+    .preset-btn[data-preset="green"]::before  { background: #27D365; }
+    .preset-btn[data-preset="teal"]::before   { background: #06B1FF; }
+    .preset-btn[data-preset="purple"]::before { background: #9771FF; }
+    .preset-btn[data-preset="dark-red"]::before    { background: #C0392B; border-color: rgba(255,255,255,0.2); }
+    .preset-btn[data-preset="dark-orange"]::before { background: #B8620A; border-color: rgba(255,255,255,0.2); }
+    .preset-btn[data-preset="dark-green"]::before  { background: #166534; border-color: rgba(255,255,255,0.2); }
+    .preset-btn[data-preset="dark-blue"]::before   { background: #1E40AF; border-color: rgba(255,255,255,0.2); }
+    .preset-btn[data-preset="dark-purple"]::before { background: #6D28D9; border-color: rgba(255,255,255,0.2); }
     .preset-btn.preset-disabled { opacity: 0.32; cursor: not-allowed; pointer-events: none; border-color: #E8E8E8 !important; color: #bbb !important; background: #fafafa !important; }
     .preset-btn.recommended::after { content: '推荐'; position: absolute; top: -8px; right: -4px; background: #FF3060; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 6px; letter-spacing: 0.3px; pointer-events: none; box-shadow: 0 1px 4px rgba(255,48,96,0.35); line-height: 14px; }
     .divider { border: none; border-top: 1px solid #F0F0F0; margin: 12px 0; }
@@ -265,9 +279,15 @@
     body.has-preview .upload-btn:hover { background: rgba(255,96,128,0.15) !important; border-color: rgba(255,96,128,0.35) !important; color: #FF8FAA !important; }
     /* 分割线 */
     body.has-preview .divider { border-top-color: rgba(255,255,255,0.06); margin: 8px 0; }
-    /* 小标题文字 */
-    body.has-preview div[style*="font-size:12px;font-weight:600;color:#555"] { color: rgba(255,255,255,0.6) !important; }
-    body.has-preview div[style*="font-size:12px;color:#636"] { color: rgba(255,255,255,0.4) !important; }
+    /* 小标题 / 提示 / 重置 / 奖品块 暗色适配 */
+    body.has-preview .panel-sub-label { color: rgba(255,255,255,0.6); }
+    body.has-preview .panel-hint { color: rgba(255,255,255,0.32); }
+    body.has-preview .reset-btn { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+    body.has-preview .reset-btn:hover { border-color: rgba(255,255,255,0.22); color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.1); }
+    body.has-preview .prize-block { border-color: rgba(255,255,255,0.07); background: rgba(255,255,255,0.015); }
+    body.has-preview .advanced-group .panel-group-title { color: rgba(255,255,255,0.3); }
+    body.has-preview .advanced-badge { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.3); }
+    body.has-preview .panel-section-badge { background: rgba(255,96,128,0.15); color: rgba(255,140,165,0.8); }
     /* config-mode-bar 重设计 */
     body.has-preview .config-mode-bar {
       padding: 14px 16px 12px; font-size: 11px;
@@ -389,6 +409,23 @@
     .panel-group.collapsed .arrow { transform: rotate(-90deg); }
     .panel-group-body { padding: 10px 12px 12px; border-top: 1px solid #EBEBEB; }
     .panel-group.collapsed .panel-group-body { display: none; }
+
+    /* Panel 内子标题 / 提示 / 重置按钮 / 奖品块 */
+    .panel-sub-label { font-size: 11px; font-weight: 600; color: #555; margin-bottom: 6px; display: block; }
+    .panel-hint { font-size: 12px; color: #888; margin-bottom: 4px; line-height: 1.5; }
+    .reset-btn { font-size: 11px; padding: 4px 10px; border: 1px solid #EBEBEB; border-radius: 6px; background: #F5F5F5; cursor: pointer; color: #555; transition: background 0.15s, border-color 0.15s, color 0.15s; margin-top: 6px; }
+    .reset-btn:hover { border-color: #CCC; color: #333; background: #EFEFEF; }
+    .prize-block { border: 1px solid #EBEBEB; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
+    .prize-block:last-child { margin-bottom: 0; }
+    /* 自定义颜色弱化 */
+    .advanced-group .panel-group-title { color: #999; }
+    .advanced-group .panel-group-title:hover { color: #666; }
+    .advanced-badge { font-size: 9px; font-weight: 600; padding: 1px 5px; border-radius: 4px; background: #F0F0F0; color: #999; letter-spacing: 0.3px; }
+    /* 面板分组 → section 标记 */
+    .panel-section-badge { font-size: 10px; padding: 1px 6px; border-radius: 4px; background: rgba(255,48,96,0.08); color: rgba(255,48,96,0.65); font-weight: 500; flex-shrink: 0; }
+    /* section-header → 配置面板指引标签 */
+    .section-ctrl-tag { font-size: 11px; padding: 2px 8px; border-radius: 5px; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.38); margin-left: auto; white-space: nowrap; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1); }
+    .section-ctrl-tag.auto { background: rgba(60,200,100,0.1); color: rgba(80,210,120,0.7); border-color: rgba(60,200,100,0.2); }
 
     /* ===== section 标题 ===== */
     .section-header {
@@ -1111,13 +1148,40 @@
       <span class="comp-name">老虎机</span>
     </div>
 
-  <!-- 分组 0：会场背景色（与配色预设配合使用）-->
-  <div class="panel-group collapsed" id="pg-bg-slot">
-    <div class="panel-group-title" onclick="toggleGroup('pg-bg-slot')">
-      <span class="dot"></span>会场背景色<span class="arrow">▾</span>
+  <!-- 分组 1：配色预设（主，决定组件颜色+自动联动背景色）-->
+  <div class="panel-group" id="pg-preset">
+    <div class="panel-group-title" onclick="toggleGroup('pg-preset','section-preview')">
+      <span class="dot"></span>配色预设<span class="panel-section-badge">素材 1–5</span><span class="arrow">▾</span>
     </div>
     <div class="panel-group-body">
-      <div style="font-size:12px;color:#636363;margin-bottom:6px">选背景色，右侧实时预览效果</div>
+      <div class="preset-group-label"><svg style="width:13px;height:13px;vertical-align:-2px;margin-right:3px;opacity:.6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>浅色系</div>
+      <div class="preset-grid" id="preset-grid-light">
+        <button class="preset-btn active" data-preset="pink"   data-tone="light" onclick="applyPreset('pink',this)">粉红</button>
+        <button class="preset-btn"        data-preset="rose"   data-tone="light" onclick="applyPreset('rose',this)">玫红</button>
+        <button class="preset-btn"        data-preset="orange" data-tone="light" onclick="applyPreset('orange',this)">橙色</button>
+        <button class="preset-btn"        data-preset="yellow" data-tone="light" onclick="applyPreset('yellow',this)">黄橙</button>
+        <button class="preset-btn"        data-preset="green"  data-tone="light" onclick="applyPreset('green',this)">绿色</button>
+        <button class="preset-btn"        data-preset="teal"   data-tone="light" onclick="applyPreset('teal',this)">蓝绿</button>
+        <button class="preset-btn"        data-preset="purple" data-tone="light" onclick="applyPreset('purple',this)">蓝紫</button>
+      </div>
+      <div class="preset-group-label" style="margin-top:8px"><svg style="width:13px;height:13px;vertical-align:-2px;margin-right:3px;opacity:.6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>深色系</div>
+      <div class="preset-grid" id="preset-grid-dark">
+        <button class="preset-btn preset-disabled" data-preset="dark-red"    data-tone="dark" onclick="applyPreset('dark-red',this)">深红</button>
+        <button class="preset-btn preset-disabled" data-preset="dark-orange" data-tone="dark" onclick="applyPreset('dark-orange',this)">深橙</button>
+        <button class="preset-btn preset-disabled" data-preset="dark-green"  data-tone="dark" onclick="applyPreset('dark-green',this)">深绿</button>
+        <button class="preset-btn preset-disabled" data-preset="dark-blue"   data-tone="dark" onclick="applyPreset('dark-blue',this)">深蓝</button>
+        <button class="preset-btn preset-disabled" data-preset="dark-purple" data-tone="dark" onclick="applyPreset('dark-purple',this)">深紫</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 分组 0：会场背景色（随配色预设自动联动，也可手动微调）-->
+  <div class="panel-group collapsed" id="pg-bg-slot">
+    <div class="panel-group-title" onclick="toggleGroup('pg-bg-slot')">
+      <span class="dot"></span>会场背景色<span class="panel-section-badge">预览面板</span><span class="arrow">▾</span>
+    </div>
+    <div class="panel-group-body">
+      <div class="panel-hint">配色预设选定后自动同步，也可在此手动微调</div>
       <div class="swatch-section-label" style="margin-top:0"><svg style="width:13px;height:13px;vertical-align:-2px;margin-right:3px;opacity:.6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>浅色系</div>
       <div class="bg-swatches">
         <div class="bg-swatch" style="background:#ffdceb" title="粉"    onclick="applyBgTheme('#ffdceb',this,'light')"></div>
@@ -1145,7 +1209,7 @@
         <input type="color" value="#ffdcdc" style="width:26px;height:20px;border:1px solid #ddd;border-radius:4px;padding:1px;cursor:pointer" oninput="applyBgTheme(this.value,null)">
       </div>
       <hr class="divider">
-      <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:6px">会场背景图</div>
+      <div class="panel-sub-label">会场背景图</div>
       <label class="bg-upload-zone" for="panel-bg-upload-2">
         <svg style="width:18px;height:18px;opacity:.55" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         <span>上传背景图（750px 宽）</span>
@@ -1154,48 +1218,22 @@
     </div>
   </div>
 
-  <!-- 分组 1：配色预设 -->
-  <div class="panel-group" id="pg-preset">
-    <div class="panel-group-title" onclick="toggleGroup('pg-preset','section-preview')">
-      <span class="dot"></span>配色预设<span class="arrow">▾</span>
-    </div>
-    <div class="panel-group-body">
-      <div class="preset-group-label"><svg style="width:13px;height:13px;vertical-align:-2px;margin-right:3px;opacity:.6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>浅色系</div>
-      <div class="preset-grid" id="preset-grid-light">
-        <button class="preset-btn active" data-preset="pink"   data-tone="light" onclick="applyPreset('pink',this)">粉红</button>
-        <button class="preset-btn"        data-preset="rose"   data-tone="light" onclick="applyPreset('rose',this)">玫红</button>
-        <button class="preset-btn"        data-preset="orange" data-tone="light" onclick="applyPreset('orange',this)">橙色</button>
-        <button class="preset-btn"        data-preset="yellow" data-tone="light" onclick="applyPreset('yellow',this)">黄橙</button>
-        <button class="preset-btn"        data-preset="green"  data-tone="light" onclick="applyPreset('green',this)">绿色</button>
-        <button class="preset-btn"        data-preset="teal"   data-tone="light" onclick="applyPreset('teal',this)">蓝绿</button>
-        <button class="preset-btn"        data-preset="purple" data-tone="light" onclick="applyPreset('purple',this)">蓝紫</button>
-      </div>
-      <div class="preset-group-label" style="margin-top:8px"><svg style="width:13px;height:13px;vertical-align:-2px;margin-right:3px;opacity:.6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>深色系</div>
-      <div class="preset-grid" id="preset-grid-dark">
-        <button class="preset-btn preset-disabled" data-preset="dark-red"    data-tone="dark" onclick="applyPreset('dark-red',this)">深红</button>
-        <button class="preset-btn preset-disabled" data-preset="dark-orange" data-tone="dark" onclick="applyPreset('dark-orange',this)">深橙</button>
-        <button class="preset-btn preset-disabled" data-preset="dark-green"  data-tone="dark" onclick="applyPreset('dark-green',this)">深绿</button>
-        <button class="preset-btn preset-disabled" data-preset="dark-blue"   data-tone="dark" onclick="applyPreset('dark-blue',this)">深蓝</button>
-        <button class="preset-btn preset-disabled" data-preset="dark-purple" data-tone="dark" onclick="applyPreset('dark-purple',this)">深紫</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 分组 2：自定义颜色 -->
-  <div class="panel-group collapsed" id="pg-color">
+  <!-- 分组 2：自定义颜色（高级，不推荐业务常规使用）-->
+  <div class="panel-group advanced-group collapsed" id="pg-color">
     <div class="panel-group-title" onclick="toggleGroup('pg-color','section-bg')">
-      <span class="dot"></span>自定义颜色<span class="arrow">▾</span>
+      <span class="dot"></span>自定义颜色<span class="advanced-badge">高级</span><span class="arrow">▾</span>
     </div>
     <div class="panel-group-body">
-      <div style="font-size:12px;color:#636363;margin-bottom:6px">主按钮渐变</div>
+      <div class="panel-hint" style="margin-bottom:8px">调整后会脱离预设，建议业务使用配色预设</div>
+      <div class="panel-sub-label">主按钮渐变</div>
       <div class="color-row"><label>起始色</label><input type="color" id="c-btn-from"   value="#FF3060" oninput="syncCustom()"></div>
       <div class="color-row"><label>结束色</label><input type="color" id="c-btn-to"     value="#FF7030" oninput="syncCustom()"></div>
       <hr class="divider">
-      <div style="font-size:12px;color:#636363;margin-bottom:6px">禁用按钮渐变</div>
+      <div class="panel-sub-label">禁用按钮渐变</div>
       <div class="color-row"><label>起始色</label><input type="color" id="c-dis-from" value="#FFBDD0" oninput="syncCustom()"></div>
       <div class="color-row"><label>结束色</label><input type="color" id="c-dis-to"   value="#FFD0B0" oninput="syncCustom()"></div>
       <hr class="divider">
-      <div style="font-size:12px;color:#636363;margin-bottom:6px">背景叠色渐变</div>
+      <div class="panel-sub-label">背景叠色渐变</div>
       <div class="color-row"><label>起始色</label><input type="color" id="c-slot-from"  value="#FFE8F5" oninput="syncCustom()"></div>
       <div class="color-row"><label>结束色</label><input type="color" id="c-slot-to"    value="#FFB0D8" oninput="syncCustom()"></div>
       <hr class="divider">
@@ -1206,7 +1244,7 @@
   <!-- 分组 3：文案设置 -->
   <div class="panel-group" id="pg-text">
     <div class="panel-group-title" onclick="toggleGroup('pg-text','section-bg')">
-      <span class="dot"></span>文案设置<span class="arrow">▾</span>
+      <span class="dot"></span>文案设置<span class="panel-section-badge">素材 2</span><span class="arrow">▾</span>
     </div>
     <div class="panel-group-body">
       <div class="color-row"><label>主标题文案</label><input type="text" id="c-title-text" value="天天抽免单" oninput="syncTitleText()"></div>
@@ -1217,24 +1255,24 @@
   <!-- 分组 4：空态页设置 -->
   <div class="panel-group collapsed" id="pg-empty">
     <div class="panel-group-title" onclick="toggleGroup('pg-empty','section-empty')">
-      <span class="dot"></span>空态页设置<span class="arrow">▾</span>
+      <span class="dot"></span>空态页设置<span class="panel-section-badge">素材 3</span><span class="arrow">▾</span>
     </div>
     <div class="panel-group-body">
-      <div class="color-row"><label>空态文案</label><input type="text" id="c-empty-text" value="活动太火爆，请稍后重试..." oninput="syncEmptyText()" style="flex:1;padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:12px"></div>
+      <div class="color-row"><label>空态文案</label><input type="text" id="c-empty-text" value="活动太火爆，请稍后重试..." oninput="syncEmptyText()"></div>
       <div style="margin-top:8px">
-        <label style="font-size:12px;color:#555;display:block;margin-bottom:6px">替换空态插图（仅支持 PNG）</label>
+        <div class="panel-sub-label">替换空态插图（仅支持 PNG）</div>
         <label class="upload-btn" for="c-empty-img">选择 PNG 图片</label>
         <input type="file" id="c-empty-img" accept="image/png" style="display:none" onchange="replaceEmptyImg(this)">
-        <div id="c-empty-img-name" style="font-size:12px;color:#636363;margin-top:4px">当前：3d3b827429c0856d14213ddf1d44cc12262543.png</div>
-        <div style="font-size:12px;color:#888;margin-top:3px">拖动调整位置，滚轮或滑块调整大小</div>
+        <div id="c-empty-img-name" class="panel-hint" style="margin-top:4px">当前：默认插图</div>
+        <div class="panel-hint">拖动调整位置，滚轮或滑块调整大小</div>
       </div>
       <div style="margin-top:10px">
         <div style="display:flex;align-items:center;gap:8px">
-          <label style="font-size:12px;color:#555;white-space:nowrap">插图大小</label>
+          <span class="panel-sub-label" style="margin-bottom:0;white-space:nowrap">插图大小</span>
           <input type="range" id="c-empty-scale" min="0" max="200" value="100" step="1" style="flex:1" oninput="syncEmptyScale(this.value)">
-          <span id="c-empty-scale-val" style="font-size:12px;color:#555;min-width:36px;text-align:right">100%</span>
+          <span id="c-empty-scale-val" class="panel-sub-label" style="margin-bottom:0;min-width:36px;text-align:right">100%</span>
         </div>
-        <button onclick="resetEmptyTransform()" style="margin-top:6px;font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:4px;background:#f5f5f5;cursor:pointer;color:#555">↺ 重置位置与大小</button>
+        <button class="reset-btn" onclick="resetEmptyTransform()">↺ 重置位置与大小</button>
       </div>
     </div>
   </div>
@@ -1242,76 +1280,74 @@
   <!-- 分组 5：奖品图设置 -->
   <div class="panel-group" id="pg-prize">
     <div class="panel-group-title" onclick="toggleGroup('pg-prize','section-prize')">
-      <span class="dot"></span>奖品图设置<span class="arrow">▾</span>
+      <span class="dot"></span>奖品图设置<span class="panel-section-badge">素材 6</span><span class="arrow">▾</span>
     </div>
     <div class="panel-group-body">
 
       <!-- 奖品图 1 -->
-      <div style="margin-bottom:12px">
-        <div style="font-size:11px;font-weight:600;color:var(--text-1);margin-bottom:6px">奖品图 1</div>
+      <div class="prize-block">
+        <div class="panel-sub-label">奖品图 1</div>
         <div class="color-row"><label>类型</label>
-          <select id="prize1-type" onchange="syncPrize(1)" style="flex:1;padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px">
+          <select id="prize1-type" onchange="syncPrize(1)">
             <option value="product-tag">产品图+标签</option>
             <option value="product-dashed">产品图+虚线</option>
             <option value="amount">金额券</option>
             <option value="thanks">谢谢参与</option>
           </select>
         </div>
-        <div class="color-row prize1-field" data-show="product-tag,product-dashed,amount"><label>顶部标签</label><input type="text" id="prize1-tag" value="无门槛优惠券" oninput="syncPrize(1)" style="flex:1;padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px"></div>
+        <div class="color-row prize1-field" data-show="product-tag,product-dashed,amount"><label>顶部标签</label><input type="text" id="prize1-tag" value="无门槛优惠券" oninput="syncPrize(1)"></div>
         <div class="color-row prize1-field" data-show="product-tag,product-dashed"><label>产品图</label>
-          <label class="upload-btn" for="prize1-img" style="font-size:12px;padding:3px 8px">上传图片</label>
+          <label class="upload-btn" for="prize1-img">上传图片</label>
           <input type="file" id="prize1-img" accept="image/*" style="display:none" onchange="loadPrizeImg(1,this)">
         </div>
-        <div class="color-row prize1-field" data-show="amount"><label>金额数字</label><input type="text" id="prize1-amount" value="30" oninput="syncPrize(1)" style="flex:1;padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px"></div>
-        <div class="color-row prize1-field" data-show="amount"><label>单位</label><input type="text" id="prize1-unit" value="元" oninput="syncPrize(1)" style="flex:1;padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px"></div>
-        <div class="color-row prize1-field" data-show="product-tag,product-dashed,amount"><label>底部文字</label><input type="text" id="prize1-bottom" value="迪奥口红免单券" oninput="syncPrize(1)" style="flex:1;padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px"></div>
-        <div class="color-row prize1-field" data-show="thanks"><label>大字文案</label><input type="text" id="prize1-thanks" value="谢谢参与" oninput="syncPrize(1)" style="flex:1;padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px"></div>
+        <div class="color-row prize1-field" data-show="amount"><label>金额数字</label><input type="text" id="prize1-amount" value="30" oninput="syncPrize(1)"></div>
+        <div class="color-row prize1-field" data-show="amount"><label>单位</label><input type="text" id="prize1-unit" value="元" oninput="syncPrize(1)"></div>
+        <div class="color-row prize1-field" data-show="product-tag,product-dashed,amount"><label>底部文字</label><input type="text" id="prize1-bottom" value="迪奥口红免单券" oninput="syncPrize(1)"></div>
+        <div class="color-row prize1-field" data-show="thanks"><label>大字文案</label><input type="text" id="prize1-thanks" value="谢谢参与" oninput="syncPrize(1)"></div>
       </div>
-      <hr class="divider">
 
       <!-- 奖品图 2 -->
-      <div style="margin-bottom:12px">
-        <div style="font-size:11px;font-weight:600;color:var(--text-1);margin-bottom:6px">奖品图 2</div>
+      <div class="prize-block">
+        <div class="panel-sub-label">奖品图 2</div>
         <div class="color-row"><label>类型</label>
-          <select id="prize2-type" onchange="syncPrize(2)" style="flex:1;padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px">
+          <select id="prize2-type" onchange="syncPrize(2)">
             <option value="product-tag">产品图+标签</option>
             <option value="product-dashed" selected>产品图+虚线</option>
             <option value="amount">金额券</option>
             <option value="thanks">谢谢参与</option>
           </select>
         </div>
-        <div class="color-row prize2-field" data-show="product-tag,product-dashed,amount"><label>顶部标签</label><input type="text" id="prize2-tag" value="零食免单券" oninput="syncPrize(2)" style="flex:1;padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px"></div>
+        <div class="color-row prize2-field" data-show="product-tag,product-dashed,amount"><label>顶部标签</label><input type="text" id="prize2-tag" value="零食免单券" oninput="syncPrize(2)"></div>
         <div class="color-row prize2-field" data-show="product-tag,product-dashed"><label>产品图</label>
-          <label class="upload-btn" for="prize2-img" style="font-size:12px;padding:3px 8px">上传图片</label>
+          <label class="upload-btn" for="prize2-img">上传图片</label>
           <input type="file" id="prize2-img" accept="image/*" style="display:none" onchange="loadPrizeImg(2,this)">
         </div>
-        <div class="color-row prize2-field" data-show="amount"><label>金额数字</label><input type="text" id="prize2-amount" value="30" oninput="syncPrize(2)" style="flex:1;padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px"></div>
-        <div class="color-row prize2-field" data-show="amount"><label>单位</label><input type="text" id="prize2-unit" value="元" oninput="syncPrize(2)" style="flex:1;padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px"></div>
-        <div class="color-row prize2-field" data-show="product-tag,product-dashed,amount"><label>底部文字</label><input type="text" id="prize2-bottom" value="零食免单券" oninput="syncPrize(2)" style="flex:1;padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px"></div>
-        <div class="color-row prize2-field" data-show="thanks"><label>大字文案</label><input type="text" id="prize2-thanks" value="谢谢参与" oninput="syncPrize(2)" style="flex:1;padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px"></div>
+        <div class="color-row prize2-field" data-show="amount"><label>金额数字</label><input type="text" id="prize2-amount" value="30" oninput="syncPrize(2)"></div>
+        <div class="color-row prize2-field" data-show="amount"><label>单位</label><input type="text" id="prize2-unit" value="元" oninput="syncPrize(2)"></div>
+        <div class="color-row prize2-field" data-show="product-tag,product-dashed,amount"><label>底部文字</label><input type="text" id="prize2-bottom" value="零食免单券" oninput="syncPrize(2)"></div>
+        <div class="color-row prize2-field" data-show="thanks"><label>大字文案</label><input type="text" id="prize2-thanks" value="谢谢参与" oninput="syncPrize(2)"></div>
       </div>
-      <hr class="divider">
 
       <!-- 奖品图 3 -->
-      <div>
-        <div style="font-size:11px;font-weight:600;color:var(--text-1);margin-bottom:6px">奖品图 3</div>
+      <div class="prize-block">
+        <div class="panel-sub-label">奖品图 3</div>
         <div class="color-row"><label>类型</label>
-          <select id="prize3-type" onchange="syncPrize(3)" style="flex:1;padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px">
+          <select id="prize3-type" onchange="syncPrize(3)">
             <option value="product-tag">产品图+标签</option>
             <option value="product-dashed">产品图+虚线</option>
             <option value="amount">金额券</option>
             <option value="thanks" selected>谢谢参与</option>
           </select>
         </div>
-        <div class="color-row prize3-field" data-show="product-tag,product-dashed,amount"><label>顶部标签</label><input type="text" id="prize3-tag" value="无门槛优惠券" oninput="syncPrize(3)" style="flex:1;padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px"></div>
+        <div class="color-row prize3-field" data-show="product-tag,product-dashed,amount"><label>顶部标签</label><input type="text" id="prize3-tag" value="无门槛优惠券" oninput="syncPrize(3)"></div>
         <div class="color-row prize3-field" data-show="product-tag,product-dashed"><label>产品图</label>
-          <label class="upload-btn" for="prize3-img" style="font-size:12px;padding:3px 8px">上传图片</label>
+          <label class="upload-btn" for="prize3-img">上传图片</label>
           <input type="file" id="prize3-img" accept="image/*" style="display:none" onchange="loadPrizeImg(3,this)">
         </div>
-        <div class="color-row prize3-field" data-show="amount"><label>金额数字</label><input type="text" id="prize3-amount" value="30" oninput="syncPrize(3)" style="flex:1;padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px"></div>
-        <div class="color-row prize3-field" data-show="amount"><label>单位</label><input type="text" id="prize3-unit" value="元" oninput="syncPrize(3)" style="flex:1;padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px"></div>
-        <div class="color-row prize3-field" data-show="product-tag,product-dashed,amount"><label>底部文字</label><input type="text" id="prize3-bottom" value="零食盲盒券" oninput="syncPrize(3)" style="flex:1;padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px"></div>
-        <div class="color-row prize3-field" data-show="thanks"><label>大字文案</label><input type="text" id="prize3-thanks" value="谢谢参与" oninput="syncPrize(3)" style="flex:1;padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px"></div>
+        <div class="color-row prize3-field" data-show="amount"><label>金额数字</label><input type="text" id="prize3-amount" value="30" oninput="syncPrize(3)"></div>
+        <div class="color-row prize3-field" data-show="amount"><label>单位</label><input type="text" id="prize3-unit" value="元" oninput="syncPrize(3)"></div>
+        <div class="color-row prize3-field" data-show="product-tag,product-dashed,amount"><label>底部文字</label><input type="text" id="prize3-bottom" value="零食盲盒券" oninput="syncPrize(3)"></div>
+        <div class="color-row prize3-field" data-show="thanks"><label>大字文案</label><input type="text" id="prize3-thanks" value="谢谢参与" oninput="syncPrize(3)"></div>
       </div>
 
     </div>
@@ -1438,6 +1474,7 @@
   <div class="section-header" id="section-bg">
     <div class="section-num">2</div>
     <div><div class="section-label">老虎机背景</div><div class="section-sub">含主标题，不带商品图 · 750 × 242 px</div></div>
+    <span class="section-ctrl-tag">配色预设 · 文案设置</span>
   </div>
   <div class="export-grid">
     <div class="export-card">
@@ -1458,6 +1495,7 @@
   <div class="section-header" id="section-empty">
     <div class="section-num">3</div>
     <div><div class="section-label">老虎机空态页</div><div class="section-sub">854 × 284 px @2x</div></div>
+    <span class="section-ctrl-tag">空态页设置</span>
   </div>
   <div class="export-grid">
     <div class="export-card">
@@ -1480,6 +1518,7 @@
   <div class="section-header" id="section-btn">
     <div class="section-num">4</div>
     <div><div class="section-label">抽奖按钮</div><div class="section-sub">194 × 80 px</div></div>
+    <span class="section-ctrl-tag auto">随配色自动适配</span>
   </div>
   <div class="export-grid">
     <div class="export-card">
@@ -1503,6 +1542,7 @@
   <div class="section-header" id="section-link">
     <div class="section-num">5</div>
     <div><div class="section-label">链接文字</div><div class="section-sub">透明背景</div></div>
+    <span class="section-ctrl-tag auto">随配色自动适配</span>
   </div>
   <div class="export-grid">
     <div class="export-card">
@@ -1526,6 +1566,7 @@
   <div class="section-header" id="section-prize">
     <div class="section-num">6</div>
     <div><div class="section-label">奖品图</div><div class="section-sub">124 × 124 px · 可编辑模板</div></div>
+    <span class="section-ctrl-tag">奖品图设置</span>
   </div>
   <div class="export-grid">
 
@@ -1718,6 +1759,13 @@
   function adjustS(hex,dS){const[r,g,b]=hexToRgb(hex);let[h,s,l]=rgbToHsl(r,g,b);s=Math.max(0,Math.min(1,s+dS));return rgbToHex(...hslToRgb(h,s,l));}
 
   /* ===== 配色预设 ===== */
+  const PRESET_BG_MAP = {
+    pink:   '#FFE1FA', rose:   '#FFE1E6', teal:   '#C8F9FF',
+    purple: '#E8E6FF', green:  '#E8FED4', yellow: '#FFF7D3', orange: '#FFE8D8',
+    'dark-red': '#3A0A0A', 'dark-orange': '#3A1800', 'dark-green': '#061A0E',
+    'dark-blue': '#060E20', 'dark-purple': '#120830',
+  };
+
   const PRESETS = {
     pink:   {from:'#FF5518',to:'#FE10A8',disFrom:'#FFBDD0',disTo:'#FFD0B0',slotFrom:'#FFE1FA',slotTo:'#FFC9F3',linksColor:'#8f8f8f',titleColor:'#f00068',isDark:false},
     rose:   {from:'#FF1C18',to:'#FE106F',disFrom:'#FFB3CE',disTo:'#FFC8D8',slotFrom:'#FFE1E6',slotTo:'#FFC9D6',linksColor:'#8f8f8f',titleColor:'#FF1C18',isDark:false},
@@ -1775,6 +1823,22 @@
     document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active','recommended'));
     if (btn) btn.classList.add('active');
     document.querySelectorAll('.bg-swatch').forEach(s => s.classList.remove('active'));
+    // 自动联动会场背景色
+    const bgColor = PRESET_BG_MAP[key];
+    if (bgColor) {
+      const mockBg = document.getElementById('page-mock-bg');
+      if (mockBg) { mockBg.style.backgroundColor = bgColor; mockBg.style.minHeight = Math.round(1624*320/750)+'px'; }
+      const bgImgEl = document.getElementById('panel-bg-img-el');
+      if (bgImgEl) { bgImgEl.src=''; bgImgEl.style.display='none'; }
+      const bgClear = document.getElementById('panel-bg-clear');
+      if (bgClear) bgClear.style.display='none';
+      const bgHexEl = document.getElementById('panel-bg-hex');
+      if (bgHexEl) bgHexEl.textContent = bgColor;
+      const colorSection = document.getElementById('panel-color-section');
+      if (colorSection) colorSection.style.display='block';
+      currentTone = p.isDark ? 'dark' : 'light';
+      updatePresetToneState(currentTone);
+    }
     syncPreviewPanel();
   }
 
