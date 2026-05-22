@@ -2213,54 +2213,7 @@
     const homeWrap = document.querySelector('.home-wrap');
     if (!cards.length || !homeWrap) return;
 
-    // --- 1. 全局聚光灯 ---
-    const spotlight = document.createElement('div');
-    spotlight.style.cssText = `position:fixed;width:600px;height:600px;border-radius:50%;pointer-events:none;
-      background:radial-gradient(circle,rgba(255,195,0,0.12) 0%,rgba(255,195,0,0.05) 25%,rgba(255,195,0,0.02) 45%,transparent 65%);
-      z-index:9999;opacity:0;transform:translate(-50%,-50%);mix-blend-mode:normal;will-change:transform,opacity;`;
-    document.body.appendChild(spotlight);
-    _bentoSpotlight = spotlight;
-
-    const onMouseMove = e => {
-      const rect = homeWrap.getBoundingClientRect();
-      const inside = e.clientX >= rect.left && e.clientX <= rect.right &&
-                     e.clientY >= rect.top  && e.clientY <= rect.bottom;
-
-      if (!inside) {
-        gsap.to(spotlight, { opacity: 0, duration: 0.4 });
-        cards.forEach(c => c.style.setProperty('--glow-intensity', '0'));
-        return;
-      }
-
-      gsap.to(spotlight, { left: e.clientX, top: e.clientY, opacity: 1, duration: 0.15, ease: 'power2.out' });
-
-      // 每张卡片的边框光晕强度
-      cards.forEach(card => {
-        const r = card.getBoundingClientRect();
-        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-        const dist = Math.max(0, Math.hypot(e.clientX - cx, e.clientY - cy) - Math.max(r.width, r.height) / 2);
-        const intensity = dist < 120 ? 1 : dist < 220 ? (220 - dist) / 100 : 0;
-        const rx = ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%';
-        const ry = ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%';
-        card.style.setProperty('--glow-x', rx);
-        card.style.setProperty('--glow-y', ry);
-        card.style.setProperty('--glow-intensity', intensity.toFixed(2));
-      });
-    };
-
-    const onMouseLeave = () => {
-      gsap.to(spotlight, { opacity: 0, duration: 0.3 });
-      cards.forEach(c => c.style.setProperty('--glow-intensity', '0'));
-    };
-
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseleave', onMouseLeave);
-    _bentoCleanup.push(
-      () => document.removeEventListener('mousemove', onMouseMove),
-      () => document.removeEventListener('mouseleave', onMouseLeave),
-    );
-
-    // --- 2. 每张卡片：倾斜 + 点击涟漪 ---
+    // --- 每张卡片：倾斜 + 点击涟漪 ---
     cards.forEach(card => {
       const onEnter = () => gsap.to(card, { rotateX: 4, rotateY: 4, scale: 1.02, duration: 0.3, ease: 'power2.out', transformPerspective: 800 });
       const onLeave = () => gsap.to(card, { rotateX: 0, rotateY: 0, scale: 1, duration: 0.35, ease: 'power2.out' });
