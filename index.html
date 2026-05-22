@@ -469,13 +469,6 @@
     .home-card.coming-soon { opacity: 0.42; }
     .home-card.coming-soon:hover { transform: none; box-shadow: none; }
     /* SpotlightCard 内部聚光效果 */
-    .home-card.done { --mouse-x: 50%; --mouse-y: 50%; --sl-color: rgba(255,195,0,0); }
-    .home-card.done::before {
-      content: ''; position: absolute; inset: 0; pointer-events: none;
-      background: radial-gradient(160px circle at var(--mouse-x) var(--mouse-y), var(--sl-color), transparent 80%);
-      transition: opacity 0.4s; z-index: 0;
-    }
-    .home-card.done:hover::before { opacity: 1; }
     .home-card > * { position: relative; z-index: 1; }
     /* AI 预留卡片 spotlight */
     .ai-promo-card { --mouse-x: 50%; --mouse-y: 50%; }
@@ -2302,26 +2295,14 @@
         card.appendChild(ripple);
         gsap.fromTo(ripple, { scale: 0, opacity: 1 }, { scale: 1, opacity: 0, duration: 0.7, ease: 'power2.out', onComplete: () => ripple.remove() });
       };
-      // SpotlightCard 内部聚光
-      const onSpotlight = e => {
-        const r = card.getBoundingClientRect();
-        card.style.setProperty('--mouse-x', `${e.clientX - r.left}px`);
-        card.style.setProperty('--mouse-y', `${e.clientY - r.top}px`);
-        card.style.setProperty('--sl-color', 'rgba(255,195,0,0.12)');
-      };
-      const onSpotlightLeave = () => card.style.setProperty('--sl-color', 'rgba(255,195,0,0)');
       card.addEventListener('mouseenter', onEnter);
       card.addEventListener('mouseleave', onLeave);
       card.addEventListener('mousemove', onMove);
-      card.addEventListener('mousemove', onSpotlight);
-      card.addEventListener('mouseleave', onSpotlightLeave);
       card.addEventListener('click', onClick);
       _bentoCleanup.push(
         () => card.removeEventListener('mouseenter', onEnter),
         () => card.removeEventListener('mouseleave', onLeave),
         () => card.removeEventListener('mousemove', onMove),
-        () => card.removeEventListener('mousemove', onSpotlight),
-        () => card.removeEventListener('mouseleave', onSpotlightLeave),
         () => card.removeEventListener('click', onClick),
       );
     });
