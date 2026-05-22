@@ -460,12 +460,57 @@
     /* SpotlightCard 内部聚光效果 */
     .home-card > * { position: relative; z-index: 1; }
     /* AI 预留卡片 spotlight */
-    .ai-promo-card { --mouse-x: 50%; --mouse-y: 50%; }
-    .ai-promo-card::before {
-      content: ''; position: absolute; inset: 0; pointer-events: none;
-      background: radial-gradient(200px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.06), transparent 75%);
-      z-index: 0;
+    /* ===== BorderGlow 效果 ===== */
+    .border-glow-target {
+      --edge-proximity: 0; --cursor-angle: 45deg;
+      --edge-sensitivity: 28; --cone-spread: 22;
+      --glow-padding: 32px; --fill-opacity: 0.5;
+      isolation: isolate;
     }
+    .border-glow-target::before, .border-glow-target::after, .border-glow-target > .edge-light {
+      content: ''; position: absolute; inset: 0; border-radius: inherit;
+      transition: opacity 0.25s ease-out; z-index: -1; pointer-events: none;
+    }
+    .border-glow-target:not(:hover) ::before,
+    .border-glow-target:not(:hover)::after,
+    .border-glow-target:not(:hover) > .edge-light { opacity: 0; transition: opacity 0.75s ease-in-out; }
+    /* mesh gradient border */
+    .border-glow-target::before {
+      border: 1px solid transparent;
+      background:
+        linear-gradient(var(--bg, #1A1440) 0 100%) padding-box,
+        linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box,
+        var(--g1, radial-gradient(at 80% 55%, hsla(45,100%,65%,1) 0px, transparent 50%)) border-box,
+        var(--g2, radial-gradient(at 20% 35%, hsla(12,100%,72%,1) 0px, transparent 50%)) border-box,
+        var(--g3, radial-gradient(at 50% 5%,  hsla(52,100%,60%,1) 0px, transparent 50%)) border-box,
+        var(--g4, radial-gradient(at 8%  85%,  hsla(30,100%,70%,1) 0px, transparent 50%)) border-box,
+        linear-gradient(#FFD060 0 100%) border-box;
+      opacity: calc((var(--edge-proximity) - calc(var(--edge-sensitivity) + 20)) / (100 - calc(var(--edge-sensitivity) + 20)));
+      mask-image: conic-gradient(from var(--cursor-angle) at center,
+        black calc(var(--cone-spread) * 1%),
+        transparent calc((var(--cone-spread) + 15) * 1%),
+        transparent calc((100 - var(--cone-spread) - 15) * 1%),
+        black calc((100 - var(--cone-spread)) * 1%));
+    }
+    /* edge glow */
+    .border-glow-target > .edge-light {
+      inset: calc(var(--glow-padding) * -1); z-index: 1;
+      mask-image: conic-gradient(from var(--cursor-angle) at center, black 2.5%, transparent 10%, transparent 90%, black 97.5%);
+      opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
+      mix-blend-mode: plus-lighter;
+    }
+    .border-glow-target > .edge-light::before {
+      content: ''; position: absolute; inset: var(--glow-padding); border-radius: inherit;
+      box-shadow:
+        inset 0 0 0 1px var(--glow-color, hsl(45deg 100% 65% / 100%)),
+        inset 0 0 6px 0 var(--glow-color, hsl(45deg 100% 65% / 60%)),
+        inset 0 0 20px 2px var(--glow-color, hsl(45deg 100% 65% / 25%)),
+        0 0 6px 0 var(--glow-color, hsl(45deg 100% 65% / 50%)),
+        0 0 20px 2px var(--glow-color, hsl(45deg 100% 65% / 20%));
+    }
+    .border-glow-target > * { position: relative; z-index: 1; }
+    /* AI 预留卡片应用 */
+    .ai-promo-card { --bg: #1A1A2E; }
     .ai-promo-card > * { position: relative; z-index: 1; }
     /* 老虎机导出卡片 spotlight */
     #page-slot .export-card { --mouse-x: 50%; --mouse-y: 50%; }
@@ -2152,7 +2197,7 @@
     let html = '<div class="home-wrap">';
     html += '<div class="home-greeting">闪购会场组件库</div>';
     html += '<div class="home-sub">选择组件进行配置和素材导出</div>';
-    html += `<div class="ai-promo-card">
+    html += `<div class="ai-promo-card border-glow-target"><span class="edge-light"></span>
       <div class="ai-promo-text">
         <div class="ai-promo-tag">✦ AI 能力预留</div>
         <div class="ai-promo-title">上传商品图，一键生成资源位</div>
@@ -2196,6 +2241,7 @@
       gsap.from('.home-section', { opacity: 0, y: 22, duration: 0.45, stagger: 0.07, delay: 0.15, ease: 'power2.out' });
       setTimeout(initBentoEffects, 300);
       setTimeout(initSpotlightCards, 100);
+      setTimeout(initBorderGlow, 100);
     }
   }
 
@@ -2247,6 +2293,29 @@
         () => card.removeEventListener('mousemove', onMove),
         () => card.removeEventListener('click', onClick),
       );
+    });
+  }
+
+  /* ===== BorderGlow JS ===== */
+  function initBorderGlow() {
+    document.querySelectorAll('.border-glow-target').forEach(el => {
+      if (el._borderGlowInit) return;
+      el._borderGlowInit = true;
+      el.addEventListener('pointermove', e => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left, y = e.clientY - r.top;
+        const cx = r.width / 2, cy = r.height / 2;
+        const dx = x - cx, dy = y - cy;
+        // edge proximity: 0=center, 100=edge
+        const kx = dx !== 0 ? cx / Math.abs(dx) : Infinity;
+        const ky = dy !== 0 ? cy / Math.abs(dy) : Infinity;
+        const proximity = Math.min(1 / Math.min(kx, ky), 1) * 100;
+        // cursor angle from center
+        let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+        if (angle < 0) angle += 360;
+        el.style.setProperty('--edge-proximity', proximity.toFixed(2));
+        el.style.setProperty('--cursor-angle', `${angle.toFixed(2)}deg`);
+      });
     });
   }
 
