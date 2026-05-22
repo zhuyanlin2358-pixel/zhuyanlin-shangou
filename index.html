@@ -2330,9 +2330,9 @@
 
   /* ===== 渲染左侧组件浏览器 ===== */
   const CAT_ICONS = {
-    P0: `<svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>`,
-    P1: `<svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 22V12M12 12C12 7 7 4 3 5c0 5 4 8 9 7M12 12c0-5 5-8 9-7-1 5-4 8-9 7"/></svg>`,
-    P2: `<svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+    P0: `<svg class="cat-icon cat-icon-sparkles" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path class="sp-star" d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path class="sp-plus" d="M20 2v4M22 4h-4"/><circle class="sp-dot" cx="4" cy="20" r="2"/></svg>`,
+    P1: `<svg class="cat-icon cat-icon-fan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618l1.45-5.412Z"/><path d="M12 12v.01"/></svg>`,
+    P2: `<svg class="cat-icon cat-icon-hwifi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path class="hw-house" d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path class="hw-w1" d="M7 10.754a8 8 0 0 1 10 0"/><path class="hw-w2" d="M9.5 13.866a4 4 0 0 1 5 .01"/><path class="hw-dot" d="M12 17h.01"/></svg>`,
     P3: `<svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path class="ly-p1" d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path class="ly-p2" d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path class="ly-p3" d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>`,
     P4: `<svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path class="bl-p1" d="M10 22V7c0-.6-.4-1-1-1H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-5c0-.6-.4-1-1-1H2"/><path class="bl-p2" d="M15 2H21a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/></svg>`,
     P6: `<svg class="cat-icon cat-icon-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path class="ui-p1" d="M18,21c0-4.4-3.6-8-8-8s-8,3.6-8,8"/><path class="ui-p2" d="M18,12c2.2-1.7,2.7-4.8,1-7-.4-.5-.9-1-1.4-1.3"/><path class="ui-p3" d="M22,20c0-3.4-2-6.5-4-8"/><circle class="ui-c" cx="10" cy="8" r="5"/></svg>`,
@@ -2363,6 +2363,36 @@
     const p4 = document.getElementById('cat-p4');
     if (p4) p4.classList.remove('collapsed');
     if (typeof gsap !== 'undefined') {
+      // P0 Sparkles: 整体缩放脉冲 + plus/dot 闪烁
+      const p0Header = document.querySelector('#cat-p0 .cat-header');
+      if (p0Header) {
+        p0Header.addEventListener('mouseenter', () => {
+          gsap.to('#cat-p0 .cat-icon-sparkles', { scale: 1.15, duration: 0.15, yoyo: true, repeat: 1, ease: 'power2.inOut', transformOrigin: 'center' });
+          gsap.to(['#cat-p0 .sp-plus', '#cat-p0 .sp-dot'], { opacity: 0, scale: 0, duration: 0.2, yoyo: true, repeat: 1, repeatDelay: 0.2, ease: 'easeInOut', stagger: 0.15, transformOrigin: 'center' });
+        });
+      }
+      // P1 Fan: hover 时旋转，离开时停止
+      const p1Header = document.querySelector('#cat-p1 .cat-header');
+      let fanTween = null;
+      if (p1Header) {
+        p1Header.addEventListener('mouseenter', () => {
+          fanTween?.kill();
+          fanTween = gsap.to('#cat-p1 .cat-icon-fan', { rotation: 360, duration: 1.2, ease: 'linear', repeat: -1, transformOrigin: 'center' });
+        });
+        p1Header.addEventListener('mouseleave', () => {
+          fanTween?.kill();
+          gsap.to('#cat-p1 .cat-icon-fan', { rotation: 0, duration: 0.4, ease: 'power2.out', transformOrigin: 'center' });
+        });
+      }
+      // P2 House-Wifi: wifi 信号依次闪烁
+      const p2Header = document.querySelector('#cat-p2 .cat-header');
+      if (p2Header) {
+        p2Header.addEventListener('mouseenter', () => {
+          const els = ['#cat-p2 .hw-dot', '#cat-p2 .hw-w2', '#cat-p2 .hw-w1'];
+          gsap.fromTo(els, { opacity: 0.2 }, { opacity: 1, duration: 0.25, stagger: 0.18, ease: 'power2.out',
+            onComplete: () => gsap.to(els, { opacity: 0.55, duration: 0.3 }) });
+        });
+      }
       // P3 Layers: 顶层下移、底层上移（散开效果）
       const p3Header = document.querySelector('#cat-p3 .cat-header');
       if (p3Header) {
