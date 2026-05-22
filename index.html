@@ -468,6 +468,33 @@
     .home-card.done:active { transform: scale(0.98); }
     .home-card.coming-soon { opacity: 0.42; }
     .home-card.coming-soon:hover { transform: none; box-shadow: none; }
+    /* SpotlightCard 内部聚光效果 */
+    .home-card.done { --mouse-x: 50%; --mouse-y: 50%; --sl-color: rgba(255,195,0,0); }
+    .home-card.done::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(160px circle at var(--mouse-x) var(--mouse-y), var(--sl-color), transparent 80%);
+      transition: opacity 0.4s; z-index: 0;
+    }
+    .home-card.done:hover::before { opacity: 1; }
+    .home-card > * { position: relative; z-index: 1; }
+    /* AI 预留卡片 spotlight */
+    .ai-promo-card { --mouse-x: 50%; --mouse-y: 50%; }
+    .ai-promo-card::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(200px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.06), transparent 75%);
+      z-index: 0;
+    }
+    .ai-promo-card > * { position: relative; z-index: 1; }
+    /* 老虎机导出卡片 spotlight */
+    #page-slot .export-card { --mouse-x: 50%; --mouse-y: 50%; }
+    #page-slot .export-card::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(160px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.06), transparent 80%);
+      opacity: 0; transition: opacity 0.3s; z-index: 0;
+    }
+    #page-slot .export-card:hover::before { opacity: 1; }
+    #page-slot .export-card > * { position: relative; z-index: 1; }
+
     .home-card-name { font-size: 14px; font-weight: 600; color: #1A1A1A; line-height: 1.4; }
     .home-card-tag { font-size: 12px; color: #666; }
     .home-card-done-badge {
@@ -2186,6 +2213,7 @@
       gsap.from('.ai-promo-card', { opacity: 0, y: 10, duration: 0.5, delay: 0.1, ease: 'power2.out' });
       gsap.from('.home-section', { opacity: 0, y: 22, duration: 0.45, stagger: 0.07, delay: 0.15, ease: 'power2.out' });
       setTimeout(initBentoEffects, 300);
+      setTimeout(initSpotlightCards, 100);
     }
   }
 
@@ -2274,17 +2302,42 @@
         card.appendChild(ripple);
         gsap.fromTo(ripple, { scale: 0, opacity: 1 }, { scale: 1, opacity: 0, duration: 0.7, ease: 'power2.out', onComplete: () => ripple.remove() });
       };
+      // SpotlightCard 内部聚光
+      const onSpotlight = e => {
+        const r = card.getBoundingClientRect();
+        card.style.setProperty('--mouse-x', `${e.clientX - r.left}px`);
+        card.style.setProperty('--mouse-y', `${e.clientY - r.top}px`);
+        card.style.setProperty('--sl-color', 'rgba(255,195,0,0.12)');
+      };
+      const onSpotlightLeave = () => card.style.setProperty('--sl-color', 'rgba(255,195,0,0)');
       card.addEventListener('mouseenter', onEnter);
       card.addEventListener('mouseleave', onLeave);
       card.addEventListener('mousemove', onMove);
+      card.addEventListener('mousemove', onSpotlight);
+      card.addEventListener('mouseleave', onSpotlightLeave);
       card.addEventListener('click', onClick);
       _bentoCleanup.push(
         () => card.removeEventListener('mouseenter', onEnter),
         () => card.removeEventListener('mouseleave', onLeave),
         () => card.removeEventListener('mousemove', onMove),
+        () => card.removeEventListener('mousemove', onSpotlight),
+        () => card.removeEventListener('mouseleave', onSpotlightLeave),
         () => card.removeEventListener('click', onClick),
       );
     });
+  }
+
+  // SpotlightCard for AI promo + slot export cards
+  function initSpotlightCards() {
+    const addSpotlight = el => {
+      const fn = e => {
+        const r = el.getBoundingClientRect();
+        el.style.setProperty('--mouse-x', `${e.clientX - r.left}px`);
+        el.style.setProperty('--mouse-y', `${e.clientY - r.top}px`);
+      };
+      el.addEventListener('mousemove', fn);
+    };
+    document.querySelectorAll('.ai-promo-card, #page-slot .export-card').forEach(addSpotlight);
   }
 
   /* ===== 渲染左侧组件浏览器 ===== */
@@ -2422,6 +2475,7 @@
       if (compId === 'slot') {
         gsap.from('.slot-page-header', { opacity: 0, y: -12, duration: 0.4, delay: 0.05, ease: 'power2.out' });
         gsap.from('#page-slot .section-header', { opacity: 0, y: 16, duration: 0.4, stagger: 0.07, delay: 0.15, ease: 'power2.out' });
+        setTimeout(initSpotlightCards, 200);
       }
     }
   }
