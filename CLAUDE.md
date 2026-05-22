@@ -1,30 +1,28 @@
 # 闪购会场组件自助设计工具 — Claude Code 上下文文档
 
 > 本文档供 Claude Code 接手开发使用。阅读完本文件即可理解项目全貌，直接开始开发。
+> **每次对话结束前更新本文档。**
 
 ---
 
 ## 项目概述
 
-**用途**：美团闪购业务的设计师自助工具，用于生成老虎机组件所需的各类 UI 切图素材，可配置配色、文案、奖品图，一键导出 PNG / ZIP。
+**用途**：美团闪购业务的运营/设计师自助工具，通过可视化目录选择组件，配置文案/配色/奖品图，一键导出 PNG / ZIP 切图素材，可接入美境（aidesign.meituan.com）"应用"模块（iframe 嵌入）。
 
 **GitHub 仓库**：`https://github.com/zhuyanlin2358-pixel/shangou-export-tool`  
 **线上地址（GitHub Pages）**：`https://zhuyanlin2358-pixel.github.io/shangou-export-tool/`  
-**本地路径**：`F:\catpaw\work\shangou-export-tool\`
+**本地路径（开发用）**：`/Users/zhuyanlin/shangou-export-tool/`
 
 ---
 
 ## 技术架构
 
-- **纯前端单文件**：`index.html`（约 1660 行），无构建工具，无框架，无 npm。
+- **纯前端单文件**：`index.html`（约 2492 行），无构建工具，无框架，无 npm
 - **外部依赖（CDN）**：
-  - `html2canvas 1.4.1`：将 DOM 渲染为 Canvas，用于导出 PNG
-  - `jszip 3.10.1`：打包多张 PNG 为 ZIP 下载
-- **内嵌资源**：
-  - 美团数字字体 `MeituanDigitalType`（base64 内嵌，约 40 行 `@font-face`）
-  - 空态页默认插图（base64 PNG，`~15KB`）
-  - 奖品图 1/2 默认示例图片（base64 PNG，各 `~3KB`）
-- **部署**：直接 commit + push 到 `main` 分支，GitHub Pages 自动构建，无需任何 CI/CD。
+  - `html2canvas 1.4.1`：DOM → Canvas → PNG 导出
+  - `jszip 3.10.1`：多张 PNG 打包 ZIP
+- **内嵌资源**：美团数字字体 `MeituanDigitalType`（base64），奖品图默认示例（base64）
+- **部署**：`git push origin main` → GitHub Pages 自动构建（1-2 分钟）
 
 ---
 
@@ -32,138 +30,110 @@
 
 ```
 shangou-export-tool/
-├── index.html      # 全部代码（HTML + CSS + JS），唯一需要修改的文件
-├── fonts/          # 备用字体目录（当前未使用，字体已内嵌到 index.html）
-├── images/         # 备用图片目录（当前未使用，图片已内嵌到 index.html）
-├── README.md       # 简介
-└── CLAUDE.md       # 本文档
+├── index.html        # 全部代码（HTML + CSS + JS）
+├── COMPONENTS.md     # 组件分类清单（50个，P0-P6优先级）
+├── CLAUDE.md         # 本文档
+└── images/           # 备用图片目录（未使用，图片内嵌JS）
 ```
 
 ---
 
-## index.html 结构（按行号）
+## 整体布局（当前）
 
-| 行号范围 | 内容 |
-|----------|------|
-| 1–8 | HTML head，引入 html2canvas / jszip CDN |
-| 9–12 | `@font-face` MeituanDigitalType（base64 内嵌） |
-| 13–26 | `:root` CSS 变量（组件配色 token + 美境 UI token） |
-| 27–420 | 全部 CSS 样式 |
-| 421–425 | `</style></head><body>` |
-| 426–445 | 顶部导航 `.topbar`（标题 + 一键导出 ZIP 按钮） |
-| 446–463 | 左侧组件导航栏 `.comp-nav`（老虎机/领券红包/楼层条/Banner/倒计时） |
-| 464–637 | 左侧配置侧边栏 `.sidebar`（5 个组件配置面板，当前仅老虎机有完整配置） |
-| 638–1000 | 主内容区 `.main`（6 个 section：未抽奖状态/背景/空态页/按钮/链接/奖品图） |
-| 1001–1004 | toast 提示 + offscreen 渲染容器 |
-| 1005–1660 | 全部 JavaScript 逻辑（`<script>` 标签） |
-| 1660–1662 | `</script></body></html>` |
+```
+[顶栏 56px, fixed]
+[左侧侧边栏 260px] [主内容区 flex:1] [右侧预览面板 360px, 仅老虎机时显示]
+```
+
+### 侧边栏双模式
+
+| 模式 | 触发条件 | 显示内容 |
+|------|----------|----------|
+| 浏览模式 | 首页/我的资产 | 组件目录（搜索 + P0-P6 分类树）+ 底部「我的资产」入口 |
+| 配置模式 | 进入某个组件 | 顶部返回条 + 该组件配置面板 |
+
+切换靠 `.sidebar.config-mode` class 控制，在 `switchComp()` / `goHome()` 里管理。
 
 ---
 
-## CSS 设计 Token（`:root`）
+## 页面结构（主内容区）
 
-### 组件配色 Token（随配色预设动态变更）
-```css
---btn-active-from    /* 主按钮渐变起始色，默认 #FF3060 */
---btn-active-to      /* 主按钮渐变结束色，默认 #FF7030 */
---btn-active-shadow  /* 主按钮阴影色 */
---btn-disabled-from  /* 禁用按钮渐变起始色 */
---btn-disabled-to    /* 禁用按钮渐变结束色 */
---slot-tint-from     /* 老虎机背景渐变起始色 */
---slot-tint-to       /* 老虎机背景渐变结束色 */
---slot-links-color   /* 链接文字颜色 */
---slot-title-color   /* 主标题颜色 */
---slot-remain-color  /* 剩余次数文字颜色（深色模式时白色）*/
-```
-
-### UI 框架 Token（固定，不参与配色预设）
-```css
---accent / --accent-soft  /* 当前等同于 --border 系列，历史遗留 */
---border    #EBEBEB
---text-1    #1A1A1A
---text-2    #555
---text-3    #999
---bg-page   #F5F4FB
---bg-card   #FFFFFF
---radius-sm 6px
---radius-md 10px
-```
+| 页面 ID | 默认激活 | 内容 |
+|---------|----------|------|
+| `page-home` | ✅ | 首页目录（AI预留卡片 + 分类组件卡片，由 `renderHomePage()` 生成） |
+| `page-slot` | — | 老虎机配置+导出页（暗色高级感主题） |
+| `page-assets` | — | 我的资产页（导出历史，由 `renderAssetsPage()` 生成） |
+| `page-generic` | — | 通用占位页（未开发组件点击后显示） |
+| `page-coupon/floor/banner/countdown` | — | 旧版占位页（保留兼容） |
 
 ---
 
-## 布局系统
+## 已实现组件：老虎机（slot）
 
-```
-[72px comp-nav] [240px sidebar] [主内容区 flex:1] [360px preview-panel]
-                                ← margin-left:312px →← margin-right:360px →
-顶部导航 topbar 高度 56px，fixed 定位
-```
+### 暗色主题
+进入老虎机时，`body.has-preview` class 触发全局暗色：
+- 顶栏、左侧、右侧全部变为 `#0C111B`
+- 主内容区 `#0D1117`，flat（无渐变）
+- 退出后恢复浅色（`transition: 0.3s`）
 
-- `.comp-nav`：左侧图标导航（72px），切换当前组件
-- `.sidebar`：配置面板（240px），随 `.comp-nav` 选中项切换
-- `.main`：主内容区，展示所有可导出的素材卡片
-- `.preview-panel`：右侧 360px 面板，显示手机 Mock + 实时预览组件效果
+### 6 个可导出素材
 
----
+| section ID | 素材名 | 尺寸 |
+|------------|--------|------|
+| `section-preview` | 老虎机未抽奖状态 | 750×242 px |
+| `section-bg` | 老虎机背景（含主标题） | 750×242 px |
+| `section-empty` | 老虎机空态页 | 854×284 @2x |
+| `section-btn` | 抽奖按钮（两态） | 194×80 px |
+| `section-link` | 链接文字（我的奖品/抽奖规则） | 96/109×34 px |
+| `section-prize` | 奖品图 1/2/3 | 124×124 px |
 
-## 当前已实现的组件：老虎机（slot）
+### 左侧配置面板（panel-slot，5 个折叠分组）
 
-### 6 个可导出素材（section 1–6）
+| id | 标题 | 功能 | 点击滚动到 |
+|----|------|------|------------|
+| `pg-bg-slot` | 会场背景色 | 背景色色块 + 上传背景图 | — |
+| `pg-preset` | 配色预设 | 浅色/深色系 12 种预设 | `section-preview` |
+| `pg-color` | 自定义颜色 | 6 个颜色 token 手动设置 | `section-bg` |
+| `pg-text` | 文案设置 | 主标题文案 + 颜色 | `section-bg` |
+| `pg-empty` | 空态页设置 | 文案 + 插图 + 缩放 | `section-empty` |
+| `pg-prize` | 奖品图设置 | 3 个奖品图配置 | `section-prize` |
 
-| section | 素材名 | 尺寸 | DOM id |
-|---------|--------|------|--------|
-| 1 | 老虎机未抽奖状态 | 750×242 px | `asset-slot-ready` |
-| 2 | 老虎机背景（含主标题） | 750×242 px | `asset-bg-only` |
-| 3 | 老虎机空态页 | 854×284 @2x | `asset-slot-empty` |
-| 4 | 按钮—立即抽奖 | 194×80 px | `asset-btn-active` |
-| 4 | 按钮—活动已结束 | 194×80 px | `asset-btn-ended` |
-| 5 | 链接文字：我的奖品 | 96×34 px | `asset-link-prize` |
-| 5 | 链接文字：抽奖规则 | 109×34 px | `asset-link-rule` |
-| 6 | 奖品图 1/2/3 | 124×124 px | `asset-prize-1/2/3` |
+**点击展开分组 → 自动滚动到对应素材区**（`toggleGroup(id, scrollTarget)`）
 
-### 左侧配置面板（5 个折叠分组）
-
-| id | 标题 | 功能 |
-|----|------|------|
-| `pg-preset` | 配色预设 | 浅色系 7 种 + 深色系 5 种（深色系 UI 已标注 disabled 待开发） |
-| `pg-color` | 自定义颜色 | 手动设置 6 个颜色值 |
-| `pg-text` | 文案设置 | 主标题文案 + 主标题颜色 |
-| `pg-empty` | 空态页设置 | 空态文案 + 替换插图 + 调整大小/位置 |
-| `pg-prize` | 奖品图设置 | 3 个奖品图各自：类型选择/文案/上传产品图/金额 |
-
-### 奖品图 4 种类型
-
-| type 值 | 样式 | 说明 |
-|---------|------|------|
-| `product-tag` | 实线边框 + 顶部标签 + 产品图 + 底部文字 | 默认 |
-| `product-dashed` | 虚线边框 + 产品图 + 底部文字 | 无顶部标签 |
-| `amount` | 实线边框 + 顶部标签 + 大号金额数字 + 底部文字 | 金额券 |
-| `thanks` | 圆形卡片 + 大字 | 谢谢参与 |
+### 右侧预览面板
+`body.has-preview` 时显示，内容：
+- 顶部「手机预览」标签
+- 手机 mock frame + 拖拽 slot 位置
+- `.page-mock.visible` 由 `switchComp('slot')` 触发
 
 ---
 
-## 配色预设数据结构（PRESETS）
+## 组件注册表（COMPONENT_REGISTRY）
 
+约 50 个组件，P0-P6 优先级，定义在 JS 中。结构：
 ```js
-const PRESETS = {
-  pink:   { from, to, disFrom, disTo, slotFrom, slotTo, linksColor, titleColor, isDark: false },
-  rose:   { ... },
-  orange: { ... },
-  yellow: { ... },
-  green:  { ... },
-  teal:   { ... },
-  purple: { ... },
-};
-const PRESETS_DARK = {
-  'dark-red':    { ..., isDark: true },
-  'dark-orange': { ..., isDark: true },
-  'dark-green':  { ..., isDark: true },
-  'dark-blue':   { ..., isDark: true },
-  'dark-purple': { ..., isDark: true },
-};
+{ group, groupLabel, badgeClass, items: [{id, name, status:'done'|'coming'}] }
+// P4 有 subgroups（A/B/C 子分类）
 ```
 
-`isDark: true` 时链接文字和剩余次数文字自动改为白色/半透明白色。
+仅 `slot`（无门槛老虎机）`status: 'done'`，其余 `coming`。
+
+**开发新组件的步骤：**
+1. 在 `COMPONENT_REGISTRY` 里把 `status` 改为 `'done'`
+2. 添加 `page-{id}` HTML（主内容区）
+3. 添加 `panel-{id}` HTML（侧边栏配置面板）
+4. 添加对应 JS 函数（sync/preview/export）
+5. 如需预览面板，把 id 加入 `PREVIEW_COMPS` 数组
+6. 在 `exportAll()` 的 `tasks` 数组里添加素材
+
+---
+
+## 我的资产功能
+
+- **存储**：`localStorage`，key = `shangou_asset_records`，最多 200 条
+- **触发**：`exportAll()` 完成后自动调用 `recordExport()`
+- **Tab**：我的导出 / 待审核 / 已通过（状态通过 `updateAssetStatus(id, status)` 切换）
+- **复用配置**：`reuseAssetConfig(id)` 一键恢复历史配色/文案到老虎机
 
 ---
 
@@ -171,146 +141,72 @@ const PRESETS_DARK = {
 
 | 函数 | 作用 |
 |------|------|
-| `applyPreset(key, btn)` | 应用配色预设，更新所有 CSS 变量和输入框值 |
-| `syncCustom()` | 自定义颜色输入变更时同步 CSS 变量 |
-| `syncTitleText()` | 主标题文案同步到所有 `.title-layer` |
-| `syncEmptyText()` | 空态页文案同步 |
-| `syncPreviewPanel()` | 将 `asset-slot-ready` clone 到右侧预览面板 |
-| `previewToPanel()` | 点击「预览」按钮时触发，显示 slot wrap |
-| `previewEmpty()` | 切换右侧预览区显示空态页 |
-| `previewPrize(idx)` | 将奖品图 idx 加入预览队列（最多 3 位） |
-| `previewBtn(state)` | 切换按钮为 active/disabled 状态并滚动到预览区 |
-| `previewLink(mode)` | 切换链接文字深色/浅色版并预览 |
-| `syncPrize(n)` | 奖品图配置变更时同步 DOM 和徽章/卡片名 |
-| `loadPrizeImg(n, input)` | 上传产品图，更新奖品图区域 |
-| `clonePrizeToSlot(srcIdx, slotIdx)` | 将奖品图 clone 到未抽奖状态预览区 |
-| `syncPrizeToSlot()` | 批量调用 clonePrizeToSlot(1→1, 2→2, 3→3) |
-| `replaceEmptyImg(input)` | 替换空态页插图（仅接受 PNG） |
-| `syncEmptyScale(val)` | 空态插图缩放滑块同步 |
-| `resetEmptyTransform()` | 重置空态插图位置和缩放 |
-| `exportSingle(id, filename, scale)` | 导出单张，scale 可选（空态页传 2） |
-| `exportSingleFixed(id, filename, w, h)` | 导出固定尺寸（链接文字用） |
-| `exportPrize(n)` | 导出奖品图，内部先截 prize-card 再居中到 124×124 画布 |
-| `exportAll()` | 一键打包所有素材为 ZIP，文件名用中文 |
-| `switchComp(compId, navEl)` | 切换组件（更新导航高亮/主内容区/侧边栏/顶部副标题） |
-| `toggleGroup(id)` | 折叠/展开侧边栏分组 |
-| `showToast(msg)` | 显示底部 toast，2.5s 后自动消失 |
-| `applyBgTheme(bgHex, swatchEl, forceTone)` | 右侧预览面板换背景色，自动推荐配色预设 |
-| `calcBgTheme(bgHex)` | 根据背景色计算推荐预设（返回 isLight/recommendedPreset/Label） |
-| `updatePresetToneState(tone)` | 根据当前色调（light/dark）启用/禁用预设按钮 |
-| `loadDefaultPrizeImg(n)` | 初始化时加载奖品图 1/2 的默认示例图 |
-| `downloadCanvas(canvas, filename)` | canvas → PNG 下载 |
-| `canvasToBlob(canvas)` | canvas → Blob（Promise） |
+| `renderHomePage()` | 渲染首页目录（AI预留卡片 + 分类卡片） |
+| `renderCompBrowser()` | 渲染左侧分类树（含 SVG 图标） |
+| `switchComp(compId)` | 进入组件视图（切换页面 + 配置面板 + 侧边栏模式 + 预览面板） |
+| `goHome()` | 返回首页（重置所有状态） |
+| `switchToAssets()` | 切换到我的资产页 |
+| `toggleGroup(id, scrollTarget)` | 折叠/展开配置分组，展开时滚动到对应素材区 |
+| `applyPreset(key, btn)` | 应用配色预设 |
+| `syncCustom()` | 自定义颜色同步到 CSS 变量 |
+| `exportAll()` | 一键打包所有素材为 ZIP，完成后记录到资产 |
+| `exportSingle(id, filename, scale)` | 导出单张 PNG |
+| `recordExport(files)` | 导出完成后写入 localStorage |
+| `reuseAssetConfig(id)` | 从资产历史恢复配置到当前组件 |
 
 ---
 
-## 右侧预览面板结构
+## 设计系统
 
-```html
-.preview-panel
-  .preview-panel-header
-    <!-- 背景色色块选择 + 上传背景图 + 自定义颜色 -->
-  .preview-panel-body
-    .page-mock          <!-- 手机 frame，320px 宽 -->
-      .page-mock-nav    <!-- 假导航栏 -->
-      .page-mock-bg     <!-- 背景色区域，点击色块切换 -->
-        #panel-bg-img-el  <!-- 上传的背景图 -->
-      #panel-slot-inner-wrap  <!-- 老虎机 slot-full 的 clone，可拖拽上下 -->
-        #panel-slot-inner
+### CSS Token（`:root`）
+```css
+--accent: #FF3060          /* 主色（红）*/
+--accent-soft: #FFF0F3     /* 主色浅背景 */
+--border: #EBEBEB
+--text-1: #1A1A1A / --text-2: #666 / --text-3: #999
+--bg: #FFFFFF / --bg-subtle: #F8F8F8
+--shadow-sm/md
 ```
 
-预览面板支持：
-- 点击色块换背景色（同时自动推荐配色预设）
-- 上传自定义背景图
-- 拖拽 slot-full 上下调整位置
-- 点各个「预览」按钮后实时更新内容
-
----
-
-## 待开发功能（UI 已有占位）
-
-以下 4 个组件在 `.comp-nav` 中已有入口（标注了 `coming-soon` class，显示为灰色不可点），主内容区和侧边栏都有占位页面，需要开发：
-
-1. **一键领券红包**（`coupon`）：红包封面、领券按钮、倒计时
-2. **楼层条**（`floor`）：楼层标题、分隔线、跳转按钮
-3. **Banner**（`banner`）：通用 banner 素材
-4. **倒计时**（`countdown`）：独立倒计时组件
-
-### 开发新组件的步骤（参考老虎机）
-
-1. **去掉 `coming-soon` 限制**：删除 `.comp-nav-item` 上的 `coming-soon` class 和 `pointer-events: none`
-2. **添加 CSS**：新组件的 DOM 尺寸/样式
-3. **补充侧边栏配置面板**：在 `#panel-{compId}` 里添加配置项
-4. **补充主内容区**：在 `#page-{compId}` 里添加 section + export-card
-5. **补充 JS**：实现对应的 sync/preview/export 函数
-6. **接入 `exportAll()`**：在 `tasks` 数组里添加新素材
-
----
-
-## 深色系预设（待完成）
-
-当前深色系 5 个预设按钮已在 UI 中显示但被 disable 掉。  
-激活方式：删除 `preset-btn.preset-disabled` class（`applyPreset` 逻辑已兼容 `isDark: true`）。  
-深色模式下需要注意：
-- 链接文字颜色改为 `rgba(255,255,255,0.9)`
-- 剩余次数文字颜色改为 `rgba(255,255,255,0.85)`
-- `--slot-remain-color` CSS 变量已预留
-
----
-
-## 颜色工具函数
-
-内置了完整的颜色计算工具，可直接使用：
-
-```js
-hexToRgb(hex)         // '#FF3060' → [255, 48, 96]
-rgbToHex(r, g, b)     // [255, 48, 96] → '#ff3060'
-rgbToHsl(r, g, b)     // → [h(0-360), s(0-1), l(0-1)]
-hslToRgb(h, s, l)     // → [r, g, b]
-adjustL(hex, dL)      // 调整亮度，dL ∈ [-1, 1]
-adjustS(hex, dS)      // 调整饱和度，dS ∈ [-1, 1]
+### 暗色模式 Token（老虎机页，body.has-preview）
 ```
+页面背景: #0D1117
+侧边栏/右侧面板: #0C111B
+边框: rgba(255,255,255,0.07)
+文字: rgba(255,255,255,0.88/0.55/0.35)
+```
+
+---
+
+## 首页 AI 预留卡片
+
+顶部深色暗调卡片（`.ai-promo-card`），标注「即将上线」。  
+后续接入 `mcli.sankuai.com` API，实现「上传商品图 → AI 生成资源位」。  
+API endpoint 已在环境变量中：`ANTHROPIC_BASE_URL=https://mcli.sankuai.com`
 
 ---
 
 ## 开发注意事项
 
-1. **不要引入任何构建工具**：项目刻意保持为单文件，直接用浏览器打开 index.html 即可调试。
-
-2. **html2canvas 限制**：
-   - 导出时元素必须在视口内或通过 offscreen div 渲染
-   - 跨域图片需要 `useCORS: true` + `allowTaint: true`
-   - 透明背景需要 `backgroundColor: null`
-   - 奖品图导出用了二次 canvas 绘制（先截 111×119，再居中放到 124×124）
-
-3. **Base64 图片**：默认示例图片和空态插图都内嵌在 JS 变量里（`PRIZE_DEFAULT_IMGS`），不是外部文件，修改时注意不要破坏 base64 字符串。
-
-4. **CSS 变量与 JS 双向同步**：配色变更时需同时更新 `document.documentElement.style.setProperty` 和对应的 `<input type="color">` value，两者都改才能保持 UI 状态一致。
-
-5. **组件切换是局部显示/隐藏**：所有组件 DOM 始终存在，通过 `.active` class 切换可见性，不动态创建/销毁。
-
-6. **Git 工作流**：  
-   ```bash
-   git add index.html
-   git commit -m "描述"
-   git push origin main
-   # GitHub Pages 约 1-2 分钟后自动更新
-   ```
+1. **不引入构建工具**，保持单文件，直接用浏览器打开调试
+2. **推送流程**：`git add index.html && git commit -m "描述" && git push origin main`
+3. **html2canvas 限制**：导出元素需在视口内或 offscreen div；跨域图需 `useCORS: true`
+4. **暗色主题作用域**：全部用 `body.has-preview` 前缀，不影响其他页面
+5. **新组件预览**：把组件 id 加入 `const PREVIEW_COMPS = ['slot', ...]`
+6. **组件状态**：`COMPONENT_REGISTRY` 里改 `status: 'done'` 即可激活
 
 ---
 
-## 近期 Git 历史（上下文参考）
+## Git 历史摘要（最近重要节点）
 
 ```
-1400d71  Revert 紫色 UI（已回滚，当前为粉红色系）
-091fadf  feat: UI 升级美境品牌紫（已回滚）
-d8dff6b  fix: previewEmpty sync actual transform from empty-illus
-9bb9d8c  revert: remove real-time sync, preview btn only
-7d1ff85  feat: real-time sync empty img transform to preview overlay
-91d9664  fix: call previewEmpty() after empty img load for auto sync
-f2f51b0  fix: sync empty img in onload, auto-refresh overlay if visible
-0a982db  fix: sync empty img to preview, prize img max 80%
-1be1950  fix: title color #f00068, previewEmpty no syncPreviewPanel
+d088bdb  fix: 隐藏暗色模式下的滚动条
+2e09258  fix: 消除白色区域 + 去渐变 + SVG图标替换emoji
+4f01611  feat: 老虎机四项UX改造（全页深色/背景色移左/点击滚动/可读性）
+b5f4c8d  feat: 我的资产功能 + AI生图预留入口
+09e5b54  fix: 修复两个关键bug（#page-home始终可见/sidebar-bottom不可点）
+cf96f8d  feat: 侧边栏双模式——浏览/配置互斥显示
+1299b2c  feat: LibLib风格导航 + 右侧面板按需显示
+e08c481  feat: 可视化首页目录 + 美境风格重设计
+c09f82f  feat: 重建左侧导航为分类树，支持50个组件
 ```
-
-空态页同步逻辑经过多次迭代，当前稳定版本：替换插图后调用 `previewEmpty()` 触发预览区同步，**不做实时同步**（用户点「预览」才更新，避免性能问题）。
