@@ -188,50 +188,59 @@ git checkout main && git merge dev && git push origin main && git checkout dev
 
 ---
 
-## 近期 Git 历史摘要
+## 近期 Git 历史摘要（2026-05-25）
 
 ```
+d5a9abd  feat: N4/N2完全拆分为独立组件，各有独立工具栏和页面
+5ca0e46  feat: N4/N2并列section + 说明备注 + 7个示意logo预置到素材库
+ac23bfd  feat: N4字号对齐参考图 + N2圆形Logo变体 + 品牌素材库
+7af0a3c  fix: N2/N4每个变体独立存储内容，切换互不干扰
+4b722e2  fix: N2/N4对齐蘑菇平台规范——透明底、红字、减X布局
+d2d93d5  feat: 完整实现N2/N4价格标签组件（8变体，240×156透明底PNG）
+3c14d32  fix: 深色模式根因修复——覆盖CSS变量使var()全局生效
+a88d849  fix: 深色模式全局适配——导出卡片/section/侧边栏输入框
+8697125  feat: 新增一拖四组件基础框架（6个切图区占位）
 d78c862  feat: 首页 coming-soon 重设计 + 老虎机 Stepper 4步引导
-2b0aea1  feat: 老虎机配置页面 UI 整合重构
-a6852aa  docs: 更新 CLAUDE.md（2026-05-22）
-d03b7a4  chore: 添加 .gitignore、impeccable skill
-6bbe380  fix: 深色模式可用卡片白色问题
-5dee764  feat: 深色模式文字提亮 + ChromaGrid 效果
-3774899  feat: 全局深色模式切换
-4afea30  feat: 首页隐藏顶栏，标题更大更干净
 ```
 
 ## 2026-05-25 新增功能
 
-### 老虎机配置页面整合重构
-- 配色预设选定后自动联动会场背景色（`PRESET_BG_MAP` + `applyPreset` 更新）
-- 面板分组重排：preset → bg-slot（标注「随配色联动」）→ 自定义颜色（弱化，`advanced-group`）→ 文案 → 空态 → 奖品
-- 新增 `.panel-section-badge` 标注各面板影响的素材编号
-- 新增 `.section-ctrl-tag` 在素材区 section-header 标注对应配置面板
-- 奖品图三组改用 `.prize-block` 卡片容器，修复暗色模式标题黑字 bug
-- 全面替换内联样式：`.panel-sub-label` / `.panel-hint` / `.reset-btn` 类
-- 配色预设按钮加色点（`::before` + `data-preset` 选择器）
+### 深色模式全局修复
+- **根因**：在 `body.dark-mode {}` 覆盖 `--bg`/`--bg-subtle`/`--border`/`--text-1/2/3`，所有 `var()` 自动响应
+- 补全 `export-card`/`section-header`/`panel-group`/`preset-btn` 等深色样式
+- 补全 `panel-input`/`color-row input`/`upload-btn` 侧边栏输入框深色
 
-### 首页视觉优化
-- Coming-soon 卡片重设计：虚线边框 + 锁图标 + 「规划中」标签（路线图风格）
-- 顶部加 3步使用引导条（选组件 → 配置参数 → 导出切图）
+### N4 文字标签（独立组件，id: 'n4'）
+- **规范来源**：N2-N4.md + 蘑菇平台 mushroom.meituan.com 截图精确对齐
+- **8种变体**：纯汉字/¥三位数/¥两位数/¥一位数/折扣两位/折扣一位/满减两位/满减一位
+- **输出**：240×156 px，透明底 PNG，文字红色 #E63129
+- **每变体独立存储**：切换不互覆盖
+- **字号**（对齐实物图）：纯汉字70px，价格数字100/110/116px，折扣78/96px，满减同价格
 
-### 老虎机 Stepper（React Bits 风格，vanilla 实现）
+### N2 品牌/活动 Logo（独立组件，id: 'n2'）
+- **规范**：两种样式——有底色无描边 / 无底色+#DBDDDE灰色描边
+- **圆形**：152×152，居中于 240×156 画布
+- **品牌Logo素材库**：localStorage，预置7个示意（P&G/Lay's乐事/闪光Club等），按名排序，用后积累
+
+### 一拖四（id: 'yituosi'，占位框架）
+- 6个切图区占位，尺寸待规范文档确认
+- 参考：ONE-DRAG-FOUR.md，整图 1125×1125，动态背景 1125×714
+
+### 老虎机 Stepper + 其他（前序）
 - 4步引导：选配色 → 设文案 → 配奖品 → 导出
-- 点击步骤自动展开对应面板、折叠其余、`scrollIntoView` 定位素材区
-- 步骤状态：默认（灰圈）/ 当前（红圈高亮）/ 完成（勾）+ 连接线填充动画
-- 进入老虎机页自动调用 `goToStep(1)` 重置
+- Coming-soon 卡片路线图风格，顶部3步引导条
 
 ## 待实现功能
 
-### GIF 导出（已确认方案，待开始）
-- 方案：`html2canvas` 截静态底图 + Canvas 逐帧加工 + `gif.js` 编码输出
-- 预设动效：渐显 / 呼吸灯 / 上浮 / 左滑入 / 弹入 / 闪动（共6种）
-- 业务操作流：点「导出 GIF」→ 选效果 → 自动生成下载
-- 先在老虎机实现，验证后推广到其他组件
+### 一拖四规范对齐（高优）
+- 框架已搭，等规范文档补充精确尺寸（整图/各切图的像素规格）
+- MasterGo API 需付费团队版（¥448/席/年），暂用截图替代
 
-### Figma MCP 接入（已配置，待验证）
-- 配置命令：`claude mcp add figma -s user -- npx -y figma-developer-mcp --figma-api-key <TOKEN>`
-- 已写入 `~/.claude.json`，重启 Claude Code 后生效
-- 用途：读取 Figma 设计稿 → 自动同步配色/文案/尺寸到工具配置参数
-- Token 安全：原 Token 已在对话中暴露，建议去 Figma Settings → Personal access tokens 重新生成后更新配置
+### GIF 导出（已确认方案）
+- html2canvas 截底图 + Canvas 逐帧 + gif.js 编码
+- 先在老虎机验证，6种预设动效
+- 用户确认后开始
+
+### 其他
+- 一拖二（id: 'yituoer'）：status coming，待开发
+- StaggeredMenu 点击行为：需在组件页（非首页）验证
