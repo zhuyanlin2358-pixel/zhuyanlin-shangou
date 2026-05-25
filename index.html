@@ -3696,6 +3696,17 @@
 
   /* ===== N2/N4 价格标签 ===== */
   let _n2n4Variant = 'text-only';
+  // 每个变体独立存储内容，互不干扰
+  const _n2n4Contents = {
+    'text-only':       '免单',
+    'price-3digit':    '200',
+    'price-2digit':    '20',
+    'price-1digit':    '8',
+    'discount-2digit': '88',
+    'discount-1digit': '8',
+    'fullcut-2digit':  '50',
+    'fullcut-1digit':  '8',
+  };
 
   const N2N4_VARIANTS = {
     'text-only':       { label:'纯汉字',    hint:'最多 3 字，如：免单',        maxLen:3  },
@@ -3709,27 +3720,40 @@
   };
 
   function selectN2N4Variant(type) {
+    // 先保存当前变体的输入值
+    const prevIsFullcut = _n2n4Variant.startsWith('fullcut');
+    const prevVal = prevIsFullcut
+      ? (document.getElementById('n2n4-fullcut-b')?.value || '')
+      : (document.getElementById('n2n4-input')?.value || '');
+    _n2n4Contents[_n2n4Variant] = prevVal;
+
     _n2n4Variant = type;
-    // 按钮高亮
-    document.querySelectorAll('.n2n4-var-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.variant === type);
-    });
     const meta = N2N4_VARIANTS[type];
-    // 切换满减双输入 vs 普通单输入
     const isFullcut = type.startsWith('fullcut');
+
+    // 切换输入区域显示
     const single = document.getElementById('n2n4-single-input-wrap');
     const fullcut = document.getElementById('n2n4-fullcut-wrap');
     if (single)  single.style.display  = isFullcut ? 'none' : '';
     if (fullcut) fullcut.style.display = isFullcut ? '' : 'none';
-    // 更新 hint / maxlength
-    const hint  = document.getElementById('n2n4-input-hint');
-    const input = document.getElementById('n2n4-input');
-    if (hint)  hint.textContent      = meta.hint;
-    if (input) input.maxLength       = meta.maxLen;
-    if (input) input.placeholder     = meta.hint;
-    // 更新卡片名
+
+    // 加载该变体自己的值
+    const storedVal = _n2n4Contents[type] || '';
+    if (isFullcut) {
+      const fb = document.getElementById('n2n4-fullcut-b');
+      if (fb) fb.value = storedVal;
+    } else {
+      const inp = document.getElementById('n2n4-input');
+      if (inp) { inp.value = storedVal; inp.maxLength = meta.maxLen; inp.placeholder = meta.hint; }
+      const hint = document.getElementById('n2n4-input-hint');
+      if (hint) hint.textContent = meta.hint;
+    }
+
+    // 按钮高亮 + 卡片名
+    document.querySelectorAll('.n2n4-var-btn').forEach(b => b.classList.toggle('active', b.dataset.variant === type));
     const nameEl = document.getElementById('n2n4-card-name');
     if (nameEl) nameEl.textContent = 'N2/N4 — ' + meta.label;
+
     renderN2N4();
   }
 
@@ -3737,8 +3761,11 @@
     const layer = document.getElementById('n2n4-content-layer');
     if (!layer) return;
     const v   = _n2n4Variant;
-    const raw = (document.getElementById('n2n4-input')?.value  || '').trim();
-    const fb  = (document.getElementById('n2n4-fullcut-b')?.value || '').trim();
+    const isFC = v.startsWith('fullcut');
+    const raw  = (document.getElementById('n2n4-input')?.value  || '').trim();
+    const fb   = (document.getElementById('n2n4-fullcut-b')?.value || '').trim();
+    // 实时保存当前变体的内容（独立存储）
+    _n2n4Contents[v] = isFC ? fb : raw;
     const NUM = "'MeituanDigitalType','PingFang SC',sans-serif";
     const CH  = "'PingFang SC','Microsoft YaHei',sans-serif";
     const C   = '#E63129';  // 美团红（蘑菇平台标准色）
