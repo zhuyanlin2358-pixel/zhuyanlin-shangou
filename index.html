@@ -75,6 +75,12 @@
     .color-row input[type=text] { flex: 1; min-width: 0; padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; background: #fff; color: #1A1A1A; }
     .panel-input { display: block; width: 100%; padding: 6px 10px; border: 1px solid #E0E0E0; border-radius: 6px; font-size: 12px; background: #fff; color: #1A1A1A; outline: none; transition: border-color 0.15s; }
     .panel-input:focus { border-color: #FF3060; }
+    .n2n4-var-btn { padding: 6px 4px; border: 1.5px solid #E8E8E8; border-radius: 7px; background: var(--bg); font-size: 11px; font-weight: 500; color: var(--text-2); cursor: pointer; transition: all 0.15s; }
+    .n2n4-var-btn:hover { border-color: #FF3060; color: #FF3060; }
+    .n2n4-var-btn.active { border-color: #FF3060; background: #FFF0F3; color: #FF3060; font-weight: 600; }
+    body.dark-mode .n2n4-var-btn { border-color: rgba(255,255,255,0.1); }
+    body.dark-mode .n2n4-var-btn:hover { border-color: rgba(255,48,96,0.5); color: #FF8FAA; }
+    body.dark-mode .n2n4-var-btn.active { border-color: rgba(255,48,96,0.5); background: rgba(255,48,96,0.12); color: #FF8FAA; }
     .color-row select { flex: 1; min-width: 0; }
 
     .main { margin-left: 260px; margin-right: 360px; margin-top: 56px; padding: 0; }
@@ -1617,6 +1623,78 @@
     </div>
   </div>
 
+  <!-- N2/N4 价格标签配置面板 -->
+  <div class="sidebar-comp-panel" id="panel-n2n4">
+    <div class="sidebar-comp-header">
+      <span class="comp-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+          <line x1="7" y1="7" x2="7.01" y2="7"/>
+        </svg>
+      </span>
+      <span class="comp-name">N2/N4 价格标签</span>
+    </div>
+
+    <!-- 变体选择 -->
+    <div class="panel-group-title" onclick="toggleGroup('pg-n2n4-variant','section-n2n4')">
+      <span class="dot"></span>选择标签类型<span class="panel-section-badge">8 种变体</span><span class="arrow">▾</span>
+    </div>
+    <div class="panel-group-body" id="pg-n2n4-variant">
+      <div id="n2n4-variant-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:4px 0 8px">
+        <button class="n2n4-var-btn active" data-variant="text-only"       onclick="selectN2N4Variant('text-only')"      >纯汉字</button>
+        <button class="n2n4-var-btn"        data-variant="price-3digit"    onclick="selectN2N4Variant('price-3digit')"   >￥三位数</button>
+        <button class="n2n4-var-btn"        data-variant="price-2digit"    onclick="selectN2N4Variant('price-2digit')"   >￥两位数</button>
+        <button class="n2n4-var-btn"        data-variant="price-1digit"    onclick="selectN2N4Variant('price-1digit')"   >￥一位数</button>
+        <button class="n2n4-var-btn"        data-variant="discount-2digit" onclick="selectN2N4Variant('discount-2digit')">折扣两位</button>
+        <button class="n2n4-var-btn"        data-variant="discount-1digit" onclick="selectN2N4Variant('discount-1digit')">折扣一位</button>
+        <button class="n2n4-var-btn"        data-variant="fullcut-2digit"  onclick="selectN2N4Variant('fullcut-2digit')" >满减两位</button>
+        <button class="n2n4-var-btn"        data-variant="fullcut-1digit"  onclick="selectN2N4Variant('fullcut-1digit')" >满减一位</button>
+      </div>
+    </div>
+
+    <!-- 内容填写 -->
+    <div class="panel-group-title" onclick="toggleGroup('pg-n2n4-content','section-n2n4')">
+      <span class="dot"></span>填写内容<span class="arrow">▾</span>
+    </div>
+    <div class="panel-group-body" id="pg-n2n4-content">
+      <!-- 普通单输入（大多数变体） -->
+      <div id="n2n4-single-input-wrap" style="padding:6px 0 8px">
+        <div class="panel-sub-label" id="n2n4-input-label">文案内容</div>
+        <input class="panel-input" id="n2n4-input" type="text" placeholder="最多3字，如：免单" value="免单" maxlength="8" oninput="renderN2N4()" style="margin-top:4px">
+        <div class="panel-hint" id="n2n4-input-hint">纯汉字，最多 3 字</div>
+      </div>
+      <!-- 满减双输入（fullcut变体时显示） -->
+      <div id="n2n4-fullcut-wrap" style="display:none;padding:6px 0 8px">
+        <div class="panel-sub-label">满（数字）</div>
+        <input class="panel-input" id="n2n4-fullcut-a" type="text" placeholder="如：99" value="99" maxlength="3" oninput="renderN2N4()" style="margin:4px 0 8px">
+        <div class="panel-sub-label">减（数字）</div>
+        <input class="panel-input" id="n2n4-fullcut-b" type="text" placeholder="如：50" value="50" maxlength="2" oninput="renderN2N4()" style="margin-top:4px">
+      </div>
+    </div>
+
+    <!-- 背景设置（可选） -->
+    <div class="panel-group-title" onclick="toggleGroup('pg-n2n4-bg','section-n2n4')">
+      <span class="dot"></span>背景（可选）<span class="arrow">▾</span>
+    </div>
+    <div class="panel-group-body collapsed" id="pg-n2n4-bg">
+      <div style="padding:6px 0 4px">
+        <div class="panel-sub-label">背景颜色</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:5px">
+          <input type="color" id="n2n4-bg-color" value="#FF3060" style="width:36px;height:28px;border:none;border-radius:6px;cursor:pointer;padding:1px 3px" oninput="renderN2N4()">
+          <button onclick="resetN2N4Bg()" style="font-size:11px;padding:3px 8px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:5px;cursor:pointer;color:var(--text-2)">还原默认</button>
+        </div>
+      </div>
+      <div style="padding:4px 0 8px">
+        <div class="panel-sub-label">背景图片</div>
+        <label style="margin-top:5px;display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--bg-subtle);border:1px dashed var(--border);border-radius:7px;cursor:pointer;font-size:12px;color:var(--text-2)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          上传背景图（透明底时留空）
+          <input type="file" accept="image/*" style="display:none" onchange="loadN2N4BgImage(this)">
+        </label>
+      </div>
+    </div>
+  </div>
+
   </div><!-- /comp-config-area -->
 </div><!-- /sidebar-scroll -->
 
@@ -2068,6 +2146,41 @@
     </div>
 
   </div><!-- /page-yituosi -->
+
+  <!-- N2/N4 价格标签页面 -->
+  <div class="comp-page" id="page-n2n4">
+    <div class="section-header" id="section-n2n4">
+      <div class="section-num">1</div>
+      <div>
+        <div class="section-label">价格标签</div>
+        <div class="section-sub">选择变体，填写内容，一键导出 · 240 × 156 px · 透明底 PNG</div>
+      </div>
+      <span class="section-ctrl-tag">变体选择 · 内容填写</span>
+    </div>
+    <div class="export-grid" style="padding:0 40px 32px">
+      <div class="export-card">
+        <div class="card-preview" style="padding:32px;display:flex;align-items:center;justify-content:center">
+          <!-- 实际渲染区 240×156，html2canvas 直接捕获此元素 -->
+          <div id="asset-n2n4" style="width:240px;height:156px;border-radius:12px;overflow:hidden;position:relative;flex-shrink:0">
+            <!-- 背景层 -->
+            <div id="n2n4-bg-layer" style="position:absolute;inset:0;background:linear-gradient(135deg,#FF5080 0%,#FF1A4A 100%)"></div>
+            <img id="n2n4-bg-img" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none">
+            <!-- 内容层 -->
+            <div id="n2n4-content-layer" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;font-family:'MeituanDigitalType','PingFang SC','Microsoft YaHei',sans-serif">
+              <div style="font-size:52px;font-weight:700;letter-spacing:4px">免单</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="card-info">
+            <div class="card-name" id="n2n4-card-name">N2/N4 — 纯汉字</div>
+            <div class="card-size">240 × 156 px · 透明底 PNG</div>
+          </div>
+          <button class="btn-export-single" onclick="exportN2N4()">⬇ 导出</button>
+        </div>
+      </div>
+    </div>
+  </div><!-- /page-n2n4 -->
 
   <!-- 一键领券红包页面（占位） -->
   <div class="comp-page" id="page-coupon">
@@ -2842,6 +2955,7 @@
       group: 'P0', groupLabel: '闪购频道页资源位', badgeClass: 'p0',
       items: [
         { id: 'yituosi',   name: '一拖四',              status: 'done' },
+        { id: 'n2n4',      name: 'N2/N4 价格标签',     status: 'done' },
         { id: 'yituoer',   name: '一拖二',              status: 'coming' },
         { id: 'diaotong',  name: '顶通',               status: 'coming' },
         { id: 'xin-zujian',name: '首页新组件',          status: 'coming' },
@@ -3580,6 +3694,129 @@
     loadDefaultPrizeImg(2);
     setTimeout(syncPrizeToSlot, 50);
   })();
+
+  /* ===== N2/N4 价格标签 ===== */
+  let _n2n4Variant = 'text-only';
+
+  const N2N4_VARIANTS = {
+    'text-only':       { label:'纯汉字',    hint:'最多 3 字，如：免单',        maxLen:3  },
+    'price-3digit':    { label:'￥三位数',  hint:'3 位价格数字，如：199',       maxLen:3  },
+    'price-2digit':    { label:'￥两位数',  hint:'2 位价格数字，如：59',        maxLen:2  },
+    'price-1digit':    { label:'￥一位数',  hint:'1 位价格数字，如：9',         maxLen:1  },
+    'discount-2digit': { label:'折扣两位',  hint:'折扣数，如：5.5（自动加折）', maxLen:4  },
+    'discount-1digit': { label:'折扣一位',  hint:'折扣数，如：5（自动加折）',   maxLen:1  },
+    'fullcut-2digit':  { label:'满减两位',  hint:'满X减X，两位数',             maxLen:3  },
+    'fullcut-1digit':  { label:'满减一位',  hint:'满X减X，一位数',             maxLen:2  },
+  };
+
+  function selectN2N4Variant(type) {
+    _n2n4Variant = type;
+    // 按钮高亮
+    document.querySelectorAll('.n2n4-var-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.variant === type);
+    });
+    const meta = N2N4_VARIANTS[type];
+    // 切换满减双输入 vs 普通单输入
+    const isFullcut = type.startsWith('fullcut');
+    const single = document.getElementById('n2n4-single-input-wrap');
+    const fullcut = document.getElementById('n2n4-fullcut-wrap');
+    if (single)  single.style.display  = isFullcut ? 'none' : '';
+    if (fullcut) fullcut.style.display = isFullcut ? '' : 'none';
+    // 更新 hint / maxlength
+    const hint  = document.getElementById('n2n4-input-hint');
+    const input = document.getElementById('n2n4-input');
+    if (hint)  hint.textContent      = meta.hint;
+    if (input) input.maxLength       = meta.maxLen;
+    if (input) input.placeholder     = meta.hint;
+    // 更新卡片名
+    const nameEl = document.getElementById('n2n4-card-name');
+    if (nameEl) nameEl.textContent = 'N2/N4 — ' + meta.label;
+    renderN2N4();
+  }
+
+  function renderN2N4() {
+    const layer = document.getElementById('n2n4-content-layer');
+    if (!layer) return;
+    const v = _n2n4Variant;
+    const raw = (document.getElementById('n2n4-input')?.value || '').trim();
+    const fa  = (document.getElementById('n2n4-fullcut-a')?.value || '').trim();
+    const fb  = (document.getElementById('n2n4-fullcut-b')?.value || '').trim();
+    const W = '\'MeituanDigitalType\',\'PingFang SC\',sans-serif';
+    let html = '';
+    switch(v) {
+      case 'text-only':
+        html = `<div style="font-size:52px;font-weight:700;letter-spacing:4px;font-family:'PingFang SC',sans-serif">${raw||'免单'}</div>`;
+        break;
+      case 'price-3digit':
+        html = `<div style="display:flex;align-items:flex-start;padding-top:6px"><span style="font-size:22px;font-weight:700;margin-top:12px;font-family:${W}">¥</span><span style="font-size:66px;font-weight:700;font-family:${W};line-height:1">${raw||'199'}</span></div>`;
+        break;
+      case 'price-2digit':
+        html = `<div style="display:flex;align-items:flex-start;padding-top:4px"><span style="font-size:26px;font-weight:700;margin-top:14px;font-family:${W}">¥</span><span style="font-size:78px;font-weight:700;font-family:${W};line-height:1">${raw||'59'}</span></div>`;
+        break;
+      case 'price-1digit':
+        html = `<div style="display:flex;align-items:flex-start"><span style="font-size:30px;font-weight:700;margin-top:16px;font-family:${W}">¥</span><span style="font-size:92px;font-weight:700;font-family:${W};line-height:1">${raw||'9'}</span></div>`;
+        break;
+      case 'discount-2digit':
+        html = `<div style="display:flex;align-items:baseline;gap:2px"><span style="font-size:58px;font-weight:700;font-family:${W};line-height:1">${raw||'5.5'}</span><span style="font-size:26px;font-weight:700;font-family:'PingFang SC',sans-serif">折</span></div>`;
+        break;
+      case 'discount-1digit':
+        html = `<div style="display:flex;align-items:baseline;gap:2px"><span style="font-size:72px;font-weight:700;font-family:${W};line-height:1">${raw||'5'}</span><span style="font-size:30px;font-weight:700;font-family:'PingFang SC',sans-serif">折</span></div>`;
+        break;
+      case 'fullcut-2digit':
+        html = `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;font-family:'PingFang SC',sans-serif"><div style="font-size:28px;font-weight:700">满<span style="font-family:${W}">${fa||'99'}</span></div><div style="font-size:28px;font-weight:700">减<span style="font-family:${W}">${fb||'50'}</span></div></div>`;
+        break;
+      case 'fullcut-1digit':
+        html = `<div style="font-size:36px;font-weight:700;font-family:'PingFang SC',sans-serif">满<span style="font-family:${W}">${fa||'9'}</span>减<span style="font-family:${W}">${fb||'5'}</span></div>`;
+        break;
+    }
+    layer.innerHTML = html;
+  }
+
+  function resetN2N4Bg() {
+    document.getElementById('n2n4-bg-layer').style.background = 'linear-gradient(135deg,#FF5080 0%,#FF1A4A 100%)';
+    const img = document.getElementById('n2n4-bg-img');
+    if (img) { img.src = ''; img.style.display = 'none'; }
+    const picker = document.getElementById('n2n4-bg-color');
+    if (picker) picker.value = '#FF3060';
+  }
+
+  function loadN2N4BgImage(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.getElementById('n2n4-bg-img');
+      if (img) { img.src = e.target.result; img.style.display = ''; }
+      document.getElementById('n2n4-bg-layer').style.background = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // 颜色 picker 联动
+  document.addEventListener('input', e => {
+    if (e.target && e.target.id === 'n2n4-bg-color') {
+      document.getElementById('n2n4-bg-layer').style.background = e.target.value;
+      const img = document.getElementById('n2n4-bg-img');
+      if (img) { img.src = ''; img.style.display = 'none'; }
+    }
+  });
+
+  async function exportN2N4() {
+    const el = document.getElementById('asset-n2n4');
+    const btn = el.closest('.export-card').querySelector('.btn-export-single');
+    const meta = N2N4_VARIANTS[_n2n4Variant];
+    const filename = 'N2N4_价格标签_' + (meta?.label || _n2n4Variant) + '_240x156';
+    btn.classList.add('loading'); btn.textContent = '导出中…';
+    showToast('正在渲染 ' + filename + '…');
+    try {
+      const canvas = await html2canvas(el, { scale:1, width:240, height:156, useCORS:true, allowTaint:true, backgroundColor:null, logging:false });
+      downloadCanvas(canvas, filename + '.png');
+      showToast('✅ 已导出：' + filename + '.png');
+    } catch(err) {
+      showToast('❌ 导出失败：' + err.message);
+    }
+    btn.classList.remove('loading'); btn.textContent = '⬇ 导出';
+  }
 
   /* ===== 一拖四 辅助函数 ===== */
   function syncY4Preview() {
