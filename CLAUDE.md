@@ -1,6 +1,6 @@
 # 闪购会场组件自助设计工具 — Claude Code 上下文文档
 
-> 每次对话结束前更新本文档。最后更新：2026-05-22
+> 每次对话结束前更新本文档。最后更新：2026-05-25
 
 ---
 
@@ -191,14 +191,41 @@ git checkout main && git merge dev && git push origin main && git checkout dev
 ## 近期 Git 历史摘要
 
 ```
+d78c862  feat: 首页 coming-soon 重设计 + 老虎机 Stepper 4步引导
+2b0aea1  feat: 老虎机配置页面 UI 整合重构
+a6852aa  docs: 更新 CLAUDE.md（2026-05-22）
 d03b7a4  chore: 添加 .gitignore、impeccable skill
 6bbe380  fix: 深色模式可用卡片白色问题
-5dee764  feat: 深色模式文字提亮 + ChromaGrid 效果  
+5dee764  feat: 深色模式文字提亮 + ChromaGrid 效果
 3774899  feat: 全局深色模式切换
 4afea30  feat: 首页隐藏顶栏，标题更大更干净
-c340c57  feat: StaggeredMenu 顶栏快速跳转菜单
-8225549  feat: 替换 P0/P1/P2 图标 + GSAP 动效
-f10474c  feat: 替换 P3/P4 图标 + GSAP 动效
-a39ff9b  feat: 团资源位图标换为 animate-ui/icons-users-round
-585a26e  feat: BorderGlow 移植到 AI 预留卡片
 ```
+
+## 2026-05-25 新增功能
+
+### 老虎机配置页面整合重构
+- 配色预设选定后自动联动会场背景色（`PRESET_BG_MAP` + `applyPreset` 更新）
+- 面板分组重排：preset → bg-slot（标注「随配色联动」）→ 自定义颜色（弱化，`advanced-group`）→ 文案 → 空态 → 奖品
+- 新增 `.panel-section-badge` 标注各面板影响的素材编号
+- 新增 `.section-ctrl-tag` 在素材区 section-header 标注对应配置面板
+- 奖品图三组改用 `.prize-block` 卡片容器，修复暗色模式标题黑字 bug
+- 全面替换内联样式：`.panel-sub-label` / `.panel-hint` / `.reset-btn` 类
+- 配色预设按钮加色点（`::before` + `data-preset` 选择器）
+
+### 首页视觉优化
+- Coming-soon 卡片重设计：虚线边框 + 锁图标 + 「规划中」标签（路线图风格）
+- 顶部加 3步使用引导条（选组件 → 配置参数 → 导出切图）
+
+### 老虎机 Stepper（React Bits 风格，vanilla 实现）
+- 4步引导：选配色 → 设文案 → 配奖品 → 导出
+- 点击步骤自动展开对应面板、折叠其余、`scrollIntoView` 定位素材区
+- 步骤状态：默认（灰圈）/ 当前（红圈高亮）/ 完成（勾）+ 连接线填充动画
+- 进入老虎机页自动调用 `goToStep(1)` 重置
+
+## 待实现功能
+
+### GIF 导出（已确认方案，待开始）
+- 方案：`html2canvas` 截静态底图 + Canvas 逐帧加工 + `gif.js` 编码输出
+- 预设动效：渐显 / 呼吸灯 / 上浮 / 左滑入 / 弹入 / 闪动（共6种）
+- 业务操作流：点「导出 GIF」→ 选效果 → 自动生成下载
+- 先在老虎机实现，验证后推广到其他组件
