@@ -1663,12 +1663,11 @@
         <input class="panel-input" id="n2n4-input" type="text" placeholder="最多3字，如：免单" value="免单" maxlength="8" oninput="renderN2N4()" style="margin-top:4px">
         <div class="panel-hint" id="n2n4-input-hint">纯汉字，最多 3 字</div>
       </div>
-      <!-- 满减双输入（fullcut变体时显示） -->
+      <!-- 满减单输入（只需填"减X"的数字，满X由瓷片背景隐含） -->
       <div id="n2n4-fullcut-wrap" style="display:none;padding:6px 0 8px">
-        <div class="panel-sub-label">满（数字）</div>
-        <input class="panel-input" id="n2n4-fullcut-a" type="text" placeholder="如：99" value="99" maxlength="3" oninput="renderN2N4()" style="margin:4px 0 8px">
-        <div class="panel-sub-label">减（数字）</div>
+        <div class="panel-sub-label">「减」后面的数字</div>
         <input class="panel-input" id="n2n4-fullcut-b" type="text" placeholder="如：50" value="50" maxlength="2" oninput="renderN2N4()" style="margin-top:4px">
+        <div class="panel-hint">标签只显示「减X」，满X 由瓷片背景承载</div>
       </div>
     </div>
 
@@ -2161,13 +2160,13 @@
       <div class="export-card">
         <div class="card-preview" style="padding:32px;display:flex;align-items:center;justify-content:center">
           <!-- 实际渲染区 240×156，html2canvas 直接捕获此元素 -->
-          <div id="asset-n2n4" style="width:240px;height:156px;border-radius:12px;overflow:hidden;position:relative;flex-shrink:0">
-            <!-- 背景层 -->
-            <div id="n2n4-bg-layer" style="position:absolute;inset:0;background:linear-gradient(135deg,#FF5080 0%,#FF1A4A 100%)"></div>
+          <div id="asset-n2n4" style="width:240px;height:156px;border-radius:0;overflow:hidden;position:relative;flex-shrink:0">
+            <!-- 背景层（默认透明，用户可选填色/上传图） -->
+            <div id="n2n4-bg-layer" style="position:absolute;inset:0;background:transparent"></div>
             <img id="n2n4-bg-img" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none">
             <!-- 内容层 -->
-            <div id="n2n4-content-layer" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;font-family:'MeituanDigitalType','PingFang SC','Microsoft YaHei',sans-serif">
-              <div style="font-size:52px;font-weight:700;letter-spacing:4px">免单</div>
+            <div id="n2n4-content-layer" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:8px 12px">
+              <div style="display:flex;align-items:flex-end;gap:0;font-family:'MeituanDigitalType','PingFang SC','Microsoft YaHei',sans-serif;font-weight:700;color:#E63129;line-height:1"><span style="font-size:52px;letter-spacing:4px;font-family:'PingFang SC',sans-serif">免单</span></div>
             </div>
           </div>
         </div>
@@ -3737,47 +3736,68 @@
   function renderN2N4() {
     const layer = document.getElementById('n2n4-content-layer');
     if (!layer) return;
-    const v = _n2n4Variant;
-    const raw = (document.getElementById('n2n4-input')?.value || '').trim();
-    const fa  = (document.getElementById('n2n4-fullcut-a')?.value || '').trim();
+    const v   = _n2n4Variant;
+    const raw = (document.getElementById('n2n4-input')?.value  || '').trim();
     const fb  = (document.getElementById('n2n4-fullcut-b')?.value || '').trim();
-    const W = '\'MeituanDigitalType\',\'PingFang SC\',sans-serif';
-    let html = '';
+    const NUM = "'MeituanDigitalType','PingFang SC',sans-serif";
+    const CH  = "'PingFang SC','Microsoft YaHei',sans-serif";
+    const C   = '#E63129';  // 美团红（蘑菇平台标准色）
+    const BW  = 'font-weight:700;line-height:1';
+    let html  = '';
     switch(v) {
       case 'text-only':
-        html = `<div style="font-size:52px;font-weight:700;letter-spacing:4px;font-family:'PingFang SC',sans-serif">${raw||'免单'}</div>`;
+        html = `<span style="${BW};font-size:52px;letter-spacing:4px;font-family:${CH};color:${C}">${raw||'免单'}</span>`;
         break;
       case 'price-3digit':
-        html = `<div style="display:flex;align-items:flex-start;padding-top:6px"><span style="font-size:22px;font-weight:700;margin-top:12px;font-family:${W}">¥</span><span style="font-size:66px;font-weight:700;font-family:${W};line-height:1">${raw||'199'}</span></div>`;
+        html = `<div style="display:flex;align-items:flex-end;gap:1px;color:${C}">
+          <span style="${BW};font-size:36px;font-family:${NUM};padding-bottom:6px">¥</span>
+          <span style="${BW};font-size:104px;font-family:${NUM}">${raw||'200'}</span>
+        </div>`;
         break;
       case 'price-2digit':
-        html = `<div style="display:flex;align-items:flex-start;padding-top:4px"><span style="font-size:26px;font-weight:700;margin-top:14px;font-family:${W}">¥</span><span style="font-size:78px;font-weight:700;font-family:${W};line-height:1">${raw||'59'}</span></div>`;
+        html = `<div style="display:flex;align-items:flex-end;gap:1px;color:${C}">
+          <span style="${BW};font-size:40px;font-family:${NUM};padding-bottom:8px">¥</span>
+          <span style="${BW};font-size:112px;font-family:${NUM}">${raw||'20'}</span>
+        </div>`;
         break;
       case 'price-1digit':
-        html = `<div style="display:flex;align-items:flex-start"><span style="font-size:30px;font-weight:700;margin-top:16px;font-family:${W}">¥</span><span style="font-size:92px;font-weight:700;font-family:${W};line-height:1">${raw||'9'}</span></div>`;
+        html = `<div style="display:flex;align-items:flex-end;gap:1px;color:${C}">
+          <span style="${BW};font-size:44px;font-family:${NUM};padding-bottom:8px">¥</span>
+          <span style="${BW};font-size:120px;font-family:${NUM}">${raw||'8'}</span>
+        </div>`;
         break;
       case 'discount-2digit':
-        html = `<div style="display:flex;align-items:baseline;gap:2px"><span style="font-size:58px;font-weight:700;font-family:${W};line-height:1">${raw||'5.5'}</span><span style="font-size:26px;font-weight:700;font-family:'PingFang SC',sans-serif">折</span></div>`;
+        html = `<div style="display:flex;align-items:baseline;gap:3px;color:${C}">
+          <span style="${BW};font-size:80px;font-family:${NUM}">${raw||'88'}</span>
+          <span style="${BW};font-size:44px;font-family:${CH}">折</span>
+        </div>`;
         break;
       case 'discount-1digit':
-        html = `<div style="display:flex;align-items:baseline;gap:2px"><span style="font-size:72px;font-weight:700;font-family:${W};line-height:1">${raw||'5'}</span><span style="font-size:30px;font-weight:700;font-family:'PingFang SC',sans-serif">折</span></div>`;
+        html = `<div style="display:flex;align-items:baseline;gap:3px;color:${C}">
+          <span style="${BW};font-size:100px;font-family:${NUM}">${raw||'8'}</span>
+          <span style="${BW};font-size:52px;font-family:${CH}">折</span>
+        </div>`;
         break;
-      case 'fullcut-2digit':
-        html = `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;font-family:'PingFang SC',sans-serif"><div style="font-size:28px;font-weight:700">满<span style="font-family:${W}">${fa||'99'}</span></div><div style="font-size:28px;font-weight:700">减<span style="font-family:${W}">${fb||'50'}</span></div></div>`;
+      case 'fullcut-2digit':   // 只显示「减50」，满X由瓷片背景承载
+        html = `<div style="display:flex;align-items:flex-end;gap:1px;color:${C}">
+          <span style="${BW};font-size:36px;font-family:${CH};padding-bottom:6px">减</span>
+          <span style="${BW};font-size:104px;font-family:${NUM}">${fb||'50'}</span>
+        </div>`;
         break;
       case 'fullcut-1digit':
-        html = `<div style="font-size:36px;font-weight:700;font-family:'PingFang SC',sans-serif">满<span style="font-family:${W}">${fa||'9'}</span>减<span style="font-family:${W}">${fb||'5'}</span></div>`;
+        html = `<div style="display:flex;align-items:flex-end;gap:1px;color:${C}">
+          <span style="${BW};font-size:44px;font-family:${CH};padding-bottom:8px">减</span>
+          <span style="${BW};font-size:120px;font-family:${NUM}">${fb||'8'}</span>
+        </div>`;
         break;
     }
     layer.innerHTML = html;
   }
 
   function resetN2N4Bg() {
-    document.getElementById('n2n4-bg-layer').style.background = 'linear-gradient(135deg,#FF5080 0%,#FF1A4A 100%)';
+    document.getElementById('n2n4-bg-layer').style.background = 'transparent';
     const img = document.getElementById('n2n4-bg-img');
     if (img) { img.src = ''; img.style.display = 'none'; }
-    const picker = document.getElementById('n2n4-bg-color');
-    if (picker) picker.value = '#FF3060';
   }
 
   function loadN2N4BgImage(input) {
