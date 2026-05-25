@@ -923,7 +923,19 @@
     .stepper-step.done + .stepper-conn .stepper-conn-fill { width: 100%; }
 
     /* ===== 全局深色模式 ===== */
-    body.dark-mode { background: #0D1117; }
+    body.dark-mode {
+      background: #0D1117;
+      /* 覆盖全局 CSS 变量 — 所有用 var() 的地方自动响应 */
+      --bg:          #161B22;
+      --bg-subtle:   rgba(255,255,255,0.05);
+      --border:      rgba(255,255,255,0.09);
+      --border-light:rgba(255,255,255,0.05);
+      --text-1:      rgba(255,255,255,0.88);
+      --text-2:      rgba(255,255,255,0.58);
+      --text-3:      rgba(255,255,255,0.36);
+      --shadow-sm:   0 1px 4px rgba(0,0,0,0.3);
+      --shadow-md:   0 4px 16px rgba(0,0,0,0.4);
+    }
     body.dark-mode .topbar { background: #0C111B; border-bottom-color: rgba(255,255,255,0.07); }
     body.dark-mode .topbar-title { color: rgba(255,255,255,0.88); }
     body.dark-mode .topbar-back { color: rgba(255,255,255,0.72); }
@@ -1021,6 +1033,17 @@
     .theme-toggle:hover { background: #F0F0F0; color: #1A1A1A; }
     body.dark-mode .theme-toggle { color: rgba(255,255,255,0.55); }
     body.dark-mode .theme-toggle:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+    body.dark-mode .panel-group { border-color: rgba(255,255,255,0.08); }
+    body.dark-mode .panel-group-title { background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.75); }
+    body.dark-mode .panel-group-title:hover { background: rgba(255,255,255,0.07); }
+    body.dark-mode .panel-group-title .dot { background: rgba(255,96,128,0.8); }
+    body.dark-mode .panel-group-title .arrow { color: rgba(255,255,255,0.3); }
+    body.dark-mode .panel-group-body { border-top-color: rgba(255,255,255,0.06); }
+    body.dark-mode .preset-btn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
+    body.dark-mode .preset-btn.active { background: rgba(255,48,96,0.15); border-color: rgba(255,48,96,0.5); color: #FF8FAA; }
+    body.dark-mode .preset-btn:hover:not(.preset-disabled) { border-color: rgba(255,48,96,0.4); color: #FF8FAA; }
+    body.has-preview .preset-btn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); }
+    body.has-preview .preset-btn.active { background: rgba(255,48,96,0.18); border-color: rgba(255,96,128,0.5); color: #FF8FAA; }
     body.dark-mode .panel-input { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); }
     body.dark-mode .panel-input::placeholder { color: rgba(255,255,255,0.28); }
     body.dark-mode .panel-input:focus { border-color: rgba(255,48,96,0.6); }
