@@ -1631,7 +1631,90 @@
     </div>
   </div>
 
-  <!-- N2/N4 价格标签配置面板 -->
+
+  <!-- N4 文字标签配置面板 -->
+  <div class="sidebar-comp-panel" id="panel-n4">
+    <div class="sidebar-comp-header">
+      <span class="comp-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18">
+          <path d="M4 7V4h16v3"/><path d="M9 20h6"/><line x1="12" y1="4" x2="12" y2="20"/>
+        </svg>
+      </span>
+      <span class="comp-name">N4 文字标签</span>
+    </div>
+
+    <div class="panel-group-title" onclick="toggleGroup('pg-n4-variant','section-n4')">
+      <span class="dot"></span>选择模板类型<span class="panel-section-badge">8 种</span><span class="arrow">▾</span>
+    </div>
+    <div class="panel-group-body" id="pg-n4-variant">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:4px 0 8px">
+        <button class="n2n4-var-btn active" data-v4="text-only"       onclick="selectN4Variant('text-only')"      >纯汉字</button>
+        <button class="n2n4-var-btn"        data-v4="price-3digit"    onclick="selectN4Variant('price-3digit')"   >￥三位数</button>
+        <button class="n2n4-var-btn"        data-v4="price-2digit"    onclick="selectN4Variant('price-2digit')"   >￥两位数</button>
+        <button class="n2n4-var-btn"        data-v4="price-1digit"    onclick="selectN4Variant('price-1digit')"   >￥一位数</button>
+        <button class="n2n4-var-btn"        data-v4="discount-2digit" onclick="selectN4Variant('discount-2digit')">折扣两位</button>
+        <button class="n2n4-var-btn"        data-v4="discount-1digit" onclick="selectN4Variant('discount-1digit')">折扣一位</button>
+        <button class="n2n4-var-btn"        data-v4="fullcut-2digit"  onclick="selectN4Variant('fullcut-2digit')" >满减两位</button>
+        <button class="n2n4-var-btn"        data-v4="fullcut-1digit"  onclick="selectN4Variant('fullcut-1digit')" >满减一位</button>
+      </div>
+    </div>
+
+    <div class="panel-group-title" onclick="toggleGroup('pg-n4-content','section-n4')">
+      <span class="dot"></span>填写内容<span class="arrow">▾</span>
+    </div>
+    <div class="panel-group-body" id="pg-n4-content">
+      <div id="n4-single-wrap" style="padding:6px 0 8px">
+        <div class="panel-sub-label" id="n4-input-label">文案内容</div>
+        <input class="panel-input" id="n4-input" type="text" placeholder="最多3字，如：免单" value="免单" maxlength="8" oninput="renderN4()" style="margin-top:4px">
+        <div class="panel-hint" id="n4-input-hint">纯汉字，最多 3 字</div>
+      </div>
+      <div id="n4-fullcut-wrap" style="display:none;padding:6px 0 8px">
+        <div class="panel-sub-label">「减」后面的数字</div>
+        <input class="panel-input" id="n4-fullcut-b" type="text" placeholder="如：80" value="80" maxlength="2" oninput="renderN4()" style="margin-top:4px">
+        <div class="panel-hint">标签只显示「减X」</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- N2 品牌Logo配置面板 -->
+  <div class="sidebar-comp-panel" id="panel-n2">
+    <div class="sidebar-comp-header">
+      <span class="comp-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18">
+          <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/>
+        </svg>
+      </span>
+      <span class="comp-name">N2 品牌/活动 Logo</span>
+    </div>
+
+    <div class="panel-group-title" onclick="toggleGroup('pg-n2-style','section-n2')">
+      <span class="dot"></span>标签样式<span class="arrow">▾</span>
+    </div>
+    <div class="panel-group-body" id="pg-n2-style">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:4px 0 8px">
+        <button class="n2n4-var-btn active" data-n2style="filled" onclick="selectN2Style('filled')">有底色</button>
+        <button class="n2n4-var-btn"        data-n2style="stroke" onclick="selectN2Style('stroke')">无底色+描边</button>
+      </div>
+      <div id="n2-filled-row" style="padding:2px 0 6px">
+        <div class="panel-sub-label">圆形背景色</div>
+        <input type="color" id="n2-bg-color" value="#FFD21E" style="width:36px;height:28px;border:none;border-radius:6px;cursor:pointer;padding:1px 3px;margin-top:4px" oninput="renderN2()">
+      </div>
+    </div>
+
+    <div class="panel-group-title" onclick="toggleGroup('pg-n2-logo','section-n2')">
+      <span class="dot"></span>品牌 Logo<span class="arrow">▾</span>
+    </div>
+    <div class="panel-group-body" id="pg-n2-logo">
+      <label style="margin:4px 0 6px;display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--bg-subtle);border:1px dashed var(--border);border-radius:7px;cursor:pointer;font-size:12px;color:var(--text-2)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        上传品牌 Logo（透明底 PNG）
+        <input type="file" accept="image/*" style="display:none" onchange="loadN2LogoForRender(this)">
+      </label>
+      <button onclick="promptSaveN2Logo()" style="width:100%;padding:6px;font-size:11px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--text-2)">💾 保存到素材库</button>
+    </div>
+  </div>
+
+  <!-- N2/N4 价格标签配置面板（旧，保留兼容） -->
   <div class="sidebar-comp-panel" id="panel-n2n4">
     <div class="sidebar-comp-header">
       <span class="comp-icon">
@@ -2175,7 +2258,88 @@
 
   </div><!-- /page-yituosi -->
 
-  <!-- N2/N4 价格标签页面 -->
+
+  <!-- N4 文字标签页面 -->
+  <div class="comp-page" id="page-n4">
+    <div class="section-header" id="section-n4">
+      <div class="section-num">1</div>
+      <div>
+        <div class="section-label">N4 文字标签</div>
+        <div class="section-sub">文字位置、字体、颜色、大小不可变，根据内容选择模板改字即可 · 240×156 px · 透明底 PNG</div>
+      </div>
+      <span class="section-ctrl-tag">模板选择 · 改字</span>
+    </div>
+    <div class="export-grid" style="padding:0 40px 40px">
+      <div class="export-card">
+        <div class="card-preview" style="padding:32px;display:flex;align-items:center;justify-content:center">
+          <div id="asset-n4" style="width:240px;height:156px;overflow:hidden;position:relative;flex-shrink:0">
+            <div id="n4-content-layer" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:8px 16px;overflow:hidden">
+              <div style="font-family:'MeituanDigitalType','PingFang SC',sans-serif;font-weight:700;color:#E63129;line-height:1;font-size:70px;letter-spacing:6px;font-family:'PingFang SC',sans-serif">免单</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="card-info">
+            <div class="card-name" id="n4-card-name">N4 — 纯汉字</div>
+            <div class="card-size">240 × 156 px · 透明底 PNG</div>
+          </div>
+          <button class="btn-export-single" onclick="exportN4()">⬇ 导出</button>
+        </div>
+      </div>
+    </div>
+  </div><!-- /page-n4 -->
+
+  <!-- N2 品牌Logo页面 -->
+  <div class="comp-page" id="page-n2">
+    <div class="section-header" id="section-n2">
+      <div class="section-num">1</div>
+      <div>
+        <div class="section-label">N2 品牌/活动 Logo</div>
+        <div class="section-sub">可配置品牌 logo、活动 IP logo · 240×156 px · 透明底 PNG</div>
+      </div>
+      <span class="section-ctrl-tag">样式选择 · Logo上传</span>
+    </div>
+    <div class="export-grid" style="padding:0 40px 32px">
+      <div class="export-card">
+        <div class="card-preview" style="padding:32px;display:flex;align-items:center;justify-content:center">
+          <div id="asset-n2" style="width:240px;height:156px;overflow:hidden;position:relative;flex-shrink:0">
+            <!-- N2 圆形 Logo -->
+            <div id="n2-circle" style="position:absolute;top:2px;left:42px;width:152px;height:152px;border-radius:50%;box-sizing:border-box;overflow:hidden;display:flex;align-items:center;justify-content:center">
+              <div id="n2-circle-fill" style="position:absolute;inset:0;border-radius:50%;background:#FFD21E"></div>
+              <img id="n2-logo-render" src="" alt="" style="position:relative;z-index:1;width:72%;height:72%;object-fit:contain;display:none">
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="card-info">
+            <div class="card-name" id="n2-card-name">N2 — 有底色</div>
+            <div class="card-size">240 × 156 px · 透明底 PNG</div>
+          </div>
+          <button class="btn-export-single" onclick="exportN2()">⬇ 导出</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- N2 品牌 Logo 素材库 -->
+    <div class="section-header" style="margin-top:8px">
+      <div class="section-num" style="background:rgba(255,48,96,0.1);color:#FF3060">2</div>
+      <div>
+        <div class="section-label">品牌 Logo 素材库</div>
+        <div class="section-sub">沉淀常用品牌 Logo，点击直接选用 · 按品牌名排序 · 用后自动积累</div>
+      </div>
+      <label style="display:flex;align-items:center;gap:5px;padding:5px 10px;background:var(--bg-subtle);border:1px dashed var(--border);border-radius:7px;cursor:pointer;font-size:12px;color:var(--text-2);flex-shrink:0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        添加 Logo
+        <input type="file" accept="image/*" style="display:none" onchange="addN2LogoFromFile(this)">
+      </label>
+    </div>
+    <div style="padding:0 40px 40px">
+      <div id="n2-library-grid-new" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:12px;min-height:80px;align-items:start">
+      </div>
+    </div>
+  </div><!-- /page-n2 -->
+
+  <!-- N2/N4 价格标签页面（旧，保留兼容） -->
   <div class="comp-page" id="page-n2n4">
     <div class="section-header" id="section-n2n4">
       <div class="section-num">1</div>
@@ -3003,7 +3167,8 @@
       group: 'P0', groupLabel: '闪购频道页资源位', badgeClass: 'p0',
       items: [
         { id: 'yituosi',   name: '一拖四',              status: 'done' },
-        { id: 'n2n4',      name: 'N2/N4 价格标签',     status: 'done' },
+        { id: 'n4',        name: 'N4 文字标签',          status: 'done' },
+        { id: 'n2',        name: 'N2 品牌/活动 Logo',   status: 'done' },
         { id: 'yituoer',   name: '一拖二',              status: 'coming' },
         { id: 'diaotong',  name: '顶通',               status: 'coming' },
         { id: 'xin-zujian',name: '首页新组件',          status: 'coming' },
@@ -3422,7 +3587,7 @@
 
     // 导出按钮
     const exportBtn = document.getElementById('btn-all');
-    if (exportBtn) exportBtn.style.display = (compId === 'slot' || compId === 'yituosi') ? '' : 'none';
+    if (exportBtn) exportBtn.style.display = ['slot','yituosi','n4','n2'].includes(compId) ? '' : 'none';
 
     // 右侧预览面板：仅需要预览的组件才显示
     const PREVIEW_COMPS = ['slot']; // 后续完成的组件加到这里
@@ -3742,9 +3907,172 @@
     loadDefaultPrizeImg(2);
     setTimeout(syncPrizeToSlot, 50);
     _initN2DefaultLogos();
+    _renderN2LibraryNew();
   })();
 
-  /* ===== N2/N4 价格标签 ===== */
+
+  /* ===== N4 文字标签（独立） ===== */
+  let _n4Variant = 'text-only';
+  const _n4Contents = {
+    'text-only':'免单','price-3digit':'200','price-2digit':'20','price-1digit':'8',
+    'discount-2digit':'88','discount-1digit':'8','fullcut-2digit':'80','fullcut-1digit':'8',
+  };
+  const N4_VARIANTS = {
+    'text-only':       {label:'纯汉字',    hint:'最多3字，如：免单',    maxLen:3},
+    'price-3digit':    {label:'￥三位数',  hint:'3位数字，如：200',     maxLen:3},
+    'price-2digit':    {label:'￥两位数',  hint:'2位数字，如：20',      maxLen:2},
+    'price-1digit':    {label:'￥一位数',  hint:'1位数字，如：8',       maxLen:1},
+    'discount-2digit': {label:'折扣两位',  hint:'折扣数，如：88',       maxLen:4},
+    'discount-1digit': {label:'折扣一位',  hint:'折扣数，如：8',        maxLen:1},
+    'fullcut-2digit':  {label:'满减两位',  hint:'减后数字，如：80',     maxLen:3},
+    'fullcut-1digit':  {label:'满减一位',  hint:'减后数字，如：8',      maxLen:2},
+  };
+
+  function selectN4Variant(type) {
+    const isFC = _n4Variant.startsWith('fullcut');
+    _n4Contents[_n4Variant] = isFC
+      ? (document.getElementById('n4-fullcut-b')?.value||'')
+      : (document.getElementById('n4-input')?.value||'');
+    _n4Variant = type;
+    const meta = N4_VARIANTS[type];
+    const newFC = type.startsWith('fullcut');
+    document.getElementById('n4-single-wrap').style.display  = newFC ? 'none' : '';
+    document.getElementById('n4-fullcut-wrap').style.display = newFC ? '' : 'none';
+    const val = _n4Contents[type]||'';
+    if (newFC) {
+      const fb = document.getElementById('n4-fullcut-b'); if(fb) fb.value=val;
+    } else {
+      const inp=document.getElementById('n4-input'),h=document.getElementById('n4-input-hint');
+      if(inp){inp.value=val;inp.maxLength=meta.maxLen;inp.placeholder=meta.hint;}
+      if(h) h.textContent=meta.hint;
+    }
+    document.querySelectorAll('[data-v4]').forEach(b=>b.classList.toggle('active',b.dataset.v4===type));
+    const nm=document.getElementById('n4-card-name');
+    if(nm) nm.textContent='N4 — '+meta.label;
+    renderN4();
+  }
+
+  function renderN4() {
+    const layer=document.getElementById('n4-content-layer');
+    if(!layer) return;
+    const v=_n4Variant, isFC=v.startsWith('fullcut');
+    const raw=(document.getElementById('n4-input')?.value||'').trim();
+    const fb=(document.getElementById('n4-fullcut-b')?.value||'').trim();
+    if(!isFC) _n4Contents[v]=raw; else _n4Contents[v]=fb;
+    const NUM="'MeituanDigitalType','PingFang SC',sans-serif";
+    const CH="'PingFang SC','Microsoft YaHei',sans-serif";
+    const C='#E63129',BW='font-weight:700;line-height:1';
+    let h='';
+    switch(v){
+      case 'text-only':
+        h=`<span style="${BW};font-size:70px;letter-spacing:6px;font-family:${CH};color:${C}">${raw||'免单'}</span>`;break;
+      case 'price-3digit':
+        h=`<div style="display:flex;align-items:flex-end;gap:0;color:${C}"><span style="${BW};font-size:38px;font-family:${NUM};padding-bottom:8px">¥</span><span style="${BW};font-size:100px;font-family:${NUM}">${raw||'200'}</span></div>`;break;
+      case 'price-2digit':
+        h=`<div style="display:flex;align-items:flex-end;gap:0;color:${C}"><span style="${BW};font-size:42px;font-family:${NUM};padding-bottom:10px">¥</span><span style="${BW};font-size:110px;font-family:${NUM}">${raw||'20'}</span></div>`;break;
+      case 'price-1digit':
+        h=`<div style="display:flex;align-items:flex-end;gap:0;color:${C}"><span style="${BW};font-size:46px;font-family:${NUM};padding-bottom:10px">¥</span><span style="${BW};font-size:116px;font-family:${NUM}">${raw||'8'}</span></div>`;break;
+      case 'discount-2digit':
+        h=`<div style="display:flex;align-items:baseline;gap:2px;color:${C}"><span style="${BW};font-size:78px;font-family:${NUM}">${raw||'88'}</span><span style="${BW};font-size:42px;font-family:${CH}">折</span></div>`;break;
+      case 'discount-1digit':
+        h=`<div style="display:flex;align-items:baseline;gap:2px;color:${C}"><span style="${BW};font-size:96px;font-family:${NUM}">${raw||'8'}</span><span style="${BW};font-size:50px;font-family:${CH}">折</span></div>`;break;
+      case 'fullcut-2digit':
+        h=`<div style="display:flex;align-items:flex-end;gap:0;color:${C}"><span style="${BW};font-size:38px;font-family:${CH};padding-bottom:8px">减</span><span style="${BW};font-size:100px;font-family:${NUM}">${fb||'80'}</span></div>`;break;
+      case 'fullcut-1digit':
+        h=`<div style="display:flex;align-items:flex-end;gap:0;color:${C}"><span style="${BW};font-size:46px;font-family:${CH};padding-bottom:10px">减</span><span style="${BW};font-size:116px;font-family:${NUM}">${fb||'8'}</span></div>`;break;
+    }
+    layer.innerHTML=h;
+  }
+
+  async function exportN4() {
+    const el=document.getElementById('asset-n4');
+    const btn=el.closest('.export-card').querySelector('.btn-export-single');
+    const name='N4_'+N4_VARIANTS[_n4Variant].label+'_240x156';
+    btn.classList.add('loading');btn.textContent='导出中…';showToast('正在渲染 '+name+'…');
+    try{
+      const c=await html2canvas(el,{scale:1,width:240,height:156,useCORS:true,allowTaint:true,backgroundColor:null,logging:false});
+      downloadCanvas(c,name+'.png');showToast('✅ 已导出：'+name+'.png');
+    }catch(e){showToast('❌ 导出失败：'+e.message);}
+    btn.classList.remove('loading');btn.textContent='⬇ 导出';
+  }
+
+  /* ===== N2 品牌Logo（独立） ===== */
+  let _n2Style = 'filled'; // 'filled' | 'stroke'
+  let _n2CurrentLogoUrl = '';
+
+  function selectN2Style(style) {
+    _n2Style = style;
+    document.querySelectorAll('[data-n2style]').forEach(b=>b.classList.toggle('active',b.dataset.n2style===style));
+    const filledRow=document.getElementById('n2-filled-row');
+    if(filledRow) filledRow.style.display = style==='filled'?'':'none';
+    const nm=document.getElementById('n2-card-name');
+    if(nm) nm.textContent = 'N2 — '+(style==='filled'?'有底色':'无底色+描边');
+    renderN2();
+  }
+
+  function renderN2() {
+    const circle=document.getElementById('n2-circle');
+    const fill=document.getElementById('n2-circle-fill');
+    const logoEl=document.getElementById('n2-logo-render');
+    if(!circle) return;
+    if(_n2Style==='filled'){
+      const color=document.getElementById('n2-bg-color')?.value||'#FFD21E';
+      circle.style.border='none';
+      if(fill) fill.style.background=color;
+    } else {
+      circle.style.border='2px solid #DBDDDE';
+      if(fill) fill.style.background='transparent';
+    }
+    if(logoEl){logoEl.src=_n2CurrentLogoUrl||'';logoEl.style.display=_n2CurrentLogoUrl?'':'none';}
+  }
+
+  function loadN2LogoForRender(input) {
+    const file=input.files&&input.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=e=>{ _n2CurrentLogoUrl=e.target.result; renderN2(); };
+    reader.readAsDataURL(file);
+  }
+
+  async function exportN2() {
+    const el=document.getElementById('asset-n2');
+    const btn=el.closest('.export-card').querySelector('.btn-export-single');
+    const name='N2_'+(_n2Style==='filled'?'有底色':'无底色描边')+'_240x156';
+    btn.classList.add('loading');btn.textContent='导出中…';showToast('正在渲染 '+name+'…');
+    try{
+      const c=await html2canvas(el,{scale:1,width:240,height:156,useCORS:true,allowTaint:true,backgroundColor:null,logging:false});
+      downloadCanvas(c,name+'.png');showToast('✅ 已导出：'+name+'.png');
+    }catch(e){showToast('❌ 导出失败：'+e.message);}
+    btn.classList.remove('loading');btn.textContent='⬇ 导出';
+  }
+
+  // N2 新素材库渲染（绑定新的 grid id）
+  function _renderN2LibraryNew() {
+    const grid=document.getElementById('n2-library-grid-new');
+    if(!grid) return;
+    const logos=_getN2Logos();
+    if(!logos.length){
+      grid.innerHTML='<div style="grid-column:1/-1;padding:24px 0;text-align:center;color:var(--text-3);font-size:12px">暂无素材，点击右上角「+ 添加 Logo」上传</div>';
+      return;
+    }
+    grid.innerHTML=logos.map(l=>`
+      <div class="n2-lib-item" onclick="_selectN2LibraryLogoNew('${l.id}')">
+        <div class="n2-lib-circle"><img src="${l.data}"></div>
+        <div class="n2-lib-name">${l.name}</div>
+        <button class="n2-lib-del" onclick="event.stopPropagation();_deleteN2LibraryLogo('${l.id}');_renderN2LibraryNew()">×</button>
+      </div>
+    `).join('');
+  }
+
+  function _selectN2LibraryLogoNew(id) {
+    const logo=_getN2Logos().find(l=>l.id===id);
+    if(!logo) return;
+    _n2CurrentLogoUrl=logo.data;
+    renderN2();
+    showToast('已选用：'+logo.name);
+  }
+
+
+  /* ===== N2/N4 价格标签（旧版，保留兼容） ===== */
   let _n2n4Variant = 'text-only';
   // 每个变体独立存储内容，互不干扰
   const _n2n4Contents = {
@@ -3930,6 +4258,7 @@
     logos.sort((a,b) => a.name.localeCompare(b.name, 'zh'));
     _saveN2Logos(logos);
     _renderN2Library();
+    _renderN2LibraryNew();
     showToast('✅ 已保存到素材库：' + name.trim());
   }
 
@@ -3945,6 +4274,7 @@
       logos.sort((a,b) => a.name.localeCompare(b.name, 'zh'));
       _saveN2Logos(logos);
       _renderN2Library();
+      _renderN2LibraryNew();
       showToast('✅ 已添加：' + name.trim());
     };
     reader.readAsDataURL(file);
@@ -3964,6 +4294,7 @@
     if (_getN2Logos().length === 0) {
       _saveN2Logos(_N2_DEFAULT_LOGOS.map(l => ({...l})));
       _renderN2Library();
+      _renderN2LibraryNew();
     }
   }
 
@@ -3984,6 +4315,7 @@
   function _deleteN2LibraryLogo(id) {
     _saveN2Logos(_getN2Logos().filter(l => l.id !== id));
     _renderN2Library();
+    _renderN2LibraryNew();
   }
 
   function _renderN2Library() {
