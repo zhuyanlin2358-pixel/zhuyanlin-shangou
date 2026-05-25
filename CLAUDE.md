@@ -229,3 +229,9 @@ d03b7a4  chore: 添加 .gitignore、impeccable skill
 - 预设动效：渐显 / 呼吸灯 / 上浮 / 左滑入 / 弹入 / 闪动（共6种）
 - 业务操作流：点「导出 GIF」→ 选效果 → 自动生成下载
 - 先在老虎机实现，验证后推广到其他组件
+
+### Figma MCP 接入（已配置，待验证）
+- 配置命令：`claude mcp add figma -s user -- npx -y figma-developer-mcp --figma-api-key <TOKEN>`
+- 已写入 `~/.claude.json`，重启 Claude Code 后生效
+- 用途：读取 Figma 设计稿 → 自动同步配色/文案/尺寸到工具配置参数
+- Token 安全：原 Token 已在对话中暴露，建议去 Figma Settings → Personal access tokens 重新生成后更新配置
