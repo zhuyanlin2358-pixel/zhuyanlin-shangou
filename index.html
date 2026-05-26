@@ -2308,9 +2308,9 @@
     <div class="export-grid" style="padding:0 40px 32px">
       <div class="export-card">
         <div class="card-preview" style="padding:32px;display:flex;align-items:center;justify-content:center">
-          <div id="asset-n2-filled" style="width:240px;height:156px;overflow:hidden;position:relative;flex-shrink:0;background:transparent">
+          <div id="asset-n2-filled" style="width:240px;height:156px;overflow:hidden;position:relative;flex-shrink:0;">
             <!-- logo 已是圆形，直接居中显示 -->
-            <img id="n2-filled-img" src="" alt="" style="position:absolute;top:2px;left:42px;width:152px;height:152px;object-fit:contain;display:none">
+            <img id="n2-filled-img" src="" alt="" style="position:absolute;top:2px;left:42px;width:152px;height:152px;border-radius:50%;object-fit:cover;display:none">
             <div id="n2-filled-placeholder" style="position:absolute;top:2px;left:42px;width:152px;height:152px;border-radius:50%;background:var(--bg-subtle);display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:11px;text-align:center">上传<br>带底色Logo</div>
           </div>
         </div>
@@ -2336,10 +2336,10 @@
     <div class="export-grid" style="padding:0 40px 32px">
       <div class="export-card">
         <div class="card-preview" style="padding:32px;display:flex;align-items:center;justify-content:center">
-          <div id="asset-n2-stroke" style="width:240px;height:156px;overflow:hidden;position:relative;flex-shrink:0;background:transparent">
+          <div id="asset-n2-stroke" style="width:240px;height:156px;overflow:hidden;position:relative;flex-shrink:0;">
             <!-- 圆形描边容器 -->
             <div style="position:absolute;top:2px;left:42px;width:152px;height:152px;border-radius:50%;border:2px solid #DBDDDE;box-sizing:border-box;display:flex;align-items:center;justify-content:center;overflow:hidden">
-              <img id="n2-stroke-img" src="" alt="" style="width:100%;height:100%;object-fit:contain;display:none">
+              <img id="n2-stroke-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none">
               <div id="n2-stroke-placeholder" style="font-size:11px;color:#bbb;text-align:center">上传<br>白色底Logo</div>
             </div>
           </div>
@@ -4120,7 +4120,7 @@
       const typeLabel = t === 'stroke' ? '无底色' : '有底色';
       const cirStyle = t === 'stroke' ? 'border:1.5px solid #DBDDDE;' : '';
       return `<div class="n2-lib-item" onclick="_selectN2LibraryLogoNew('${l.id}')">
-        <div class="n2-lib-circle" style="${cirStyle}"><img src="${l.data}"></div>
+        <div class="n2-lib-circle" style="${cirStyle};overflow:hidden"><img src="${l.data}" style="width:100%;height:100%;object-fit:cover"></div>
         <div class="n2-lib-name">${l.name}</div>
         <div class="n2-lib-type ${t}">${typeLabel}</div>
         <button class="n2-lib-del" onclick="event.stopPropagation();_deleteN2LibraryLogo('${l.id}');_renderN2Library();_renderN2LibraryNew()">×</button>
