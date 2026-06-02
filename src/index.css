@@ -13,6 +13,48 @@
   :root {
     --meituan-yellow: #F8B500;
     --meituan-red: #E63129;
+    /* 浅色主题 */
+    --bg: #ffffff;
+    --bg-subtle: #F8F8F8;
+    --border: #EBEBEB;
+    --text-1: #1A1A1A;
+    --text-2: #666666;
+    --text-3: #999999;
+    --accent: #FF3060;
+    --sidebar-bg: #F8F8F8;
+    --sidebar-border: #EBEBEB;
+    /* 老虎机 CSS 变量 */
+    --btn-active-from: #FF5518;
+    --btn-active-to: #FE10A8;
+    --btn-disabled-from: #FFBDD0;
+    --btn-disabled-to: #FFD0B0;
+    --slot-tint-from: #FFE1FA;
+    --slot-tint-to: #FFC9F3;
+    --slot-links-color: #8f8f8f;
+    --slot-title-color: #f00068;
+    --slot-remain-color: #666;
+  }
+
+  body.dark-mode {
+    --bg: #161B22;
+    --bg-subtle: rgba(255,255,255,0.05);
+    --border: rgba(255,255,255,0.09);
+    --text-1: rgba(255,255,255,0.92);
+    --text-2: rgba(255,255,255,0.62);
+    --text-3: rgba(255,255,255,0.38);
+    --sidebar-bg: #0C111B;
+    --sidebar-border: rgba(255,255,255,0.07);
+  }
+
+  body.has-preview {
+    --sidebar-bg: #0C111B;
+    --sidebar-border: rgba(255,255,255,0.07);
+    --bg: #0D1117;
+    --bg-subtle: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.08);
+    --text-1: rgba(255,255,255,0.92);
+    --text-2: rgba(255,255,255,0.62);
+    --text-3: rgba(255,255,255,0.38);
   }
 
   * {
