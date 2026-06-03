@@ -168,6 +168,18 @@ export interface SlotPreset {
   isDark: boolean
 }
 
+export type PrizeType = 'product-tag' | 'product-dashed' | 'amount' | 'thanks'
+
+export interface PrizeConfig {
+  type: PrizeType
+  imageUrl: string
+  tag: string        // 顶部标签文字
+  amount: string     // 金额数字（amount 类型）
+  unit: string       // 单位（元/折等）
+  bottomText: string // 底部文字
+  thanksText: string // 谢谢参与文字
+}
+
 export interface SlotConfig {
   bgColor: string
   bgImageUrl: string
@@ -185,9 +197,4 @@ export interface SlotConfig {
   emptyScale: number
   prizes: PrizeConfig[]
   tone: 'light' | 'dark'
-}
-
-export interface PrizeConfig {
-  imageUrl: string
-  name: string
 }

@@ -32,9 +32,9 @@ const INITIAL_CONFIG: SlotConfig = {
   emptyImageUrl: '',
   emptyScale: 100,
   prizes: [
-    { imageUrl: '', name: '奖品1' },
-    { imageUrl: '', name: '奖品2' },
-    { imageUrl: '', name: '奖品3' },
+    { type: 'product-tag',    imageUrl: '', tag: '无门槛优惠券', amount: '30', unit: '元', bottomText: '迪奥口红免单券', thanksText: '谢谢参与' },
+    { type: 'product-dashed', imageUrl: '', tag: '零食免单券',   amount: '30', unit: '元', bottomText: '零食免单券',     thanksText: '谢谢参与' },
+    { type: 'thanks',         imageUrl: '', tag: '',             amount: '30', unit: '元', bottomText: '零食盲盒券',     thanksText: '谢谢参与' },
   ],
   tone: 'light',
 }
@@ -44,7 +44,7 @@ interface SlotContextValue {
   activePreset: string | null
   setConfig: (patch: Partial<SlotConfig>) => void
   applyPreset: (key: string) => void
-  setPrize: (idx: number, patch: Partial<{ imageUrl: string; name: string }>) => void
+  setPrize: (idx: number, patch: Partial<import('@/types').PrizeConfig>) => void
 }
 
 const SlotContext = createContext<SlotContextValue | null>(null)
@@ -74,7 +74,7 @@ export function SlotProvider({ children }: { children: ReactNode }) {
     setActivePreset(key)
   }
 
-  const setPrize = (idx: number, patch: Partial<{ imageUrl: string; name: string }>) =>
+  const setPrize = (idx: number, patch: Partial<import('@/types').PrizeConfig>) =>
     setConfigState(prev => ({
       ...prev,
       prizes: prev.prizes.map((p, i) => i === idx ? { ...p, ...patch } : p),

@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { useSlot, SLOT_PRESETS } from '@/contexts/SlotContext'
+import type { PrizeType, PrizeConfig } from '@/types'
 
 const LIGHT_PRESETS = ['pink','rose','orange','yellow','green','teal','purple']
 const DARK_PRESETS  = ['dark-red','dark-orange','dark-green','dark-blue','dark-purple']
@@ -15,23 +16,6 @@ const BG_SWATCHES_LIGHT = ['#ffdceb','#ffdcdc','#d9f8ff','#efe9ff','#f9fed2','#f
 const BG_SWATCHES_PROMO = ['#ff1d5e','#ff0000','#ffdf04']
 const BG_SWATCHES_DARK  = ['#01732b','#331200','#000679']
 
-type PrizeType = 'product-tag' | 'product-dashed' | 'amount' | 'thanks'
-
-interface PrizeDetail {
-  type: PrizeType
-  tag: string
-  amount: string
-  unit: string
-  bottomText: string
-  thanksText: string
-  imageUrl: string
-}
-
-const DEFAULT_PRIZES: PrizeDetail[] = [
-  { type: 'product-tag',    tag: '无门槛优惠券', amount: '30', unit: '元', bottomText: '迪奥口红免单券', thanksText: '谢谢参与', imageUrl: '' },
-  { type: 'product-dashed', tag: '零食免单券',   amount: '30', unit: '元', bottomText: '零食免单券',     thanksText: '谢谢参与', imageUrl: '' },
-  { type: 'thanks',         tag: '无门槛优惠券', amount: '30', unit: '元', bottomText: '零食盲盒券',     thanksText: '谢谢参与', imageUrl: '' },
-]
 
 function PanelGroup({ title, badge, children, defaultOpen = false }: {
   title: string; badge?: string; children: React.ReactNode; defaultOpen?: boolean
@@ -54,11 +38,8 @@ function PanelGroup({ title, badge, children, defaultOpen = false }: {
 }
 
 export default function SlotPanel() {
-  const { config, activePreset, setConfig, applyPreset } = useSlot()
-  const [prizes, setPrizes] = useState<PrizeDetail[]>(DEFAULT_PRIZES)
-
-  const setPrize = (idx: number, patch: Partial<PrizeDetail>) =>
-    setPrizes(prev => prev.map((p, i) => i === idx ? { ...p, ...patch } : p))
+  const { config, activePreset, setConfig, applyPreset, setPrize } = useSlot()
+  const prizes = config.prizes
 
   const handlePrizeImg = (idx: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return
@@ -224,8 +205,8 @@ export default function SlotPanel() {
 
 function PrizeBlock({ idx, prize, onChange, onImgChange }: {
   idx: number
-  prize: PrizeDetail
-  onChange: (patch: Partial<PrizeDetail>) => void
+  prize: PrizeConfig
+  onChange: (patch: Partial<PrizeConfig>) => void
   onImgChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }) {
   const fileRef = useRef<HTMLInputElement>(null)
