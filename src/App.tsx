@@ -16,18 +16,21 @@ function MainContent() {
   const { page, currentComp, toast } = useApp()
 
   const PageContent = () => {
-    if (page === 'home') return <HomePage />
-    if (page === 'assets') return <AssetsPage />
+    if (page === 'home') return <div className="page-enter"><HomePage /></div>
+    if (page === 'assets') return <div className="page-enter"><AssetsPage /></div>
     if (page === 'comp') {
-      switch (currentComp) {
-        case 'slot':    return <SlotPage />
-        case 'n4':      return <N4Page />
-        case 'n2':      return <N2Page />
-        case 'yituosi': return <YituosiPage />
-        default:        return <GenericPage />
-      }
+      const inner = (() => {
+        switch (currentComp) {
+          case 'slot':    return <SlotPage />
+          case 'n4':      return <N4Page />
+          case 'n2':      return <N2Page />
+          case 'yituosi': return <YituosiPage />
+          default:        return <GenericPage />
+        }
+      })()
+      return <div key={currentComp} className="page-enter">{inner}</div>
     }
-    return <HomePage />
+    return <div className="page-enter"><HomePage /></div>
   }
 
   return (

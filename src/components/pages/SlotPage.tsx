@@ -1,4 +1,5 @@
 import { useRef, useEffect, useCallback } from 'react'
+import { gsap } from 'gsap'
 import { useSlot } from '@/contexts/SlotContext'
 import { useApp } from '@/contexts/AppContext'
 import { captureElement, downloadCanvas, downloadZip } from '@/utils/exportUtils'
@@ -91,24 +92,14 @@ function ExportCard({ children, label, sub, onExport }: {
   children: React.ReactNode; label: string; sub: string; onExport: () => void
 }) {
   return (
-    <div style={{ borderRadius:10, overflow:'hidden', border:'1px solid rgba(255,255,255,0.08)',
-      background:'rgba(255,255,255,0.04)' }}>
-      <div style={{ padding:'16px 16px 12px', display:'flex', justifyContent:'center',
-        background:'rgba(255,255,255,0.02)' }}>
-        {children}
-      </div>
-      <div style={{ padding:'10px 16px', display:'flex', alignItems:'center', justifyContent:'space-between',
-        borderTop:'1px solid rgba(255,255,255,0.07)' }}>
+    <div className="slot-export-card">
+      <div className="slot-card-preview">{children}</div>
+      <div className="slot-card-footer">
         <div>
-          <div style={{ fontSize:13, fontWeight:500, color:'rgba(255,255,255,0.8)' }}>{label}</div>
-          <div style={{ fontSize:12, color:'rgba(255,255,255,0.35)', marginTop:2 }}>{sub}</div>
+          <div className="slot-card-name">{label}</div>
+          <div className="slot-card-size">{sub}</div>
         </div>
-        <button onClick={onExport} style={{
-          padding:'5px 12px', fontSize:12, borderRadius:6, cursor:'pointer',
-          border:'1px solid rgba(255,255,255,0.15)', background:'rgba(255,255,255,0.06)',
-          color:'rgba(255,255,255,0.7)' }}>
-          ↓ 导出
-        </button>
+        <button className="slot-btn-export" onClick={onExport}>⬇ 导出</button>
       </div>
     </div>
   )
@@ -116,7 +107,7 @@ function ExportCard({ children, label, sub, onExport }: {
 
 function SectionTitle({ num, label, sub, badge }: { num:number; label:string; sub:string; badge?:string }) {
   return (
-    <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:16 }}>
+    <div className="slot-section-title" style={{ display:'flex', alignItems:'center', gap:12, marginBottom:16 }}>
       <div style={{ width:28, height:28, borderRadius:'50%', background:'#FF3060',
         display:'flex', alignItems:'center', justifyContent:'center',
         fontSize:12, fontWeight:700, color:'#fff', flexShrink:0 }}>{num}</div>
@@ -183,6 +174,8 @@ export default function SlotPage() {
 
   useEffect(() => {
     registerExportAll(doExportAll)
+    // 入场动画
+    gsap.from('.slot-section-title', { opacity:0, y:16, duration:0.4, stagger:0.07, delay:0.1, ease:'power2.out', clearProps:'all' })
     return () => registerExportAll(null)
   }, [doExportAll, registerExportAll])
 
