@@ -1,10 +1,92 @@
-import { useRef, useEffect, useCallback, useState } from 'react'
+import { useRef, useEffect, useCallback } from 'react'
 import { gsap } from 'gsap'
 import { useSlot } from '@/contexts/SlotContext'
 import { useApp } from '@/contexts/AppContext'
 import { captureElement, downloadCanvas, downloadZip } from '@/utils/exportUtils'
 import Stepper from '@/components/panels/Stepper'
-import type { PrizeConfig, PrizeType } from '@/types'
+import type { PrizeConfig, PrizeType, ImgTransform } from '@/types'
+
+/* ── 通用可拖拽图片容器 ── */
+interface DraggableWrapProps {
+  w: number; h: number
+  transform: ImgTransform
+  imageUrl: string
+  onTransformChange: (t: Partial<ImgTransform>) => void
+  onReset?: () => void
+  minScale?: number; maxScale?: number
+  checkered?: boolean
+  onClickEmpty?: () => void
+  emptyHint?: string
+  cursor?: string
+}
+
+function DraggableImageWrap({
+  w, h, transform, imageUrl, onTransformChange, minScale = 0.1, maxScale = 4,
+  checkered = true, onClickEmpty, emptyHint, cursor,
+}: DraggableWrapProps) {
+  const dragging = useRef(false)
+  const startPos = useRef({ x: 0, y: 0 })
+  const startOff = useRef({ x: 0, y: 0 })
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    if (!imageUrl) { onClickEmpty?.(); return }
+    dragging.current = true
+    startPos.current = { x: e.clientX, y: e.clientY }
+    startOff.current = { x: transform.offsetX, y: transform.offsetY }
+    e.preventDefault()
+  }
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (!dragging.current) return
+      onTransformChange({
+        offsetX: startOff.current.x + (e.clientX - startPos.current.x),
+        offsetY: startOff.current.y + (e.clientY - startPos.current.y),
+      })
+    }
+    const onUp = () => { dragging.current = false }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+    return () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp) }
+  }, [onTransformChange])
+
+  const onWheel = (e: React.WheelEvent) => {
+    if (!imageUrl) return
+    e.preventDefault()
+    const delta = e.deltaY > 0 ? -0.05 : 0.05
+    onTransformChange({ scale: Math.min(maxScale, Math.max(minScale, transform.scale + delta)) })
+  }
+
+  const bg = checkered
+    ? 'repeating-conic-gradient(#E8E8E8 0% 25%,#F8F8F8 0% 50%) 0 0/8px 8px'
+    : undefined
+
+  return (
+    <div
+      style={{ width: w, height: h, position: 'relative', overflow: 'hidden', background: bg, cursor: imageUrl ? (cursor || 'grab') : 'pointer', flexShrink: 0 }}
+      onMouseDown={onMouseDown}
+      onWheel={onWheel}
+    >
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          draggable={false}
+          style={{
+            position: 'absolute', top: '50%', left: '50%',
+            transform: `translate(calc(-50% + ${transform.offsetX}px), calc(-50% + ${transform.offsetY}px)) scale(${transform.scale})`,
+            maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto',
+            objectFit: 'contain', userSelect: 'none', pointerEvents: 'none',
+          }}
+        />
+      ) : (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 4 }}>
+          <div style={{ fontSize: 18, opacity: 0.3 }}>+</div>
+          {emptyHint && <div style={{ fontSize: 9, color: '#888', textAlign: 'center', lineHeight: 1.4 }}>{emptyHint}</div>}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const PF = "'PingFang SC','Microsoft YaHei',sans-serif"
 
@@ -142,58 +224,88 @@ function SectionTitle({ num, label, sub, badge, id }: { num: number; label: stri
   )
 }
 
-/* ── Prize editor card（奖品图区域，可点击上传） ── */
+const PRIZE_TYPE_LABELS: Record<PrizeType, string> = {
+  'product-tag': '产品图+标签', 'product-dashed': '产品图+虚线',
+  'amount': '金额券', 'thanks': '谢谢参与',
+}
+
+/* ── Prize editor card（奖品图区域，可拖拽/缩放/上传） ── */
 function PrizeEditorCard({ idx, prize, onExport }: {
   idx: number; prize: PrizeConfig; onExport: () => void
 }) {
-  const { setPrize } = useSlot()
+  const { setPrize, setPrizeTransform, resetPrizeTransform, config } = useSlot()
   const fileRef = useRef<HTMLInputElement>(null)
-  const previewRef = useRef<HTMLDivElement>(null)
-  const [hasImage, setHasImage] = useState(!!prize.imageUrl)
-
-  const PRIZE_TYPE_LABELS: Record<PrizeType, string> = {
-    'product-tag': '产品图+标签', 'product-dashed': '产品图+虚线',
-    'amount': '金额券', 'thanks': '谢谢参与',
-  }
+  const transform = config.prizeTransforms[idx] ?? { offsetX: 0, offsetY: 0, scale: 1 }
+  const showImg = prize.type === 'product-tag' || prize.type === 'product-dashed'
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return
-    const url = URL.createObjectURL(file)
-    setPrize(idx, { imageUrl: url })
-    setHasImage(true)
+    setPrize(idx, { imageUrl: URL.createObjectURL(file) })
+    resetPrizeTransform(idx)
   }
 
-  const handleClickImg = () => {
-    if (prize.type === 'product-tag' || prize.type === 'product-dashed') {
-      fileRef.current?.click()
-    }
-  }
+  // 渲染奖品卡外壳，图片区用拖拽组件替换
+  const isDashed = prize.type === 'product-dashed'
+  const isThanks = prize.type === 'thanks'
+  const isAmount = prize.type === 'amount'
 
-  const showImg = prize.type === 'product-tag' || prize.type === 'product-dashed'
+  const CARD_BG = isThanks ? '#FFD060' : isDashed ? '#FFF4D0' : '#FFE9B0'
+  const CARD_BORDER = isThanks ? '1px solid rgba(180,120,0,0.2)' : isDashed ? '1.5px dashed #F0A830' : '1px solid rgba(180,120,0,0.15)'
 
   return (
-    <div style={{
-      background: 'rgba(255,255,255,0.04)', borderRadius: 10,
-      border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden',
-      transition: 'background 0.2s, border-color 0.2s',
-    }}>
-      {/* 棋盘格预览区 */}
-      <div ref={previewRef} style={{
-        background: 'repeating-conic-gradient(#F0F0F0 0% 25%,#FAFAFA 0% 50%) 0 0/16px 16px',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, minHeight: 100,
-        position: 'relative', cursor: showImg ? 'pointer' : 'default',
-      }} onClick={showImg ? handleClickImg : undefined}>
-        <PulseHint visible={showImg && !hasImage} />
+    <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+      {/* 棋盘格预览区（含奖品卡） */}
+      <div style={{ background: 'repeating-conic-gradient(#F0F0F0 0% 25%,#FAFAFA 0% 50%) 0 0/16px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, position: 'relative' }}>
+        <PulseHint visible={showImg && !prize.imageUrl} />
+
+        {/* 奖品卡外壳 */}
         <div style={{ width: 124, height: 124, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <PrizeCard prize={prize} onClick={showImg ? handleClickImg : undefined} />
+          <div style={isThanks
+            ? { width: 111, height: 111, borderRadius: '50%', background: CARD_BG, border: CARD_BORDER, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+            : { width: 111, height: 119, borderRadius: 14, background: CARD_BG, border: CARD_BORDER, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', fontFamily: PF }
+          }>
+            {prize.type === 'product-tag' && (
+              <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 81, minHeight: 18, background: '#fff', borderRadius: '0 0 6px 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2px 6px', zIndex: 5 }}>
+                <span style={{ fontSize: 12, color: '#812D16', lineHeight: 1.3, whiteSpace: 'nowrap' }}>{prize.tag}</span>
+              </div>
+            )}
+
+            {showImg && (
+              <div style={{ position: 'absolute', bottom: 31, left: '50%', transform: 'translateX(-50%)', width: isDashed ? 77 : 72, height: isDashed ? 78 : 72, borderRadius: 6, overflow: 'hidden', zIndex: 2 }}>
+                <DraggableImageWrap
+                  w={isDashed ? 77 : 72} h={isDashed ? 78 : 72}
+                  transform={transform}
+                  imageUrl={prize.imageUrl}
+                  onTransformChange={t => setPrizeTransform(idx, t)}
+                  onClickEmpty={() => fileRef.current?.click()}
+                  emptyHint={'点击\n上传图片'}
+                  minScale={0.1} maxScale={4}
+                />
+              </div>
+            )}
+            {isAmount && (
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-58%)', display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                <span style={{ fontSize: 60, fontWeight: 700, color: '#812D16', fontFamily: "'MeituanDigitalType',sans-serif", lineHeight: 1, letterSpacing: -4 }}>{prize.amount || '30'}</span>
+                <span style={{ fontSize: 16, fontWeight: 600, color: '#812D16' }}>{prize.unit || '元'}</span>
+              </div>
+            )}
+            {isThanks && (
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: 22, fontWeight: 700, color: '#7B3A00', textAlign: 'center', whiteSpace: 'nowrap' }}>{prize.thanksText || '谢谢参与'}</div>
+            )}
+            {!isThanks && (
+              <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, textAlign: 'center', fontSize: 13, color: '#7B3A00', fontWeight: 500, lineHeight: 1.2, whiteSpace: 'nowrap' }}>{prize.bottomText}</div>
+            )}
+          </div>
         </div>
+
         {showImg && (
           <div style={{ position: 'absolute', bottom: 6, left: 0, right: 0, textAlign: 'center', fontSize: 10, color: '#aaa' }}>
-            {hasImage ? '点击更换图片' : '点击上传商品图'}
+            {prize.imageUrl ? '拖动调整位置 · 滚轮缩放' : '点击棋盘格区域上传图片'}
           </div>
         )}
       </div>
-      {/* 卡片底部 */}
+
+      {/* 底部信息行 */}
       <div style={{ padding: '10px 14px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
         <div>
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', background: 'rgba(255,48,96,0.08)', borderRadius: 4, padding: '1px 6px', display: 'inline-block', marginBottom: 2 }}>
@@ -204,7 +316,14 @@ function PrizeEditorCard({ idx, prize, onExport }: {
           </div>
           <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>124 × 124 px · PNG</div>
         </div>
-        <button className="slot-btn-export" onClick={onExport}>⬇ 导出</button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
+          {showImg && (
+            <button onClick={() => fileRef.current?.click()} className="slot-btn-export" style={{ fontSize: 11, padding: '3px 8px', height: 24 }}>
+              📂 上传
+            </button>
+          )}
+          <button className="slot-btn-export" onClick={onExport}>⬇ 导出</button>
+        </div>
       </div>
       <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
     </div>
@@ -213,7 +332,7 @@ function PrizeEditorCard({ idx, prize, onExport }: {
 
 /* ── 主页面 ── */
 export default function SlotPage() {
-  const { config } = useSlot()
+  const { config, setEmptyTransform } = useSlot()
   const { showToast, registerExportAll } = useApp()
 
   // 监听 toast 事件
@@ -324,14 +443,24 @@ export default function SlotPage() {
           <SectionTitle num={3} label="老虎机空态页" sub="854 × 284 px @2x" badge="素材 3" />
           <ExportCard label="老虎机空态页" sub="854 × 284 px · PNG" onExport={() => ex(refs.empty, 'slot_3_空态页_854x284', 854, 284)}>
             <div ref={refs.empty} style={{ width: 427, height: 142, borderRadius: 12, background: '#fff', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-              <div style={{ width: 239, height: 96, position: 'relative', overflow: 'hidden', flexShrink: 0, background: 'repeating-conic-gradient(#E8E8E8 0% 25%,#F8F8F8 0% 50%) 0 0/8px 8px' }}>
-                {config.emptyImageUrl && (
-                  <img src={config.emptyImageUrl} style={{ position: 'absolute', top: '50%', left: '50%', transform: `translate(-50%,-50%) scale(${config.emptyScale/100})`, maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                )}
-              </div>
+              {/* 空态插图：可拖拽 + 滚轮缩放 */}
+              <DraggableImageWrap
+                w={239} h={96}
+                transform={config.emptyTransform}
+                imageUrl={config.emptyImageUrl}
+                onTransformChange={t => setEmptyTransform(t)}
+                emptyHint="点击上传\n自定义插图"
+                minScale={0} maxScale={2}
+                cursor="grab"
+              />
               <div style={{ marginTop: 2, fontFamily: PF, fontSize: 13, color: '#999', textAlign: 'center', whiteSpace: 'nowrap' }}>{config.emptyText}</div>
             </div>
           </ExportCard>
+          {config.emptyImageUrl && (
+            <div style={{ marginTop: 6, fontSize: 11, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
+              拖动插图调整位置 · 滚轮调整大小 · 在左侧面板替换图片
+            </div>
+          )}
         </div>
 
         {/* ── 4 按钮（两款）── */}

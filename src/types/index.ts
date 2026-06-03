@@ -180,6 +180,12 @@ export interface PrizeConfig {
   thanksText: string // 谢谢参与文字
 }
 
+export interface ImgTransform {
+  offsetX: number
+  offsetY: number
+  scale: number
+}
+
 export interface SlotConfig {
   bgColor: string
   bgImageUrl: string
@@ -194,7 +200,8 @@ export interface SlotConfig {
   titleText: string
   emptyText: string
   emptyImageUrl: string
-  emptyScale: number
+  emptyTransform: ImgTransform
   prizes: PrizeConfig[]
+  prizeTransforms: ImgTransform[]
   tone: 'light' | 'dark'
 }

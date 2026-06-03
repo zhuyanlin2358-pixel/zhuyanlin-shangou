@@ -2,6 +2,61 @@ import { useState, useRef } from 'react'
 import { useSlot, SLOT_PRESETS } from '@/contexts/SlotContext'
 import type { PrizeType, PrizeConfig } from '@/types'
 
+function EmptySection() {
+  const { config, setConfig, setEmptyTransform, resetEmptyTransform } = useSlot()
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [fileName, setFileName] = useState('当前：默认插图')
+  const scale = Math.round(config.emptyTransform.scale * 100)
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; if (!file) return
+    setConfig({ emptyImageUrl: URL.createObjectURL(file) })
+    resetEmptyTransform()
+    setFileName('当前：' + file.name)
+  }
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <label className="text-xs block mb-1" style={{ color: 'var(--text-2)' }}>空态文案</label>
+        <input type="text" value={config.emptyText}
+          onChange={e => setConfig({ emptyText: e.target.value })}
+          className="w-full px-2.5 py-1.5 text-xs rounded-lg outline-none"
+          style={{ border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text-1)' }} />
+      </div>
+      <div>
+        <div className="text-xs font-medium mb-1" style={{ color: 'var(--text-2)' }}>替换空态插图</div>
+        <button
+          onClick={() => fileRef.current?.click()}
+          className="w-full py-1.5 text-xs rounded-lg border transition-colors"
+          style={{ borderColor: 'var(--border)', color: 'var(--text-2)', background: 'var(--bg)' }}
+        >
+          选择 PNG 图片
+        </button>
+        <div className="text-xs mt-1" style={{ color: 'var(--text-3)' }}>{fileName}</div>
+        <div className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>拖动调整位置，滚轮或滑块调整大小</div>
+        <input ref={fileRef} type="file" accept="image/png,image/*" className="hidden" onChange={handleFile} />
+      </div>
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-xs" style={{ color: 'var(--text-2)' }}>插图大小</label>
+          <span className="text-xs" style={{ color: 'var(--text-3)' }}>{scale}%</span>
+        </div>
+        <input type="range" min={0} max={200} value={scale}
+          onChange={e => setEmptyTransform({ scale: Number(e.target.value) / 100 })}
+          className="w-full" />
+      </div>
+      <button
+        onClick={resetEmptyTransform}
+        className="w-full py-1.5 text-xs rounded-lg border transition-colors"
+        style={{ borderColor: 'var(--border)', color: 'var(--text-3)', background: 'transparent' }}
+      >
+        ↺ 重置位置与大小
+      </button>
+    </div>
+  )
+}
+
 const LIGHT_PRESETS = ['pink','rose','orange','yellow','green','teal','purple']
 const DARK_PRESETS  = ['dark-red','dark-orange','dark-green','dark-blue','dark-purple']
 
@@ -169,24 +224,7 @@ export default function SlotPanel() {
 
       {/* 空态页 */}
       <PanelGroup title="空态页设置" badge="素材 3">
-        <div className="space-y-3">
-          <div>
-            <label className="text-xs block mb-1" style={{ color: 'var(--text-2)' }}>空态文案</label>
-            <input type="text" value={config.emptyText}
-              onChange={e => setConfig({ emptyText: e.target.value })}
-              className="w-full px-2.5 py-1.5 text-xs rounded-lg outline-none"
-              style={{ border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text-1)' }} />
-          </div>
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-xs" style={{ color: 'var(--text-2)' }}>插图大小</label>
-              <span className="text-xs" style={{ color: 'var(--text-3)' }}>{config.emptyScale}%</span>
-            </div>
-            <input type="range" min={0} max={200} value={config.emptyScale}
-              onChange={e => setConfig({ emptyScale: Number(e.target.value) })}
-              className="w-full" />
-          </div>
-        </div>
+        <EmptySection />
       </PanelGroup>
 
       {/* 奖品图设置 */}

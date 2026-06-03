@@ -30,11 +30,16 @@ const INITIAL_CONFIG: SlotConfig = {
   titleText: '惊喜抽奖',
   emptyText: '活动太火爆，请稍后重试...',
   emptyImageUrl: '/empty-illus.png',
-  emptyScale: 100,
+  emptyTransform: { offsetX: 0, offsetY: 0, scale: 1 },
   prizes: [
     { type: 'product-tag',    imageUrl: '/prize-1.png', tag: '无门槛优惠券', amount: '30', unit: '元', bottomText: '迪奥口红免单券', thanksText: '谢谢参与' },
     { type: 'product-dashed', imageUrl: '/prize-2.png', tag: '零食免单券',   amount: '30', unit: '元', bottomText: '零食免单券',     thanksText: '谢谢参与' },
     { type: 'thanks',         imageUrl: '/prize-3.png', tag: '',             amount: '30', unit: '元', bottomText: '零食盲盒券',     thanksText: '谢谢参与' },
+  ],
+  prizeTransforms: [
+    { offsetX: 0, offsetY: 0, scale: 1 },
+    { offsetX: 0, offsetY: 0, scale: 1 },
+    { offsetX: 0, offsetY: 0, scale: 1 },
   ],
   tone: 'light',
 }
@@ -47,6 +52,10 @@ interface SlotContextValue {
   applyPreset: (key: string) => void
   setPrize: (idx: number, patch: Partial<import('@/types').PrizeConfig>) => void
   setActiveStep: (n: number) => void
+  setEmptyTransform: (t: Partial<import('@/types').ImgTransform>) => void
+  setPrizeTransform: (idx: number, t: Partial<import('@/types').ImgTransform>) => void
+  resetEmptyTransform: () => void
+  resetPrizeTransform: (idx: number) => void
 }
 
 const SlotContext = createContext<SlotContextValue | null>(null)
@@ -83,8 +92,26 @@ export function SlotProvider({ children }: { children: ReactNode }) {
       prizes: prev.prizes.map((p, i) => i === idx ? { ...p, ...patch } : p),
     }))
 
+  const setEmptyTransform = (t: Partial<import('@/types').ImgTransform>) =>
+    setConfigState(prev => ({ ...prev, emptyTransform: { ...prev.emptyTransform, ...t } }))
+
+  const setPrizeTransform = (idx: number, t: Partial<import('@/types').ImgTransform>) =>
+    setConfigState(prev => ({
+      ...prev,
+      prizeTransforms: prev.prizeTransforms.map((tr, i) => i === idx ? { ...tr, ...t } : tr),
+    }))
+
+  const resetEmptyTransform = () =>
+    setConfigState(prev => ({ ...prev, emptyTransform: { offsetX: 0, offsetY: 0, scale: 1 } }))
+
+  const resetPrizeTransform = (idx: number) =>
+    setConfigState(prev => ({
+      ...prev,
+      prizeTransforms: prev.prizeTransforms.map((tr, i) => i === idx ? { offsetX: 0, offsetY: 0, scale: 1 } : tr),
+    }))
+
   return (
-    <SlotContext.Provider value={{ config, activePreset, activeStep, setConfig, applyPreset, setPrize, setActiveStep }}>
+    <SlotContext.Provider value={{ config, activePreset, activeStep, setConfig, applyPreset, setPrize, setActiveStep, setEmptyTransform, setPrizeTransform, resetEmptyTransform, resetPrizeTransform }}>
       {children}
     </SlotContext.Provider>
   )
