@@ -159,54 +159,96 @@ function PulseHint({ visible }: { visible: boolean }) {
   )
 }
 
-/* ── 奖品卡片 ── */
-function PrizeCard({ prize, onClick }: { prize: PrizeConfig; onClick?: () => void }) {
-  const isDashed = prize.type === 'product-dashed'
-  const isThanks = prize.type === 'thanks'
-  const isAmount = prize.type === 'amount'
+/* ── 奖品卡片（带 transform，Section1/导出/预览三处共用）── */
+export function PrizeCardFull({
+  prize, transform, onClick,
+}: {
+  prize: PrizeConfig
+  transform?: ImgTransform   // 商品图位移+缩放，不传则居中 scale(1)
+  onClick?: () => void
+}) {
+  const isDashed  = prize.type === 'product-dashed'
+  const isThanks  = prize.type === 'thanks'
+  const isAmount  = prize.type === 'amount'
   const showImg   = prize.type === 'product-tag' || isDashed
   const showBottom = !isThanks
+  const imgW = isDashed ? 77 : 72
+  const imgH = isDashed ? 78 : 72
+  const tr = transform ?? { offsetX: 0, offsetY: 0, scale: 1 }
 
   const cardStyle: React.CSSProperties = isThanks
-    ? { width: 111, height: 111, borderRadius: '50%', background: '#FFD060', border: '1px solid rgba(180,120,0,0.2)', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'center' }
-    : { width: 111, height: 119, borderRadius: 14, background: isDashed ? '#FFF4D0' : '#FFE9B0', border: isDashed ? '1.5px dashed #F0A830' : '1px solid rgba(180,120,0,0.15)', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', fontFamily: PF }
+    ? { width: 111, height: 111, borderRadius: '50%', background: '#FFD060',
+        border: '1px solid rgba(180,120,0,0.2)', position: 'relative', overflow: 'hidden',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'center' }
+    : { width: 111, height: 119, borderRadius: 14,
+        background: isDashed ? '#FFF4D0' : '#FFE9B0',
+        border: isDashed ? '1.5px dashed #F0A830' : '1px solid rgba(180,120,0,0.15)',
+        position: 'relative', overflow: 'hidden',
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        fontFamily: PF }
 
   return (
     <div style={{ width: 124, height: 124, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
       <div style={cardStyle}>
+        {/* 顶部标签（product-tag 类型） */}
         {prize.type === 'product-tag' && (
-          <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 81, minHeight: 18, background: '#fff', borderRadius: '0 0 6px 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2px 6px', zIndex: 2 }}>
-            <span style={{ fontSize: 12, color: '#812D16', lineHeight: 1.3, whiteSpace: 'nowrap' }}>{prize.tag || '无门槛优惠券'}</span>
+          <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+            width: 81, minHeight: 18, background: '#fff', borderRadius: '0 0 6px 6px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '2px 6px', zIndex: 2 }}>
+            <span style={{ fontSize: 12, color: '#812D16', lineHeight: 1.3, whiteSpace: 'nowrap' }}>
+              {prize.tag || '无门槛优惠券'}
+            </span>
           </div>
         )}
+        {/* 商品图区域（product-tag / product-dashed） */}
         {showImg && (
           <div
             onClick={onClick}
             style={{
-              position: 'absolute', bottom: 31, left: '50%', transform: 'translateX(-50%)',
-              width: isDashed ? 77 : 72, height: isDashed ? 78 : 72,
+              position: 'absolute', bottom: 31, left: '50%',
+              transform: 'translateX(-50%)',
+              width: imgW, height: imgH,
               background: 'repeating-conic-gradient(#E8E8E8 0% 25%,#F8F8F8 0% 50%) 0 0/8px 8px',
-              borderRadius: 6, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: onClick ? 'pointer' : 'default',
+              borderRadius: 6, overflow: 'hidden',
+              cursor: onClick ? 'grab' : 'default',
             }}
           >
             {prize.imageUrl
-              ? <img src={prize.imageUrl} style={{ maxWidth: '80%', maxHeight: '80%', objectFit: 'contain' }} />
-              : <span style={{ fontSize: 9, color: '#888', textAlign: 'center', lineHeight: 1.4, pointerEvents: 'none' }}>点击左侧<br/>上传图片</span>
+              ? <img
+                  src={prize.imageUrl}
+                  draggable={false}
+                  style={{
+                    position: 'absolute', top: '50%', left: '50%',
+                    // 应用 prizeTransforms：对齐原版 translate(calc(-50%+offsetX), ...) scale(s)
+                    transform: `translate(calc(-50% + ${tr.offsetX}px), calc(-50% + ${tr.offsetY}px)) scale(${tr.scale})`,
+                    maxWidth: '80%', maxHeight: '80%',
+                    width: 'auto', height: 'auto',
+                    objectFit: 'contain', userSelect: 'none', display: 'block',
+                  }}
+                />
+              : <span style={{ fontSize: 9, color: '#888', textAlign: 'center', lineHeight: 1.4, pointerEvents: 'none' }}>
+                  {onClick ? '点击\n上传图片' : ''}
+                </span>
             }
           </div>
         )}
+        {/* 金额券 */}
         {isAmount && (
           <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-58%)', display: 'flex', alignItems: 'baseline', gap: 1 }}>
-            <span style={{ fontSize: 60, fontWeight: 700, color: '#812D16', fontFamily: "'MeituanDigitalType',sans-serif", lineHeight: 1, letterSpacing: -4 }}>{prize.amount || '30'}</span>
+            <span style={{ fontSize: 60, fontWeight: 700, color: '#812D16', fontFamily: "'MeituanDigitalType',sans-serif", lineHeight: 1, letterSpacing: -4 }}>
+              {prize.amount || '30'}
+            </span>
             <span style={{ fontSize: 16, fontWeight: 600, color: '#812D16' }}>{prize.unit || '元'}</span>
           </div>
         )}
+        {/* 谢谢参与 */}
         {isThanks && (
           <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: 22, fontWeight: 700, color: '#7B3A00', textAlign: 'center', whiteSpace: 'nowrap' }}>
             {prize.thanksText || '谢谢参与'}
           </div>
         )}
+        {/* 底部文字 */}
         {showBottom && (
           <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, textAlign: 'center', fontSize: 13, color: '#7B3A00', fontWeight: 500, lineHeight: 1.2, whiteSpace: 'nowrap' }}>
             {prize.bottomText}
@@ -452,7 +494,9 @@ export default function SlotPage() {
               </div>
               <div style={{ position: 'absolute', left: 43, top: 76, width: 441, height: 142, borderRadius: 20, background: '#fff', border: '1px solid rgba(0,0,0,0.1)', zIndex: 1 }} />
               <div style={{ position: 'absolute', left: 43, top: 76, width: 441, height: 142, zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '0 12px' }}>
-                {config.prizes.map((p, i) => <PrizeCard key={i} prize={p} />)}
+                {config.prizes.map((p, i) => (
+                  <PrizeCardFull key={i} prize={p} transform={config.prizeTransforms[i]} />
+                ))}
               </div>
               <div style={{ position: 'absolute', right: 46, top: 106, width: 194, height: 80, borderRadius: 40, zIndex: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(90deg,var(--btn-active-from),var(--btn-active-to))`, fontSize: 30, color: '#fff', fontFamily: PF }}>立即抽奖</div>
               <div style={{ position: 'absolute', right: 46, bottom: 14, fontSize: 14, color: 'var(--slot-links-color)', textAlign: 'center', width: 194, zIndex: 3 }}>还剩 999 次抽奖机会</div>
@@ -535,11 +579,11 @@ export default function SlotPage() {
               />
             ))}
           </div>
-          {/* 隐藏导出用 canvas */}
+          {/* 隐藏导出用 canvas — 应用 prizeTransforms */}
           <div style={{ position: 'absolute', left: -9999, top: -9999 }}>
             {config.prizes.map((p, i) => (
-              <div key={i} ref={refs.prize[i]} style={{ width: 124, height: 124, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.85)' }}>
-                <PrizeCard prize={p} />
+              <div key={i} ref={refs.prize[i]} style={{ width: 124, height: 124, background: 'transparent' }}>
+                <PrizeCardFull prize={p} transform={config.prizeTransforms[i]} />
               </div>
             ))}
           </div>

@@ -32,9 +32,9 @@ const INITIAL_CONFIG: SlotConfig = {
   emptyImageUrl: '/empty-illus.png',
   emptyTransform: { offsetX: 0, offsetY: 0, scale: 1 },
   prizes: [
-    { type: 'product-tag',    imageUrl: '/prize-1.png', tag: '无门槛优惠券', amount: '30', unit: '元', bottomText: '迪奥口红免单券', thanksText: '谢谢参与' },
-    { type: 'product-dashed', imageUrl: '/prize-2.png', tag: '零食免单券',   amount: '30', unit: '元', bottomText: '零食免单券',     thanksText: '谢谢参与' },
-    { type: 'thanks',         imageUrl: '/prize-3.png', tag: '',             amount: '30', unit: '元', bottomText: '零食盲盒券',     thanksText: '谢谢参与' },
+    { type: 'product-tag',    imageUrl: '', tag: '无门槛优惠券', amount: '30', unit: '元', bottomText: '迪奥口红免单券', thanksText: '谢谢参与' },
+    { type: 'product-dashed', imageUrl: '', tag: '零食免单券',   amount: '30', unit: '元', bottomText: '零食免单券',     thanksText: '谢谢参与' },
+    { type: 'thanks',         imageUrl: '', tag: '',             amount: '30', unit: '元', bottomText: '零食盲盒券',     thanksText: '谢谢参与' },
   ],
   prizeTransforms: [
     { offsetX: 0, offsetY: 0, scale: 1 },
