@@ -24,38 +24,66 @@ function DraggableImageWrap({
   w, h, transform, imageUrl, onTransformChange, minScale = 0.1, maxScale = 4,
   checkered = true, onClickEmpty, emptyHint, cursor,
 }: DraggableWrapProps) {
+  const wrapRef  = useRef<HTMLDivElement>(null)
   const dragging = useRef(false)
   const startPos = useRef({ x: 0, y: 0 })
   const startOff = useRef({ x: 0, y: 0 })
+  // 用 ref 缓存最新 transform，避免闭包陈旧值
+  const transformRef  = useRef(transform)
+  const onChangeRef   = useRef(onTransformChange)
+  const minScaleRef   = useRef(minScale)
+  const maxScaleRef   = useRef(maxScale)
+  const imageUrlRef   = useRef(imageUrl)
+  useEffect(() => { transformRef.current  = transform },         [transform])
+  useEffect(() => { onChangeRef.current   = onTransformChange }, [onTransformChange])
+  useEffect(() => { minScaleRef.current   = minScale },          [minScale])
+  useEffect(() => { maxScaleRef.current   = maxScale },          [maxScale])
+  useEffect(() => { imageUrlRef.current   = imageUrl },          [imageUrl])
 
-  const onMouseDown = (e: React.MouseEvent) => {
-    if (!imageUrl) { onClickEmpty?.(); return }
+  // mousedown → 开始拖拽
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (!imageUrlRef.current) { onClickEmpty?.(); return }
     dragging.current = true
     startPos.current = { x: e.clientX, y: e.clientY }
-    startOff.current = { x: transform.offsetX, y: transform.offsetY }
+    startOff.current = { x: transformRef.current.offsetX, y: transformRef.current.offsetY }
     e.preventDefault()
-  }
+  }, [onClickEmpty])
 
+  // mousemove / mouseup 全局绑定
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       if (!dragging.current) return
-      onTransformChange({
+      onChangeRef.current({
         offsetX: startOff.current.x + (e.clientX - startPos.current.x),
         offsetY: startOff.current.y + (e.clientY - startPos.current.y),
       })
     }
     const onUp = () => { dragging.current = false }
     document.addEventListener('mousemove', onMove)
-    document.addEventListener('mouseup', onUp)
-    return () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp) }
-  }, [onTransformChange])
+    document.addEventListener('mouseup',   onUp)
+    return () => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup',   onUp)
+    }
+  }, [])   // 只绑定一次，通过 ref 读最新值
 
-  const onWheel = (e: React.WheelEvent) => {
-    if (!imageUrl) return
-    e.preventDefault()
-    const delta = e.deltaY > 0 ? -0.05 : 0.05
-    onTransformChange({ scale: Math.min(maxScale, Math.max(minScale, transform.scale + delta)) })
-  }
+  // wheel：必须 passive:false 才能 preventDefault，阻止页面滚动
+  useEffect(() => {
+    const el = wrapRef.current
+    if (!el) return
+    const onWheel = (e: WheelEvent) => {
+      if (!imageUrlRef.current) return
+      e.preventDefault()   // 阻止页面滚动
+      e.stopPropagation()
+      const delta = e.deltaY > 0 ? -0.08 : 0.08
+      const cur   = transformRef.current.scale
+      onChangeRef.current({
+        scale: Math.min(maxScaleRef.current, Math.max(minScaleRef.current, cur + delta)),
+      })
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [])   // 只绑定一次
 
   const bg = checkered
     ? 'repeating-conic-gradient(#E8E8E8 0% 25%,#F8F8F8 0% 50%) 0 0/8px 8px'
@@ -63,9 +91,13 @@ function DraggableImageWrap({
 
   return (
     <div
-      style={{ width: w, height: h, position: 'relative', overflow: 'hidden', background: bg, cursor: imageUrl ? (cursor || 'grab') : 'pointer', flexShrink: 0 }}
-      onMouseDown={onMouseDown}
-      onWheel={onWheel}
+      ref={wrapRef}
+      style={{
+        width: w, height: h, position: 'relative', overflow: 'hidden',
+        background: bg, flexShrink: 0,
+        cursor: imageUrl ? (dragging.current ? 'grabbing' : (cursor || 'grab')) : 'pointer',
+      }}
+      onMouseDown={handleMouseDown}
     >
       {imageUrl ? (
         <img
@@ -76,6 +108,7 @@ function DraggableImageWrap({
             transform: `translate(calc(-50% + ${transform.offsetX}px), calc(-50% + ${transform.offsetY}px)) scale(${transform.scale})`,
             maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto',
             objectFit: 'contain', userSelect: 'none', pointerEvents: 'none',
+            display: 'block',
           }}
         />
       ) : (
