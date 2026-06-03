@@ -77,7 +77,7 @@ export default function N4Page() {
   }
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-8">
+    <div className="flex flex-col items-center justify-center p-8" style={{ minHeight: 'calc(100vh - 56px)' }}>
       <div className="flex flex-col items-center gap-5">
         <div className="text-xs" style={{ color: 'var(--text-3)' }}>
           预览 · 240 × 156 px · 透明底
