@@ -4,6 +4,7 @@ import { N2Provider } from '@/contexts/N2Context'
 import { SlotProvider } from '@/contexts/SlotContext'
 import Sidebar from '@/components/layout/Sidebar'
 import TopBar from '@/components/layout/TopBar'
+import PreviewPanel from '@/components/layout/PreviewPanel'
 import HomePage from '@/components/pages/HomePage'
 import SlotPage from '@/components/pages/SlotPage'
 import N4Page from '@/components/pages/N4Page'
@@ -13,7 +14,7 @@ import GenericPage from '@/components/pages/GenericPage'
 import AssetsPage from '@/components/pages/AssetsPage'
 
 function MainContent() {
-  const { page, currentComp, toast } = useApp()
+  const { page, currentComp, toast, hasPreview } = useApp()
 
   const PageContent = () => {
     if (page === 'home') return <div className="page-enter"><HomePage /></div>
@@ -40,11 +41,9 @@ function MainContent() {
       {/* 主内容区 */}
       <div
         className="flex-1 flex flex-col overflow-hidden"
-        style={{ marginLeft: 260 }}
+        style={{ marginLeft: 260, marginRight: hasPreview ? 360 : 0 }}
       >
-        {/* 首页时顶栏隐藏 */}
         {page !== 'home' && <TopBar />}
-
         <main
           className="flex-1 overflow-y-auto"
           style={{ marginTop: page !== 'home' ? 56 : 0 }}
@@ -52,6 +51,9 @@ function MainContent() {
           <PageContent />
         </main>
       </div>
+
+      {/* 右侧手机预览面板（老虎机专属） */}
+      {hasPreview && <PreviewPanel />}
 
       {/* Toast */}
       {toast && (

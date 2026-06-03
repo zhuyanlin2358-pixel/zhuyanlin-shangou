@@ -42,9 +42,11 @@ const INITIAL_CONFIG: SlotConfig = {
 interface SlotContextValue {
   config: SlotConfig
   activePreset: string | null
+  activeStep: number
   setConfig: (patch: Partial<SlotConfig>) => void
   applyPreset: (key: string) => void
   setPrize: (idx: number, patch: Partial<import('@/types').PrizeConfig>) => void
+  setActiveStep: (n: number) => void
 }
 
 const SlotContext = createContext<SlotContextValue | null>(null)
@@ -52,6 +54,7 @@ const SlotContext = createContext<SlotContextValue | null>(null)
 export function SlotProvider({ children }: { children: ReactNode }) {
   const [config, setConfigState] = useState<SlotConfig>(INITIAL_CONFIG)
   const [activePreset, setActivePreset] = useState<string | null>('pink')
+  const [activeStep, setActiveStep] = useState(1)
 
   const setConfig = (patch: Partial<SlotConfig>) =>
     setConfigState(prev => ({ ...prev, ...patch }))
@@ -81,7 +84,7 @@ export function SlotProvider({ children }: { children: ReactNode }) {
     }))
 
   return (
-    <SlotContext.Provider value={{ config, activePreset, setConfig, applyPreset, setPrize }}>
+    <SlotContext.Provider value={{ config, activePreset, activeStep, setConfig, applyPreset, setPrize, setActiveStep }}>
       {children}
     </SlotContext.Provider>
   )
