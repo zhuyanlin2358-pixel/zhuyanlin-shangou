@@ -1,107 +1,99 @@
 /**
- * 侧边栏配置面板的通用字段组件
- * 基于 @headlessui/react 的 Field / Fieldset / Label / Description
- * 风格：深色背景 + 白色标签 + 灰色说明文字
+ * 侧边栏配置面板通用字段组件
+ * Disclosure 用 Headless UI（有动画），其余字段用原生 HTML
  */
 import {
-  Field, Fieldset, Label, Description,
-  Input, Select, Textarea,
   Disclosure, DisclosureButton, DisclosurePanel,
 } from '@headlessui/react'
-
-// headlessui v2 没有独立 Legend，用原生 legend 包装
-function Legend({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <legend className={className}>{children}</legend>
-}
 import { clsx } from 'clsx'
 
-/* ── 设计 token ── */
-const T = {
-  label:  'text-xs font-medium text-white/80 select-none',
-  desc:   'text-xs text-white/35 mt-0.5 leading-snug',
-  input:  [
-    'w-full rounded-lg border border-white/10 bg-white/[0.06]',
-    'px-3 py-2 text-xs text-white/85 placeholder:text-white/25',
-    'focus:outline-none focus:border-white/25 focus:bg-white/[0.09]',
-    'transition-colors duration-150',
-  ].join(' '),
-  select: [
-    'w-full rounded-lg border border-white/10 bg-white/[0.06]',
-    'px-3 py-2 text-xs text-white/85',
-    'focus:outline-none focus:border-white/25',
-    'transition-colors duration-150',
-  ].join(' '),
-}
+/* ── 输入框样式 ── */
+const inputCls = [
+  'w-full rounded-lg px-3 py-2 text-xs',
+  'border border-white/10 bg-white/[0.06]',
+  'text-white/85 placeholder:text-white/25',
+  'focus:outline-none focus:border-white/25 focus:bg-white/[0.09]',
+  'transition-colors duration-150',
+].join(' ')
 
-/* ── Field 行（label + input）── */
-interface PanelFieldProps {
+/* ── 字段行：label + 可选说明 + 子内容 ── */
+export function PF({
+  label, desc, children, horizontal,
+}: {
   label: string
   desc?: string
   children: React.ReactNode
-  horizontal?: boolean  // label 和 input 横排
-}
-export function PF({ label, desc, children, horizontal }: PanelFieldProps) {
-  return (
-    <Field className={clsx('space-y-1', horizontal && 'flex items-center gap-3 space-y-0')}>
-      <div className={horizontal ? 'w-20 shrink-0' : undefined}>
-        <Label className={T.label}>{label}</Label>
-        {desc && !horizontal && <Description className={T.desc}>{desc}</Description>}
+  horizontal?: boolean
+}) {
+  if (horizontal) {
+    return (
+      <div className="flex items-center gap-3">
+        <span className="w-20 shrink-0 text-xs font-medium text-white/75">{label}</span>
+        <div className="flex-1">{children}</div>
       </div>
-      <div className={horizontal ? 'flex-1' : undefined}>{children}</div>
-    </Field>
+    )
+  }
+  return (
+    <div className="space-y-1">
+      <label className="text-xs font-medium text-white/75 block">{label}</label>
+      {desc && <p className="text-xs text-white/35 leading-snug">{desc}</p>}
+      {children}
+    </div>
   )
 }
 
 /* ── 文本输入 ── */
 export function PanelInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  return <Input {...props} className={clsx(T.input, props.className)} />
+  return <input {...props} className={clsx(inputCls, props.className)} />
 }
 
 /* ── 下拉选择 ── */
 export function PanelSelect(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
-    <Select {...props} className={clsx(T.select, props.className)}>
+    <select {...props} className={clsx(inputCls, props.className)}>
       {props.children}
-    </Select>
+    </select>
   )
 }
 
 /* ── 多行文本 ── */
 export function PanelTextarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <Textarea {...props} className={clsx(T.input, 'resize-none', props.className)} />
+  return <textarea {...props} className={clsx(inputCls, 'resize-none', props.className)} />
 }
 
-/* ── Fieldset 分组（带标题和描述）── */
-interface PanelSectionProps {
+/* ── 分组标题区（legend + desc） ── */
+export function PanelSection({
+  legend, desc, children, className,
+}: {
   legend: string
   desc?: string
   children: React.ReactNode
   className?: string
-}
-export function PanelSection({ legend, desc, children, className }: PanelSectionProps) {
+}) {
   return (
-    <Fieldset className={clsx('space-y-3', className)}>
+    <div className={clsx('space-y-3', className)}>
       <div>
-        <Legend className="text-xs font-semibold text-white/90">{legend}</Legend>
-        {desc && <Description className={T.desc}>{desc}</Description>}
+        <div className="text-xs font-semibold text-white/90">{legend}</div>
+        {desc && <p className="text-xs text-white/35 mt-0.5">{desc}</p>}
       </div>
       {children}
-    </Fieldset>
+    </div>
   )
 }
 
-/* ── 可折叠分组（带红点 + 徽章）── */
-interface DisclosureGroupProps {
+/* ── 可折叠分组（Headless UI Disclosure + 动画箭头）── */
+export function DisclosureGroup({
+  title, badge, defaultOpen = false, children,
+}: {
   title: string
   badge?: string
   defaultOpen?: boolean
   children: React.ReactNode
-}
-export function DisclosureGroup({ title, badge, defaultOpen = false, children }: DisclosureGroupProps) {
+}) {
   return (
     <Disclosure as="div" defaultOpen={defaultOpen}
       className="border-b border-white/[0.07]">
-      {({ open }) => (
+      {({ open }: { open: boolean }) => (
         <>
           <DisclosureButton className="w-full flex items-center gap-2 px-4 py-3 text-left hover:bg-white/[0.03] transition-colors">
             <span className="w-1.5 h-1.5 rounded-full bg-red-400/80 shrink-0" />
@@ -112,7 +104,7 @@ export function DisclosureGroup({ title, badge, defaultOpen = false, children }:
               </span>
             )}
             <svg
-              className={clsx('w-3 h-3 text-white/30 transition-transform duration-200 shrink-0', open ? '' : '-rotate-90')}
+              className={clsx('w-3 h-3 text-white/30 transition-transform duration-200 shrink-0', !open && '-rotate-90')}
               viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={1.8}
             >
               <path d="M2 4l4 4 4-4" />
@@ -127,13 +119,14 @@ export function DisclosureGroup({ title, badge, defaultOpen = false, children }:
   )
 }
 
-/* ── 颜色选择行（label + color picker）── */
-interface ColorFieldProps {
+/* ── 颜色选择行 ── */
+export function ColorField({
+  label, value, onChange,
+}: {
   label: string
   value: string
   onChange: (v: string) => void
-}
-export function ColorField({ label, value, onChange }: ColorFieldProps) {
+}) {
   return (
     <PF label={label} horizontal>
       <div className="flex items-center gap-2">
@@ -152,4 +145,3 @@ export function ColorField({ label, value, onChange }: ColorFieldProps) {
 export function Divider() {
   return <hr className="border-white/[0.07] my-1" />
 }
-
