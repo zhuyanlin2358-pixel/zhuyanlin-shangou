@@ -16,6 +16,9 @@ export const SLOT_PRESETS: Record<string, SlotPreset & { label: string; tone: 'l
   'dark-purple':{ label:'深紫', tone:'dark', from:'#C084FC',to:'#E879F9',disFrom:'#6D28D9',disTo:'#5B21B6',slotFrom:'#1E0A3C',slotTo:'#5B2D8E',linksColor:'rgba(255,255,255,0.85)',titleColor:'#FFFFFF',isDark:true },
 }
 
+// Vite BASE_URL：本地 / Vercel = '/'，GitHub Pages = '/shangou-export-tool/'
+const BASE = import.meta.env.BASE_URL
+
 const INITIAL_CONFIG: SlotConfig = {
   bgColor: '#FFF5F8',
   bgImageUrl: '',
@@ -29,11 +32,11 @@ const INITIAL_CONFIG: SlotConfig = {
   titleColor: '#f00068',
   titleText: '惊喜抽奖',
   emptyText: '活动太火爆，请稍后重试...',
-  emptyImageUrl: '/empty-illus.png',
+  emptyImageUrl: `${BASE}empty-illus.png`,
   emptyTransform: { offsetX: 0, offsetY: 0, scale: 1 },
   prizes: [
-    { type: 'product-tag',    imageUrl: '/prize-1.png', tag: '无门槛优惠券', amount: '30', unit: '元', bottomText: '迪奥口红免单券', thanksText: '谢谢参与' },
-    { type: 'product-dashed', imageUrl: '/prize-2.png', tag: '零食免单券',   amount: '30', unit: '元', bottomText: '零食免单券',     thanksText: '谢谢参与' },
+    { type: 'product-tag',    imageUrl: `${BASE}prize-1.png`, tag: '无门槛优惠券', amount: '30', unit: '元', bottomText: '迪奥口红免单券', thanksText: '谢谢参与' },
+    { type: 'product-dashed', imageUrl: `${BASE}prize-2.png`, tag: '零食免单券',   amount: '30', unit: '元', bottomText: '零食免单券',     thanksText: '谢谢参与' },
     { type: 'thanks',         imageUrl: '',             tag: '',             amount: '30', unit: '元', bottomText: '零食盲盒券',     thanksText: '谢谢参与' },
   ],
   prizeTransforms: [

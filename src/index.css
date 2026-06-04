@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'MeituanDigitalType';
-  src: url('/fonts/MeituanDigitalType-Bold.ttf') format('truetype');
+  src: url('@/assets/fonts/MeituanDigitalType-Bold.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
 }
