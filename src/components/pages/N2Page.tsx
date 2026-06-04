@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { Download } from 'lucide-react'
 import { useN2 } from '@/contexts/N2Context'
 import { useApp } from '@/contexts/AppContext'
 import { captureElement, downloadCanvas } from '@/utils/exportUtils'
@@ -61,7 +62,7 @@ function LogoSection({ title, badge, stroke, logoUrl, canvasRef, onExport, expor
         className="px-5 py-2 text-sm font-medium rounded-lg text-white transition-colors disabled:opacity-50"
         style={{ background: '#1a1a1a' }}
       >
-        {exporting ? '导出中…' : '⬇ 导出 PNG'}
+        {exporting ? '导出中…' : <><Download size={13} className="shrink-0" />导出 PNG</>}
       </button>
     </div>
   )

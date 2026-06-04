@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
+import { Download } from 'lucide-react'
 import html2canvas from 'html2canvas'
 
 type N4VariantId =
@@ -184,7 +185,7 @@ export default function N4Panel() {
           disabled={exporting}
           className="w-full py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-700 disabled:opacity-50 transition-colors"
         >
-          {exporting ? '导出中…' : '⬇ 导出 PNG'}
+          {exporting ? '导出中…' : <><Download size={13} className="shrink-0" />导出 PNG</>}
         </button>
       </div>
 

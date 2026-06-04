@@ -1,3 +1,4 @@
+import { ArrowLeft, Download, Sun, Moon } from 'lucide-react'
 import { useApp } from '@/contexts/AppContext'
 import { findComponent, type ComponentId } from '@/types'
 
@@ -19,7 +20,7 @@ export default function TopBar() {
             className="flex items-center gap-1.5 text-xs rounded-lg px-2.5 py-1.5 transition-colors"
             style={{ color: 'var(--text-2)', background: 'var(--bg-subtle)' }}
           >
-            ← 返回
+            <ArrowLeft size={13} /><span>返回</span>
           </button>
           <span style={{ color: 'var(--border)' }}>·</span>
           <span className="text-sm font-semibold" style={{ color: 'var(--text-1)' }}>
@@ -54,7 +55,7 @@ export default function TopBar() {
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-white"
             style={{ background: 'linear-gradient(90deg,#FF3060,#FF6030)' }}
           >
-            ↓ 一键导出 ZIP
+            <Download size={13} /><span>一键导出 ZIP</span>
           </button>
         )}
         {!isComp && (
@@ -71,7 +72,7 @@ export default function TopBar() {
           className="w-8 h-8 flex items-center justify-center rounded-lg text-sm"
           style={{ color: 'var(--text-2)' }}
         >
-          {darkMode ? '☀' : '🌙'}
+          {darkMode ? <Sun size={15} /> : <Moon size={15} />}
         </button>
       </div>
     </header>

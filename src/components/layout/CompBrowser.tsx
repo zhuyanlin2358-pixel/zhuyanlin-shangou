@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { gsap } from 'gsap'
+import { ChevronDown } from 'lucide-react'
 import { useApp } from '@/contexts/AppContext'
 import { COMPONENT_REGISTRY, type ComponentId, type ComponentDef } from '@/types'
 
@@ -92,7 +93,7 @@ function CatGroup({ g, onEnter }: { g: typeof COMPONENT_REGISTRY[0]; onEnter: (i
         {GROUP_SVG[g.group]}
         <span style={{ flex:1, fontSize:14, fontWeight:500, color:'var(--text-1)' }}>{g.groupLabel}</span>
         {doneCount > 0 && <span style={{ fontSize:11, color:'#27D365', flexShrink:0 }}>{doneCount}</span>}
-        <span className={`cat-arrow ${open ? '' : 'cat-group-collapsed'}`} style={{ transform: open ? '' : 'rotate(-90deg)' }}>▾</span>
+        <ChevronDown size={13} className={`cat-arrow transition-transform duration-200`} style={{ color: 'var(--text-3)', transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
       </div>
       {open && (
         <div className="cat-body">

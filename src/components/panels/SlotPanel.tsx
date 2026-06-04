@@ -1,5 +1,5 @@
-import { useRef } from 'react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { ChevronDown, RotateCcw } from 'lucide-react'
 import { useSlot, SLOT_PRESETS } from '@/contexts/SlotContext'
 import type { PrizeType, PrizeConfig } from '@/types'
 import {
@@ -176,9 +176,9 @@ function EmptySection() {
 
       <button
         onClick={resetEmptyTransform}
-        className="w-full py-1.5 rounded-lg text-xs border border-white/10 text-white/35 hover:text-white/60 hover:bg-white/[0.04] transition-colors"
+        className="w-full py-1.5 rounded-lg text-xs border border-white/10 text-white/35 hover:text-white/60 hover:bg-white/[0.04] transition-colors flex items-center justify-center gap-1.5"
       >
-        ↺ 重置位置与大小
+        <RotateCcw size={11} className="shrink-0" />重置位置与大小
       </button>
     </div>
   )
@@ -200,14 +200,18 @@ function AccordionHeader({
           {badge}
         </span>
       )}
-      <svg
-        className={`w-3 h-3 text-white/25 transition-transform duration-200 shrink-0 ${open ? '' : '-rotate-90'}`}
-        viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={1.8}
-      >
-        <path d="M2 4l4 4 4-4" />
-      </svg>
+      <ChevronDown size={13} className={`text-white/25 transition-transform duration-200 shrink-0 ${open ? '' : '-rotate-90'}`} />
     </button>
   )
+}
+
+/** 简单亮度检测：返回 0（纯黑）~1（纯白） */
+function hexLuminance(hex: string): number {
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return 0.5
+  const r = parseInt(hex.slice(1, 3), 16) / 255
+  const g = parseInt(hex.slice(3, 5), 16) / 255
+  const b = parseInt(hex.slice(5, 7), 16) / 255
+  return 0.299 * r + 0.587 * g + 0.114 * b
 }
 
 /* ── 主面板 ── */
@@ -224,7 +228,7 @@ export default function SlotPanel() {
   const bgTone = darkBgSet.has(config.bgColor)  ? 'dark'
                : promoBgSet.has(config.bgColor) ? 'promo'
                : lightBgSet.has(config.bgColor) ? 'light'
-               : 'both'
+               : hexLuminance(config.bgColor) < 0.35 ? 'dark' : 'light'  // 自定义颜色按亮度自动判断
 
   const handlePrizeImg = (idx: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return
@@ -266,16 +270,6 @@ export default function SlotPanel() {
           <PF label="推荐 · 同色系">
             <PresetGrid keys={WARM_PRESETS} active={activePreset} onSelect={applyPreset} />
           </PF>
-        )}
-        {bgTone === 'both' && (
-          <>
-            <PF label="浅色系">
-              <PresetGrid keys={LIGHT_PRESETS} active={activePreset} onSelect={applyPreset} />
-            </PF>
-            <PF label="深色系">
-              <PresetGrid keys={DARK_PRESETS} active={activePreset} onSelect={applyPreset} />
-            </PF>
-          </>
         )}
       </Section>
 

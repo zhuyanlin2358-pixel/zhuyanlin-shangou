@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { Download } from 'lucide-react'
 import { useN4, N4_VARIANTS, N4_VARIANT_IDS } from '@/contexts/N4Context'
 import { useApp } from '@/contexts/AppContext'
 import { captureElement, downloadCanvas } from '@/utils/exportUtils'
@@ -111,7 +112,7 @@ export default function N4Page() {
           className="px-6 py-2.5 text-sm font-medium rounded-lg text-white transition-colors disabled:opacity-50"
           style={{ background: '#1a1a1a' }}
         >
-          {exporting ? '导出中…' : '⬇ 导出 PNG'}
+          {exporting ? '导出中…' : <><Download size={13} className="shrink-0" />导出 PNG</>}
         </button>
 
         {/* 所有变体快览 */}

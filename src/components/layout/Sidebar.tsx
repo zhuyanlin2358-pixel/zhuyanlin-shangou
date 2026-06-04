@@ -1,3 +1,4 @@
+import { ArrowLeft, Package, Sun, Moon } from 'lucide-react'
 import { useApp } from '@/contexts/AppContext'
 import CompBrowser from './CompBrowser'
 import SlotPanel from '@/components/panels/SlotPanel'
@@ -35,7 +36,7 @@ export default function Sidebar() {
           style={{ borderColor: 'var(--sidebar-border)' }}
           onClick={goHome}
         >
-          <span className="text-sm" style={{ color: 'var(--text-2)' }}>←</span>
+          <ArrowLeft size={14} style={{ color: 'var(--text-2)', flexShrink: 0 }} />
           <span className="text-sm font-medium" style={{ color: 'var(--text-2)' }}>返回首页</span>
         </div>
       ) : (
@@ -72,7 +73,7 @@ export default function Sidebar() {
             className="w-full flex items-center gap-2 px-4 py-3 text-xs transition-colors hover:opacity-80"
             style={{ color: 'var(--text-2)' }}
           >
-            <span>📦</span>
+            <Package size={14} style={{ flexShrink: 0 }} />
             <span>我的资产</span>
           </button>
           <button
@@ -80,7 +81,7 @@ export default function Sidebar() {
             className="w-full flex items-center gap-2 px-4 py-3 text-xs transition-colors hover:opacity-80 border-t"
             style={{ color: 'var(--text-2)', borderColor: 'var(--sidebar-border)' }}
           >
-            <span>{darkMode ? '☀️' : '🌙'}</span>
+            {darkMode ? <Sun size={14} style={{ flexShrink: 0 }} /> : <Moon size={14} style={{ flexShrink: 0 }} />}
             <span>{darkMode ? '浅色模式' : '深色模式'}</span>
           </button>
         </div>

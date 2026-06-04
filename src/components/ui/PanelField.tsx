@@ -7,6 +7,7 @@ import {
   Disclosure, DisclosureButton, DisclosurePanel,
   Listbox, ListboxButton, ListboxOptions, ListboxOption,
 } from '@headlessui/react'
+import { ChevronDown, Check } from 'lucide-react'
 import { clsx } from 'clsx'
 
 /* ── 输入框基础样式 ── */
@@ -80,9 +81,7 @@ export function PanelListbox<T extends string>({
       <div className="relative">
         <ListboxButton className={clsx(inputBase, 'flex items-center justify-between cursor-pointer text-left')}>
           <span>{selected?.label}</span>
-          <svg className="w-3 h-3 text-white/30 shrink-0" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={1.8}>
-            <path d="M2 4l4 4 4-4" />
-          </svg>
+          <ChevronDown size={12} className="text-white/30 shrink-0" />
         </ListboxButton>
         <ListboxOptions className="absolute z-50 mt-1 w-full rounded-lg py-1 border border-white/10 bg-[#1a1f2e] shadow-xl focus:outline-none">
           {options.map(opt => (
@@ -94,11 +93,7 @@ export function PanelListbox<T extends string>({
               }
             >
               <span className="w-3 h-3 shrink-0 flex items-center justify-center">
-                {opt.value === value && (
-                  <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={2} className="w-3 h-3 text-red-400">
-                    <path d="M2 6l3 3 5-5" />
-                  </svg>
-                )}
+                {opt.value === value && <Check size={12} className="text-red-400" />}
               </span>
               {opt.label}
             </ListboxOption>
@@ -153,10 +148,7 @@ export function DisclosureGroup({
             {badge && (
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-400/10 text-red-300/70 shrink-0">{badge}</span>
             )}
-            <svg className={clsx('w-3 h-3 text-white/30 transition-transform duration-200 shrink-0', !open && '-rotate-90')}
-              viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={1.8}>
-              <path d="M2 4l4 4 4-4" />
-            </svg>
+            <ChevronDown size={13} className={clsx('text-white/30 transition-transform duration-200 shrink-0', !open && '-rotate-90')} />
           </DisclosureButton>
           <DisclosurePanel className="px-4 pb-4 space-y-3">{children}</DisclosurePanel>
         </>
@@ -181,12 +173,13 @@ export function ColorField({
   return (
     <PF label={label} horizontal>
       <div className="flex items-center gap-2">
-        {/* 彩色色块：点击打开 picker */}
+        {/* 彩色色块：点击打开 picker，onInput 保证拖动时实时更新 */}
         <label className="relative w-6 h-6 rounded-md cursor-pointer flex-shrink-0 overflow-hidden"
           style={{ boxShadow: '0 0 0 1px rgba(255,255,255,0.15)' }}>
           <div className="w-full h-full" style={{ background: value }} />
           <input
             type="color" value={value}
+            onInput={e => onChange((e.target as HTMLInputElement).value)}
             onChange={e => onChange(e.target.value)}
             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
           />

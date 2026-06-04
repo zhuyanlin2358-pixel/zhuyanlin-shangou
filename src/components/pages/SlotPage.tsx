@@ -1,5 +1,6 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 import { gsap } from 'gsap'
+import { Eye, Download } from 'lucide-react'
 import { useSlot } from '@/contexts/SlotContext'
 import { useApp } from '@/contexts/AppContext'
 import { downloadCanvas, downloadZip, drawSlotBannerCanvas, drawSlotBgCanvas, drawButtonCanvas, drawLinkCanvas, drawEmptyStateCanvas, drawPrizeCanvas, drawDialogButtonCanvas, drawDialogResultCanvas } from '@/utils/exportUtils'
@@ -284,9 +285,9 @@ function ExportCard({ children, label, sub, onExport, onPreview }: {
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
           {onPreview && (
-            <button className="btn-preview" onClick={onPreview} style={{ height: 28, padding: '0 10px', fontSize: 12 }}>👁 预览</button>
+            <button className="btn-preview" onClick={onPreview} style={{ height: 28, padding: '0 10px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}><Eye size={12} />预览</button>
           )}
-          <button className="slot-btn-export" onClick={onExport}>⬇ 导出</button>
+          <button className="slot-btn-export" onClick={onExport} style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Download size={12} />导出</button>
         </div>
       </div>
     </div>
@@ -402,7 +403,7 @@ function PrizeEditorCard({ idx, prize, onExport, onPreview }: {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
           {onPreview && <button className="btn-preview" onClick={onPreview} style={{ height: 28, padding: '0 10px', fontSize: 12 }}>👁 预览</button>}
-          <button className="slot-btn-export" onClick={onExport}>⬇ 导出</button>
+          <button className="slot-btn-export" onClick={onExport} style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Download size={12} />导出</button>
         </div>
       </div>
       <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />

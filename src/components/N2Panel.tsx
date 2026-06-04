@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { Download } from 'lucide-react'
 import html2canvas from 'html2canvas'
 
 const STORAGE_KEY = 'shangou_n2_logos'
@@ -101,7 +102,7 @@ function LogoSection({
           disabled={exporting}
           className="py-2 px-3 text-sm bg-gray-900 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 transition-colors"
         >
-          {exporting ? '…' : '⬇'}
+          {exporting ? '…' : <Download size={13} />}
         </button>
       </div>
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
