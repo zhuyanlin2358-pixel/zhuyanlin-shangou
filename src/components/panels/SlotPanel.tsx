@@ -3,8 +3,8 @@ import { useState } from 'react'
 import { useSlot, SLOT_PRESETS } from '@/contexts/SlotContext'
 import type { PrizeType, PrizeConfig } from '@/types'
 import {
-  PF, PanelInput, PanelSelect, PanelSection,
-  DisclosureGroup, ColorField,
+  PF, PanelInput, PanelSection,
+  DisclosureGroup, ColorField, PanelListbox,
 } from '@/components/ui/PanelField'
 
 /* ── 配色预设 ── */
@@ -82,9 +82,11 @@ function PrizeBlock({ idx, prize, onChange, onImgChange }: {
     <PanelSection legend={`奖品图 ${idx + 1}`} className="pb-4 border-b border-white/[0.07] last:border-b-0 last:pb-0">
 
       <PF label="类型">
-        <PanelSelect value={prize.type} onChange={e => onChange({ type: e.target.value as PrizeType })}>
-          {PRIZE_TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </PanelSelect>
+        <PanelListbox<PrizeType>
+          value={prize.type}
+          onChange={v => onChange({ type: v })}
+          options={PRIZE_TYPE_OPTIONS}
+        />
       </PF>
 
       {!showThanks && (

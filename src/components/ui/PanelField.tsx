@@ -1,9 +1,10 @@
 /**
  * 侧边栏配置面板通用字段组件
- * Disclosure 用 Headless UI（有动画），其余字段用原生 HTML
+ * Disclosure / Listbox 用 Headless UI（有动画），其余字段用原生 HTML
  */
 import {
   Disclosure, DisclosureButton, DisclosurePanel,
+  Listbox, ListboxButton, ListboxOptions, ListboxOption,
 } from '@headlessui/react'
 import { clsx } from 'clsx'
 
@@ -47,12 +48,69 @@ export function PanelInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={clsx(inputCls, props.className)} />
 }
 
-/* ── 下拉选择 ── */
+/* ── 原生下拉（保留备用，不推荐新增使用） ── */
 export function PanelSelect(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select {...props} className={clsx(inputCls, props.className)}>
       {props.children}
     </select>
+  )
+}
+
+/* ── 自定义下拉（Headless UI Listbox，样式与面板统一）── */
+export function PanelListbox<T extends string>({
+  value, onChange, options,
+}: {
+  value: T
+  onChange: (v: T) => void
+  options: { value: T; label: string }[]
+}) {
+  const selected = options.find(o => o.value === value) ?? options[0]
+  return (
+    <Listbox value={value} onChange={onChange}>
+      <div className="relative">
+        <ListboxButton
+          className={clsx(
+            inputCls,
+            'flex items-center justify-between cursor-pointer text-left',
+          )}
+        >
+          <span>{selected?.label}</span>
+          <svg className="w-3 h-3 text-white/30 shrink-0" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={1.8}>
+            <path d="M2 4l4 4 4-4" />
+          </svg>
+        </ListboxButton>
+        <ListboxOptions
+          className={clsx(
+            'absolute z-50 mt-1 w-full rounded-lg py-1',
+            'border border-white/10 bg-[#1a1f2e] shadow-xl',
+            'focus:outline-none',
+          )}
+        >
+          {options.map(opt => (
+            <ListboxOption
+              key={opt.value}
+              value={opt.value}
+              className={({ focus }: { focus: boolean }) =>
+                clsx(
+                  'flex items-center gap-2 px-3 py-2 text-xs cursor-pointer transition-colors',
+                  focus ? 'bg-white/[0.07] text-white/90' : 'text-white/65',
+                )
+              }
+            >
+              <span className="w-3 h-3 shrink-0 flex items-center justify-center">
+                {opt.value === value && (
+                  <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={2} className="w-3 h-3 text-red-400">
+                    <path d="M2 6l3 3 5-5" />
+                  </svg>
+                )}
+              </span>
+              {opt.label}
+            </ListboxOption>
+          ))}
+        </ListboxOptions>
+      </div>
+    </Listbox>
   )
 }
 
