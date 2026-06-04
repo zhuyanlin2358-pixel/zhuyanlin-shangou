@@ -1,1 +1,5 @@
 node_modules/
+archive/node_modules_old/
+dist/
+.DS_Store
+*.local
