@@ -145,8 +145,8 @@ export default function PreviewPanel() {
               }}>
                 {/* 标题 */}
                 <div style={{
-                  position: 'absolute', left: 42, top: 25,
-                  fontSize: 33, fontWeight: 500,
+                  position: 'absolute', left: 43, top: 11,
+                  fontSize: 38, fontWeight: 500, lineHeight: '58.8px',
                   color: config.titleColor, fontFamily: PF,
                   whiteSpace: 'nowrap', zIndex: 3,
                 }}>
@@ -154,9 +154,9 @@ export default function PreviewPanel() {
                 </div>
                 {/* 链接 */}
                 <div style={{
-                  position: 'absolute', top: 24, right: 48,
+                  position: 'absolute', top: 11, right: 48,
                   display: 'flex', alignItems: 'center',
-                  fontSize: 22, color: config.linksColor, fontFamily: PF, zIndex: 3,
+                  fontSize: 28, lineHeight: '44px', color: config.linksColor, fontFamily: PF, zIndex: 3,
                 }}>
                   <span>我的奖品</span>
                   <span style={{ margin: '0 8px', opacity: 0.6 }}>|</span>
@@ -164,14 +164,14 @@ export default function PreviewPanel() {
                 </div>
                 {/* 奖品框白底 */}
                 <div style={{
-                  position: 'absolute', left: 43, top: 76,
-                  width: 441, height: 142, borderRadius: 20,
+                  position: 'absolute', left: 43, top: 75,
+                  width: 427, height: 142, borderRadius: 24,
                   background: '#fff', border: '1px solid rgba(0,0,0,0.1)', zIndex: 1,
                 }} />
                 {/* 奖品层 — PrizeCardFull + prizeTransforms */}
                 <div style={{
-                  position: 'absolute', left: 43, top: 76,
-                  width: 441, height: 142, zIndex: 2,
+                  position: 'absolute', left: 43, top: 75,
+                  width: 427, height: 142, zIndex: 2,
                   display: 'flex', alignItems: 'center',
                   justifyContent: 'center', gap: 8, padding: '0 12px',
                 }}>
@@ -185,7 +185,7 @@ export default function PreviewPanel() {
                 </div>
                 {/* 按钮 */}
                 <div style={{
-                  position: 'absolute', right: 46, top: 106,
+                  position: 'absolute', right: 57, top: 104,
                   width: 194, height: 80, borderRadius: 40, zIndex: 3,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   background: `linear-gradient(90deg, ${config.btnActiveFrom}, ${config.btnActiveTo})`,
@@ -195,9 +195,10 @@ export default function PreviewPanel() {
                 </div>
                 {/* 剩余次数 */}
                 <div style={{
-                  position: 'absolute', right: 46, bottom: 14,
-                  fontSize: 14, color: config.linksColor,
-                  textAlign: 'center', width: 194, zIndex: 3,
+                  position: 'absolute', right: 79, top: 188,
+                  fontSize: 20, color: config.linksColor, fontFamily: PF,
+                  textAlign: 'center', width: 153, zIndex: 3,
+                  whiteSpace: 'nowrap',
                 }}>
                   还剩 999 次抽奖机会
                 </div>

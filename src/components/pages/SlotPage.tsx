@@ -1,9 +1,9 @@
-import { useRef, useEffect, useCallback } from 'react'
+import { useRef, useEffect, useCallback, useState } from 'react'
 import { gsap } from 'gsap'
 import { useSlot } from '@/contexts/SlotContext'
 import { useApp } from '@/contexts/AppContext'
-import { captureElement, downloadCanvas, downloadZip } from '@/utils/exportUtils'
-import Stepper from '@/components/panels/Stepper'
+import { downloadCanvas, downloadZip, drawSlotBannerCanvas, drawSlotBgCanvas, drawButtonCanvas, drawLinkCanvas, drawEmptyStateCanvas, drawPrizeCanvas, drawDialogButtonCanvas, drawDialogResultCanvas } from '@/utils/exportUtils'
+import type { PrizeInfo, XfTransform } from '@/utils/exportUtils'
 import type { PrizeConfig, PrizeType, ImgTransform } from '@/types'
 
 /* ── 通用可拖拽图片容器 ── */
@@ -180,8 +180,8 @@ export function PrizeCardFull({
     ? { width: 111, height: 111, borderRadius: '50%', background: '#FFD060',
         border: '1px solid rgba(180,120,0,0.2)', position: 'relative', overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'center' }
-    : { width: 111, height: 119, borderRadius: 14,
-        background: isDashed ? '#FFF4D0' : '#FFE9B0',
+    : { width: 111, height: 119, borderRadius: 17,
+        background: '#FFE9B0',
         border: isDashed ? '1.5px dashed #F0A830' : '1px solid rgba(180,120,0,0.15)',
         position: 'relative', overflow: 'hidden',
         display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -190,14 +190,14 @@ export function PrizeCardFull({
   return (
     <div style={{ width: 124, height: 124, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
       <div style={cardStyle}>
-        {/* 顶部标签（product-tag 类型） */}
-        {prize.type === 'product-tag' && (
+        {/* 顶部标签（product-tag / amount 类型） */}
+        {(prize.type === 'product-tag' || isAmount) && prize.tag && (
           <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
             width: 81, minHeight: 18, background: '#fff', borderRadius: '0 0 6px 6px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: '2px 6px', zIndex: 2 }}>
             <span style={{ fontSize: 12, color: '#812D16', lineHeight: 1.3, whiteSpace: 'nowrap' }}>
-              {prize.tag || '无门槛优惠券'}
+              {prize.tag}
             </span>
           </div>
         )}
@@ -219,10 +219,11 @@ export function PrizeCardFull({
                   src={prize.imageUrl}
                   draggable={false}
                   style={{
-                    position: 'absolute', top: '50%', left: '50%',
-                    // 应用 prizeTransforms：对齐原版 translate(calc(-50%+offsetX), ...) scale(s)
-                    transform: `translate(calc(-50% + ${tr.offsetX}px), calc(-50% + ${tr.offsetY}px)) scale(${tr.scale})`,
-                    maxWidth: '80%', maxHeight: '80%',
+                    position: 'absolute',
+                    top: `calc(50% + ${tr.offsetY}px)`,
+                    left: `calc(50% + ${tr.offsetX}px)`,
+                    transform: `translate(-50%, -50%) scale(${tr.scale})`,
+                    maxWidth: '100%', maxHeight: '100%',
                     width: 'auto', height: 'auto',
                     objectFit: 'contain', userSelect: 'none', display: 'block',
                   }}
@@ -233,13 +234,19 @@ export function PrizeCardFull({
             }
           </div>
         )}
-        {/* 金额券 */}
+        {/* 金额券：label 存在时内容下移 18px */}
         {isAmount && (
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-58%)', display: 'flex', alignItems: 'baseline', gap: 1 }}>
-            <span style={{ fontSize: 60, fontWeight: 700, color: '#812D16', fontFamily: "'MeituanDigitalType',sans-serif", lineHeight: 1, letterSpacing: -4 }}>
-              {prize.amount || '30'}
-            </span>
-            <span style={{ fontSize: 16, fontWeight: 600, color: '#812D16' }}>{prize.unit || '元'}</span>
+          <div style={{
+            position: 'absolute', left: 0, right: 0,
+            top: prize.tag ? 18 : 4, bottom: 20,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+              <span style={{ fontSize: 60, fontWeight: 700, color: '#812D16', fontFamily: "'MeituanDigitalType',sans-serif", lineHeight: 1, letterSpacing: -4 }}>
+                {prize.amount || '30'}
+              </span>
+              <span style={{ fontSize: 16, fontWeight: 600, color: '#812D16' }}>{prize.unit || '元'}</span>
+            </div>
           </div>
         )}
         {/* 谢谢参与 */}
@@ -300,13 +307,13 @@ function SectionTitle({ num, label, sub, badge, id }: { num: number; label: stri
 }
 
 const PRIZE_TYPE_LABELS: Record<PrizeType, string> = {
-  'product-tag': '产品图+标签', 'product-dashed': '产品图+虚线',
+  'product-tag': '产品图+标签', 'product-dashed': '产品图',
   'amount': '金额券', 'thanks': '谢谢参与',
 }
 
 /* ── Prize editor card（奖品图区域，可拖拽/缩放/上传） ── */
-function PrizeEditorCard({ idx, prize, onExport }: {
-  idx: number; prize: PrizeConfig; onExport: () => void
+function PrizeEditorCard({ idx, prize, onExport, onPreview }: {
+  idx: number; prize: PrizeConfig; onExport: () => void; onPreview?: () => void
 }) {
   const { setPrize, setPrizeTransform, resetPrizeTransform, config } = useSlot()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -324,7 +331,7 @@ function PrizeEditorCard({ idx, prize, onExport }: {
   const isThanks = prize.type === 'thanks'
   const isAmount = prize.type === 'amount'
 
-  const CARD_BG = isThanks ? '#FFD060' : isDashed ? '#FFF4D0' : '#FFE9B0'
+  const CARD_BG = isThanks ? '#FFD060' : '#FFE9B0'
   const CARD_BORDER = isThanks ? '1px solid rgba(180,120,0,0.2)' : isDashed ? '1.5px dashed #F0A830' : '1px solid rgba(180,120,0,0.15)'
 
   return (
@@ -337,9 +344,9 @@ function PrizeEditorCard({ idx, prize, onExport }: {
         <div style={{ width: 124, height: 124, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={isThanks
             ? { width: 111, height: 111, borderRadius: '50%', background: CARD_BG, border: CARD_BORDER, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }
-            : { width: 111, height: 119, borderRadius: 14, background: CARD_BG, border: CARD_BORDER, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', fontFamily: PF }
+            : { width: 111, height: 119, borderRadius: 17, background: CARD_BG, border: CARD_BORDER, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', fontFamily: PF }
           }>
-            {prize.type === 'product-tag' && (
+            {(prize.type === 'product-tag' || isAmount) && prize.tag && (
               <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 81, minHeight: 18, background: '#fff', borderRadius: '0 0 6px 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2px 6px', zIndex: 5 }}>
                 <span style={{ fontSize: 12, color: '#812D16', lineHeight: 1.3, whiteSpace: 'nowrap' }}>{prize.tag}</span>
               </div>
@@ -359,9 +366,11 @@ function PrizeEditorCard({ idx, prize, onExport }: {
               </div>
             )}
             {isAmount && (
-              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-58%)', display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                <span style={{ fontSize: 60, fontWeight: 700, color: '#812D16', fontFamily: "'MeituanDigitalType',sans-serif", lineHeight: 1, letterSpacing: -4 }}>{prize.amount || '30'}</span>
-                <span style={{ fontSize: 16, fontWeight: 600, color: '#812D16' }}>{prize.unit || '元'}</span>
+              <div style={{ position: 'absolute', left: 0, right: 0, top: prize.tag ? 18 : 4, bottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                  <span style={{ fontSize: 60, fontWeight: 700, color: '#812D16', fontFamily: "'MeituanDigitalType',sans-serif", lineHeight: 1, letterSpacing: -4 }}>{prize.amount || '30'}</span>
+                  <span style={{ fontSize: 16, fontWeight: 600, color: '#812D16' }}>{prize.unit || '元'}</span>
+                </div>
               </div>
             )}
             {isThanks && (
@@ -392,11 +401,7 @@ function PrizeEditorCard({ idx, prize, onExport }: {
           <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>124 × 124 px · PNG</div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
-          {showImg && (
-            <button onClick={() => fileRef.current?.click()} className="slot-btn-export" style={{ fontSize: 11, padding: '3px 8px', height: 24 }}>
-              📂 上传
-            </button>
-          )}
+          {onPreview && <button className="btn-preview" onClick={onPreview} style={{ height: 28, padding: '0 10px', fontSize: 12 }}>👁 预览</button>}
           <button className="slot-btn-export" onClick={onExport}>⬇ 导出</button>
         </div>
       </div>
@@ -404,6 +409,26 @@ function PrizeEditorCard({ idx, prize, onExport }: {
     </div>
   )
 }
+
+/* ── 弹窗按钮/结果页配置 ── */
+const DIALOG_BUTTONS = [
+  { key: 'confirm',  text: '确认',         label: '确认' },
+  { key: 'claim',    text: '领奖品',       label: '领奖品' },
+  { key: 'address',  text: '查看收货地址', label: '查看收货地址' },
+  { key: 'reload',   text: '重新加载',                         label: '重新加载' },
+  { key: 'tomorrow', text: '明日再来',     label: '明日再来' },
+  { key: 'nochance', text: '已无抽奖次数', label: '已无抽奖次数' },
+  { key: 'copy',     text: '复制粘贴',     label: '复制粘贴' },
+] as const
+
+const DIALOG_RESULTS = [
+  { key: 'congrats', state: '恭喜你',  label: '恭喜你（中奖）' },
+  { key: 'won',      state: '中奖了',  label: '中奖了' },
+  { key: 'nowin',    state: '未中奖',  label: '未中奖' },
+  { key: 'nochance', state: '没机会了', label: '没机会了' },
+  { key: 'myprize',  state: '我的奖品', label: '我的奖品' },
+  { key: 'error',    state: '出错了',  label: '出错了' },
+] as const
 
 /* ── 主页面 ── */
 export default function SlotPage() {
@@ -417,53 +442,166 @@ export default function SlotPage() {
     return () => window.removeEventListener('show-toast', fn)
   }, [showToast])
 
-  const refs = {
-    preview:     useRef<HTMLDivElement>(null),
-    bg:          useRef<HTMLDivElement>(null),
-    empty:       useRef<HTMLDivElement>(null),
-    btnActive:   useRef<HTMLDivElement>(null),
-    btnDisabled: useRef<HTMLDivElement>(null),
-    linkPrize:   useRef<HTMLDivElement>(null),
-    linkRule:    useRef<HTMLDivElement>(null),
-    prize:       [useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null)],
-  }
+  // ── 所有预览/导出 100% Canvas，无 html2canvas ──────────────────────────────
+  const [previews, setPreviews] = useState<Record<string, string>>({})
 
-  const ex = useCallback(async (ref: React.RefObject<HTMLDivElement | null>, name: string, w: number, h: number) => {
-    if (!ref.current) return
-    showToast(`正在渲染 ${name}…`)
+  // ── 1. Banner / 按钮 / 链接预览（只在配色/文案变化时重建，不含奖品图和空态）
+  const buildBanner = useCallback(async () => {
+    // 先用当前奖品 canvas（不重绘奖品，避免图片 decode 影响 s1 标题）
+    const pcs = await Promise.all(
+      config.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform))
+    )
+    const [c1, c4a, c4d, c5p, c5r] = await Promise.all([
+      drawSlotBannerCanvas(config, pcs),
+      Promise.resolve(drawButtonCanvas('立即抽奖', config.btnActiveFrom, config.btnActiveTo)),
+      Promise.resolve(drawButtonCanvas('活动已结束', config.btnDisabledFrom, config.btnDisabledTo)),
+      Promise.resolve(drawLinkCanvas([{ text: '我的奖品' }], config.linksColor, 96, 34, 22)),
+      Promise.resolve(drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], config.linksColor, 109, 34, 22)),
+    ])
+    const c2 = drawSlotBgCanvas(config)
+    setPreviews(prev => ({
+      ...prev,
+      s1: c1.toDataURL(), s2: c2.toDataURL(),
+      s4a: c4a.toDataURL(), s4d: c4d.toDataURL(),
+      s5p: c5p.toDataURL(), s5r: c5r.toDataURL(),
+    }))
+  }, [  // eslint-disable-line
+    config.prizes, config.prizeTransforms,
+    config.titleText, config.titleColor, config.linksColor,
+    config.slotTintFrom, config.slotTintTo,
+    config.btnActiveFrom, config.btnActiveTo,
+    config.btnDisabledFrom, config.btnDisabledTo,
+  ])
+
+  // ── 2. 奖品图预览（拖动/上传奖品时只更新 s6，不碰 s1/s2）
+  const buildPrizes = useCallback(async () => {
+    const pcs = await Promise.all(
+      config.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform))
+    )
+    setPreviews(prev => ({
+      ...prev,
+      ...Object.fromEntries(pcs.map((c, i) => [`s6_${i}`, c.toDataURL()])),
+    }))
+  }, [config.prizes, config.prizeTransforms]) // eslint-disable-line
+
+  // ── 3. 空态页预览（只在空态配置变化时更新 s3）
+  const buildEmpty = useCallback(async () => {
+    const c3 = await drawEmptyStateCanvas(config.emptyImageUrl, config.emptyTransform as XfTransform, config.emptyText)
+    setPreviews(prev => ({ ...prev, s3: c3.toDataURL() }))
+  }, [config.emptyImageUrl, config.emptyTransform, config.emptyText])
+
+  // ── 4. 弹窗按钮预览（配色变化时重建）
+  const buildDialogButtons = useCallback(() => {
+    const p: Record<string, string> = {}
+    DIALOG_BUTTONS.forEach(v => {
+      p[v.key] = drawDialogButtonCanvas(v.text, config.btnActiveFrom, config.btnActiveTo, 'subText' in v ? v.subText : undefined).toDataURL()
+    })
+    setPreviews(prev => ({ ...prev, ...Object.fromEntries(Object.entries(p).map(([k, val]) => [`db_${k}`, val])) }))
+  }, [config.btnActiveFrom, config.btnActiveTo])
+
+  // ── 5. 弹窗结果页预览（主题配色变化时重建）
+  const buildDialogResults = useCallback(() => {
+    const p: Record<string, string> = {}
+    DIALOG_RESULTS.forEach(v => {
+      p[v.key] = drawDialogResultCanvas(v.state, config.slotTintFrom, config.slotTintTo, config.titleColor).toDataURL()
+    })
+    setPreviews(prev => ({ ...prev, ...Object.fromEntries(Object.entries(p).map(([k, val]) => [`dr_${k}`, val])) }))
+  }, [config.slotTintFrom, config.slotTintTo, config.titleColor])
+
+  const bannerTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const prizeTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const emptyTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const dialogBtnTimer  = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const dialogResTimer  = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current)
+    bannerTimerRef.current = setTimeout(buildBanner, 400)
+    return () => { if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current) }
+  }, [buildBanner])
+
+  useEffect(() => {
+    if (prizeTimerRef.current) clearTimeout(prizeTimerRef.current)
+    prizeTimerRef.current = setTimeout(buildPrizes, 300)
+    return () => { if (prizeTimerRef.current) clearTimeout(prizeTimerRef.current) }
+  }, [buildPrizes])
+
+  useEffect(() => {
+    if (emptyTimerRef.current) clearTimeout(emptyTimerRef.current)
+    emptyTimerRef.current = setTimeout(buildEmpty, 100)
+    return () => { if (emptyTimerRef.current) clearTimeout(emptyTimerRef.current) }
+  }, [buildEmpty])
+
+  useEffect(() => {
+    if (dialogBtnTimer.current) clearTimeout(dialogBtnTimer.current)
+    dialogBtnTimer.current = setTimeout(buildDialogButtons, 200)
+    return () => { if (dialogBtnTimer.current) clearTimeout(dialogBtnTimer.current) }
+  }, [buildDialogButtons])
+
+  useEffect(() => {
+    if (dialogResTimer.current) clearTimeout(dialogResTimer.current)
+    dialogResTimer.current = setTimeout(buildDialogResults, 200)
+    return () => { if (dialogResTimer.current) clearTimeout(dialogResTimer.current) }
+  }, [buildDialogResults])
+
+  // ── 导出单张 ─────────────────────────────────────────────────────────────
+  const exportOne = useCallback(async (key: string, filename: string, builder: () => Promise<HTMLCanvasElement>) => {
+    showToast(`正在渲染 ${filename}…`)
     try {
-      const canvas = await captureElement(ref.current, w, h)
-      downloadCanvas(canvas, `${name}.png`)
-      showToast(`✅ ${name}.png`)
+      const canvas = await builder()
+      downloadCanvas(canvas, `${filename}.png`)
+      showToast(`✅ ${filename}.png`)
     } catch (e: unknown) { showToast(`❌ ${e instanceof Error ? e.message : '导出失败'}`) }
   }, [showToast])
 
+  // ── 一键导出全部 ──────────────────────────────────────────────────────────
   const doExportAll = useCallback(async () => {
     showToast('正在打包…')
-    const tasks = [
-      { ref: refs.preview,     name: 'slot_1_未抽奖状态_750x242',  w: 750, h: 242 },
-      { ref: refs.bg,          name: 'slot_2_背景_750x242',        w: 750, h: 242 },
-      { ref: refs.empty,       name: 'slot_3_空态页_854x284',      w: 854, h: 284 },
-      { ref: refs.btnActive,   name: 'slot_4_按钮立即抽奖_194x80', w: 194, h: 80  },
-      { ref: refs.btnDisabled, name: 'slot_4_按钮活动结束_194x80', w: 194, h: 80  },
-      { ref: refs.linkPrize,   name: 'slot_5_我的奖品_96x34',      w: 96,  h: 34  },
-      { ref: refs.linkRule,    name: 'slot_5_抽奖规则_109x34',     w: 109, h: 34  },
-      ...refs.prize.map((r, i) => ({ ref: r, name: `slot_6_奖品${i+1}_124x124`, w: 124, h: 124 })),
-    ]
     try {
-      const files = await Promise.all(
-        tasks.filter(t => t.ref.current).map(async t => ({
-          canvas: await captureElement(t.ref.current!, t.w, t.h), name: `${t.name}.png`,
-        }))
-      )
+      const p = config.prizes; const t = config.prizeTransforms
+      const prizes = p.map((pr, i) => ({ prize: pr as PrizeInfo, tr: t[i] as XfTransform }))
+      const pcs = await Promise.all(prizes.map(x => drawPrizeCanvas(x.prize, x.tr)))
+      const [c1, c3, c4a, c4d, c5p, c5r, ...c6s] = await Promise.all([
+        drawSlotBannerCanvas(config, pcs),
+        drawEmptyStateCanvas(config.emptyImageUrl, config.emptyTransform as XfTransform, config.emptyText),
+        Promise.resolve(drawButtonCanvas('立即抽奖', config.btnActiveFrom, config.btnActiveTo)),
+        Promise.resolve(drawButtonCanvas('活动已结束', config.btnDisabledFrom, config.btnDisabledTo)),
+        Promise.resolve(drawLinkCanvas([{ text: '我的奖品' }], config.linksColor, 96, 34, 22)),
+        Promise.resolve(drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], config.linksColor, 109, 34, 22)),
+        ...prizes.map(x => drawPrizeCanvas(x.prize, x.tr)),
+      ])
+      const c2 = drawSlotBgCanvas(config)
+      const dialogBtnFiles = DIALOG_BUTTONS.map(v => ({
+        canvas: drawDialogButtonCanvas(v.text, config.btnActiveFrom, config.btnActiveTo, 'subText' in v ? v.subText : undefined),
+        name: `dialog_7_弹窗按钮_${v.label}_276x80.png`,
+      }))
+      const dialogResFiles = DIALOG_RESULTS.map(v => ({
+        canvas: drawDialogResultCanvas(v.state, config.slotTintFrom, config.slotTintTo, config.titleColor),
+        name: `dialog_8_弹窗结果页_${v.label}_750x612.png`,
+      }))
+      const files = [
+        { canvas: c1, name: 'slot_1_未抽奖状态_750x242.png' },
+        { canvas: c2, name: 'slot_2_背景_750x242.png' },
+        { canvas: c3, name: 'slot_3_空态页_854x284.png' },
+        { canvas: c4a, name: 'slot_4_按钮立即抽奖_194x80.png' },
+        { canvas: c4d, name: 'slot_4_按钮活动结束_194x80.png' },
+        { canvas: c5p, name: 'slot_5_我的奖品_96x34.png' },
+        { canvas: c5r, name: 'slot_5_抽奖规则_109x34.png' },
+        ...(c6s as HTMLCanvasElement[]).map((c, i) => ({ canvas: c, name: `slot_6_奖品${i+1}_124x124.png` })),
+        ...dialogBtnFiles,
+        ...dialogResFiles,
+      ]
       await downloadZip(files, '老虎机_切图包')
       showToast('✅ 已打包：老虎机_切图包.zip')
     } catch (e: unknown) { showToast(`❌ ${e instanceof Error ? e.message : '打包失败'}`) }
-  }, [showToast]) // eslint-disable-line
+  }, [config, showToast]) // eslint-disable-line
+
+  useEffect(() => {
+    gsap.from('.slot-section-title', { opacity: 0, y: 16, duration: 0.4, stagger: 0.07, delay: 0.1, ease: 'power2.out', clearProps: 'all' })
+  }, [])  // 只在挂载时执行一次
 
   useEffect(() => {
     registerExportAll(doExportAll)
-    gsap.from('.slot-section-title', { opacity: 0, y: 16, duration: 0.4, stagger: 0.07, delay: 0.1, ease: 'power2.out', clearProps: 'all' })
     return () => registerExportAll(null)
   }, [doExportAll, registerExportAll])
 
@@ -475,121 +613,162 @@ export default function SlotPage() {
   } as React.CSSProperties
 
   return (
+    <>
     <div style={v}>
-      {/* Stepper */}
-      <Stepper />
-
-      <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
+      <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 32, position: 'relative' }}>
 
         {/* ── 1 未抽奖状态 ── */}
         <div id="slot-section-1">
           <SectionTitle num={1} label="老虎机未抽奖状态" sub="含标题 + 奖品图 + 按钮 · 750 × 242 px" badge="素材 1" />
           <ExportCard label="老虎机 — 未抽奖状态" sub="750 × 242 px · PNG"
-            onExport={() => ex(refs.preview, 'slot_1_未抽奖状态_750x242', 750, 242)}
+            onExport={() => exportOne('s1', 'slot_1_未抽奖状态_750x242', async () => drawSlotBannerCanvas(config, await Promise.all(config.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform)))))}
             onPreview={() => showToast('已同步到手机预览')}>
-            <div ref={refs.preview} style={{ width: 750, height: 242, position: 'relative', overflow: 'hidden', background: `linear-gradient(120deg,var(--slot-tint-from),var(--slot-tint-to))`, borderRadius: 20, flexShrink: 0 }}>
-              <div style={{ position: 'absolute', left: 42, top: 25, fontSize: 33, fontWeight: 500, color: 'var(--slot-title-color)', fontFamily: PF, zIndex: 3 }}>{config.titleText}</div>
-              <div style={{ position: 'absolute', top: 24, right: 48, display: 'flex', alignItems: 'center', fontSize: 22, color: 'var(--slot-links-color)', fontFamily: PF, zIndex: 3 }}>
-                <span>我的奖品</span><span style={{ margin: '0 8px', opacity: 0.6 }}>|</span><span>抽奖规则</span>
-              </div>
-              <div style={{ position: 'absolute', left: 43, top: 76, width: 441, height: 142, borderRadius: 20, background: '#fff', border: '1px solid rgba(0,0,0,0.1)', zIndex: 1 }} />
-              <div style={{ position: 'absolute', left: 43, top: 76, width: 441, height: 142, zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '0 12px' }}>
-                {config.prizes.map((p, i) => (
-                  <PrizeCardFull key={i} prize={p} transform={config.prizeTransforms[i]} />
-                ))}
-              </div>
-              <div style={{ position: 'absolute', right: 46, top: 106, width: 194, height: 80, borderRadius: 40, zIndex: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(90deg,var(--btn-active-from),var(--btn-active-to))`, fontSize: 30, color: '#fff', fontFamily: PF }}>立即抽奖</div>
-              <div style={{ position: 'absolute', right: 46, bottom: 14, fontSize: 14, color: 'var(--slot-links-color)', textAlign: 'center', width: 194, zIndex: 3 }}>还剩 999 次抽奖机会</div>
-            </div>
+            {previews.s1
+              ? <img src={previews.s1} style={{ width: 495, height: 160, borderRadius: 13, display: 'block', flexShrink: 0 }} />
+              : <div style={{ width: 495, height: 160, borderRadius: 13, background: `linear-gradient(120deg,${config.slotTintFrom},${config.slotTintTo})`, flexShrink: 0 }} />
+            }
           </ExportCard>
         </div>
 
         {/* ── 2 背景 ── */}
-        <div id="slot-section-2">
+        <div>
           <SectionTitle num={2} label="老虎机背景" sub="含主标题，不带商品图 · 750 × 242 px" badge="素材 2" />
-          <ExportCard label="老虎机背景（含主标题）" sub="750 × 242 px · PNG" onExport={() => ex(refs.bg, 'slot_2_背景_750x242', 750, 242)}>
-            <div ref={refs.bg} style={{ width: 750, height: 242, position: 'relative', overflow: 'hidden', background: `linear-gradient(120deg,var(--slot-tint-from),var(--slot-tint-to))`, borderRadius: 20, flexShrink: 0 }}>
-              <div style={{ position: 'absolute', left: 42, top: 25, fontSize: 33, fontWeight: 500, color: 'var(--slot-title-color)', fontFamily: PF }}>{config.titleText}</div>
-              <div style={{ position: 'absolute', left: 43, top: 76, width: 441, height: 142, borderRadius: 20, background: '#fff', border: '1px solid rgba(0,0,0,0.1)' }} />
-            </div>
+          <ExportCard label="老虎机背景（含主标题）" sub="750 × 242 px · PNG"
+            onExport={() => exportOne('s2', 'slot_2_背景_750x242', async () => drawSlotBgCanvas(config))}>
+            {previews.s2
+              ? <img src={previews.s2} style={{ width: 495, height: 160, borderRadius: 13, display: 'block', flexShrink: 0 }} />
+              : <div style={{ width: 495, height: 160, borderRadius: 13, background: `linear-gradient(120deg,${config.slotTintFrom},${config.slotTintTo})`, flexShrink: 0 }} />
+            }
           </ExportCard>
         </div>
 
         {/* ── 3 空态页 ── */}
-        <div id="slot-section-3">
+        <div>
           <SectionTitle num={3} label="老虎机空态页" sub="854 × 284 px @2x" badge="素材 3" />
-          <ExportCard label="老虎机空态页" sub="854 × 284 px · PNG" onExport={() => ex(refs.empty, 'slot_3_空态页_854x284', 854, 284)}>
-            <div ref={refs.empty} style={{ width: 427, height: 142, borderRadius: 12, background: '#fff', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-              {/* 空态插图：可拖拽 + 滚轮缩放 */}
-              <DraggableImageWrap
-                w={239} h={96}
-                transform={config.emptyTransform}
-                imageUrl={config.emptyImageUrl}
-                onTransformChange={t => setEmptyTransform(t)}
-                emptyHint="点击上传\n自定义插图"
-                minScale={0} maxScale={2}
-                cursor="grab"
-              />
+          <ExportCard label="老虎机空态页" sub="854 × 284 px · PNG"
+            onExport={() => exportOne('s3', 'slot_3_空态页_854x284', () => drawEmptyStateCanvas(config.emptyImageUrl, config.emptyTransform as XfTransform, config.emptyText))}
+            onPreview={() => showToast('空态页插图已同步，可在上方预览卡查看')}>
+            <div style={{ width: 427, height: 142, borderRadius: 12, background: '#fff', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+              <DraggableImageWrap w={239} h={96} transform={config.emptyTransform} imageUrl={config.emptyImageUrl}
+                onTransformChange={t => setEmptyTransform(t)} emptyHint="点击上传\n自定义插图" minScale={0} maxScale={2} cursor="grab" />
               <div style={{ marginTop: 2, fontFamily: PF, fontSize: 13, color: '#999', textAlign: 'center', whiteSpace: 'nowrap' }}>{config.emptyText}</div>
             </div>
           </ExportCard>
           {config.emptyImageUrl && (
             <div style={{ marginTop: 6, fontSize: 11, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
-              拖动插图调整位置 · 滚轮调整大小 · 在左侧面板替换图片
+              拖动插图调整位置 · 滚轮调整大小
             </div>
           )}
         </div>
 
         {/* ── 4 按钮（两款）── */}
-        <div id="slot-section-4">
+        <div>
           <SectionTitle num={4} label="抽奖按钮" sub="194 × 80 px · 随配色自动适配" badge="素材 4–5" />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <ExportCard label="按钮 — 立即抽奖" sub="194 × 80 px · PNG" onExport={() => ex(refs.btnActive, 'slot_4_按钮立即抽奖_194x80', 194, 80)}>
-              <div ref={refs.btnActive} style={{ width: 194, height: 80, borderRadius: 40, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(90deg,var(--btn-active-from),var(--btn-active-to))`, fontSize: 30, color: '#fff', fontFamily: PF }}>立即抽奖</div>
+            <ExportCard label="按钮 — 立即抽奖" sub="194 × 80 px · PNG"
+              onExport={() => exportOne('s4a', 'slot_4_按钮立即抽奖_194x80', async () => drawButtonCanvas('立即抽奖', config.btnActiveFrom, config.btnActiveTo))}>
+              {previews.s4a
+                ? <img src={previews.s4a} style={{ width: 194, height: 80, display: 'block', flexShrink: 0 }} />
+                : <div style={{ width: 194, height: 80, borderRadius: 40, background: `linear-gradient(90deg,${config.btnActiveFrom},${config.btnActiveTo})`, flexShrink: 0 }} />
+              }
             </ExportCard>
-            <ExportCard label="按钮 — 活动已结束" sub="194 × 80 px · PNG" onExport={() => ex(refs.btnDisabled, 'slot_4_按钮活动结束_194x80', 194, 80)}>
-              <div ref={refs.btnDisabled} style={{ width: 194, height: 80, borderRadius: 40, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(90deg,var(--btn-disabled-from),var(--btn-disabled-to))`, fontSize: 30, color: '#fff', fontFamily: PF }}>活动已结束</div>
+            <ExportCard label="按钮 — 活动已结束" sub="194 × 80 px · PNG"
+              onExport={() => exportOne('s4d', 'slot_4_按钮活动结束_194x80', async () => drawButtonCanvas('活动已结束', config.btnDisabledFrom, config.btnDisabledTo))}>
+              {previews.s4d
+                ? <img src={previews.s4d} style={{ width: 194, height: 80, display: 'block', flexShrink: 0 }} />
+                : <div style={{ width: 194, height: 80, borderRadius: 40, background: `linear-gradient(90deg,${config.btnDisabledFrom},${config.btnDisabledTo})`, flexShrink: 0 }} />
+              }
             </ExportCard>
           </div>
         </div>
 
         {/* ── 5 链接（两款）── */}
-        <div id="slot-section-5">
+        <div>
           <SectionTitle num={5} label="链接文字" sub="透明背景 · 随配色自动适配" />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <ExportCard label="我的奖品" sub="96 × 34 px · PNG" onExport={() => ex(refs.linkPrize, 'slot_5_我的奖品_96x34', 96, 34)}>
-              <div ref={refs.linkPrize} style={{ width: 96, height: 34, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: 'var(--slot-links-color)', fontFamily: PF }}>我的奖品</div>
+            <ExportCard label="我的奖品" sub="96 × 34 px · PNG"
+              onExport={() => exportOne('s5p', 'slot_5_我的奖品_96x34', async () => drawLinkCanvas([{ text: '我的奖品' }], config.linksColor, 96, 34, 22))}>
+              {previews.s5p
+                ? <img src={previews.s5p} style={{ width: 96, height: 34, display: 'block', flexShrink: 0 }} />
+                : <div style={{ width: 96, height: 34, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: config.linksColor, fontFamily: PF }}>我的奖品</div>
+              }
             </ExportCard>
-            <ExportCard label="抽奖规则" sub="109 × 34 px · PNG" onExport={() => ex(refs.linkRule, 'slot_5_抽奖规则_109x34', 109, 34)}>
-              <div ref={refs.linkRule} style={{ width: 109, height: 34, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: 'var(--slot-links-color)', fontFamily: PF }}>
-                <span style={{ opacity: 0.6, marginRight: 8 }}>|</span>抽奖规则
-              </div>
+            <ExportCard label="抽奖规则" sub="109 × 34 px · PNG"
+              onExport={() => exportOne('s5r', 'slot_5_抽奖规则_109x34', async () => drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], config.linksColor, 109, 34, 22))}>
+              {previews.s5r
+                ? <img src={previews.s5r} style={{ width: 109, height: 34, display: 'block', flexShrink: 0 }} />
+                : <div style={{ width: 109, height: 34, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: config.linksColor, fontFamily: PF }}>
+                    <span style={{ opacity: 0.6, marginRight: 8 }}>|</span>抽奖规则
+                  </div>
+              }
             </ExportCard>
           </div>
         </div>
 
         {/* ── 6 奖品图（可点击上传）── */}
-        <div id="slot-section-6">
+        <div>
           <SectionTitle num={6} label="奖品图" sub="124 × 124 px · 点击棋盘格区域上传商品图" badge="素材 6" />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
             {config.prizes.map((p, i) => (
               <PrizeEditorCard
                 key={i} idx={i} prize={p}
-                onExport={() => ex(refs.prize[i], `slot_6_奖品${i+1}_124x124`, 124, 124)}
+                onExport={() => exportOne(`s6_${i}`, `slot_6_奖品${i+1}_124x124`, () => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform))}
+                onPreview={() => showToast('已同步到手机预览')}
               />
             ))}
           </div>
-          {/* 隐藏导出用 canvas — 应用 prizeTransforms */}
-          <div style={{ position: 'absolute', left: -9999, top: -9999 }}>
-            {config.prizes.map((p, i) => (
-              <div key={i} ref={refs.prize[i]} style={{ width: 124, height: 124, background: 'transparent' }}>
-                <PrizeCardFull prize={p} transform={config.prizeTransforms[i]} />
-              </div>
-            ))}
+        </div>
+
+        {/* ── 分隔线：弹窗部分 ── */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.8px', marginBottom: 24 }}>
+            老虎机弹窗
+          </div>
+
+          {/* ── 7 弹窗按钮 ── */}
+          <div style={{ marginBottom: 32 }}>
+            <SectionTitle num={7} label="弹窗按钮" sub="276 × 80 px · 7 款 · 随配色自动适配" />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+              {DIALOG_BUTTONS.map(v => (
+                <ExportCard key={v.key} label={v.label} sub="276 × 80 px · PNG"
+                  onExport={() => exportOne(
+                    `db_${v.key}`, `dialog_7_弹窗按钮_${v.label}_276x80`,
+                    async () => drawDialogButtonCanvas(v.text, config.btnActiveFrom, config.btnActiveTo, 'subText' in v ? v.subText : undefined),
+                  )}
+                >
+                  {previews[`db_${v.key}`]
+                    ? <img src={previews[`db_${v.key}`]} style={{ width: '100%', maxWidth: 276, height: 'auto', display: 'block' }} />
+                    : <div style={{ width: '100%', maxWidth: 276, aspectRatio: '276/80', borderRadius: 40, background: `linear-gradient(90deg,${config.btnActiveFrom},${config.btnActiveTo})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#fff', fontFamily: PF }}>{v.text}</div>
+                  }
+                </ExportCard>
+              ))}
+            </div>
+          </div>
+
+          {/* ── 8 弹窗结果页 ── */}
+          <div>
+            <SectionTitle num={8} label="弹窗结果页" sub="750 × 612 px · 6 款状态" />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 16 }}>
+              {DIALOG_RESULTS.map(v => (
+                <ExportCard key={v.key} label={v.label} sub="750 × 612 px · PNG"
+                  onExport={() => exportOne(
+                    `dr_${v.key}`, `dialog_8_弹窗结果页_${v.label}_750x612`,
+                    async () => drawDialogResultCanvas(v.state, config.slotTintFrom, config.slotTintTo, config.titleColor),
+                  )}
+                >
+                  {previews[`dr_${v.key}`]
+                    ? <img src={previews[`dr_${v.key}`]} style={{ width: '100%', maxWidth: 375, height: 'auto', borderRadius: 22, display: 'block' }} />
+                    : <div style={{ width: '100%', maxWidth: 375, aspectRatio: '750/612', borderRadius: 22, background: `linear-gradient(120deg,${config.slotTintFrom},${config.slotTintTo})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#fff', fontFamily: PF }}>{v.state}</div>
+                  }
+                </ExportCard>
+              ))}
+            </div>
           </div>
         </div>
 
       </div>
     </div>
+
+    </>
   )
 }

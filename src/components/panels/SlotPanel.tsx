@@ -4,12 +4,14 @@ import { useSlot, SLOT_PRESETS } from '@/contexts/SlotContext'
 import type { PrizeType, PrizeConfig } from '@/types'
 import {
   PF, PanelInput, PanelSection,
-  DisclosureGroup, ColorField, PanelListbox,
+  ColorField, PanelListbox,
 } from '@/components/ui/PanelField'
 
 /* ── 配色预设 ── */
 const LIGHT_PRESETS = ['pink','rose','orange','yellow','green','teal','purple']
 const DARK_PRESETS  = ['dark-red','dark-orange','dark-green','dark-blue','dark-purple']
+// 大促色背景 → 推荐同色系（暖色系）浅色预设
+const WARM_PRESETS  = ['pink','rose','orange','yellow']
 const PRESET_DOTS: Record<string,string> = {
   pink:'#FF5518', rose:'#FF1C18', orange:'#FF5E00', yellow:'#FF4560',
   green:'#27D365', teal:'#06B1FF', purple:'#9771FF',
@@ -62,7 +64,7 @@ function SwatchRow({ colors, active, onSelect }: { colors:string[]; active:strin
 /* ── 奖品图配置块 ── */
 const PRIZE_TYPE_OPTIONS: { value: PrizeType; label: string }[] = [
   { value: 'product-tag',    label: '产品图 + 标签' },
-  { value: 'product-dashed', label: '产品图 + 虚线' },
+  { value: 'product-dashed', label: '产品图' },
   { value: 'amount',         label: '金额券' },
   { value: 'thanks',         label: '谢谢参与' },
 ]
@@ -182,9 +184,47 @@ function EmptySection() {
   )
 }
 
+/* ── 手风琴 section 头 ── */
+function AccordionHeader({
+  title, badge, open, onClick,
+}: { title: string; badge?: string; open: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/[0.04] transition-colors border-b border-white/[0.07]"
+    >
+      <span className="w-1.5 h-1.5 rounded-full bg-red-400/70 shrink-0" />
+      <span className="flex-1 text-xs font-medium text-white/80">{title}</span>
+      {badge && (
+        <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/[0.07] text-white/35 shrink-0">
+          {badge}
+        </span>
+      )}
+      <svg
+        className={`w-3 h-3 text-white/25 transition-transform duration-200 shrink-0 ${open ? '' : '-rotate-90'}`}
+        viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={1.8}
+      >
+        <path d="M2 4l4 4 4-4" />
+      </svg>
+    </button>
+  )
+}
+
 /* ── 主面板 ── */
 export default function SlotPanel() {
   const { config, activePreset, setConfig, applyPreset, setPrize } = useSlot()
+  const [openSection, setOpenSection] = useState<string>('配色预设')
+
+  const toggle = (s: string) => setOpenSection(prev => prev === s ? '' : s)
+
+  // 根据会场背景色决定推荐哪组配色预设
+  const darkBgSet  = new Set(BG_SWATCHES_DARK)
+  const promoBgSet = new Set(BG_SWATCHES_PROMO)
+  const lightBgSet = new Set(BG_SWATCHES_LIGHT)
+  const bgTone = darkBgSet.has(config.bgColor)  ? 'dark'
+               : promoBgSet.has(config.bgColor) ? 'promo'
+               : lightBgSet.has(config.bgColor) ? 'light'
+               : 'both'
 
   const handlePrizeImg = (idx: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return
@@ -193,26 +233,53 @@ export default function SlotPanel() {
     reader.readAsDataURL(file)
   }
 
+  const Section = ({ id, badge, children }: { id: string; badge?: string; children: React.ReactNode }) => (
+    <div>
+      <AccordionHeader title={id} badge={badge} open={openSection === id} onClick={() => toggle(id)} />
+      {openSection === id && (
+        <div className="px-4 py-3 space-y-3 border-b border-white/[0.07]">
+          {children}
+        </div>
+      )}
+    </div>
+  )
+
   return (
     <div>
       {/* 组件标题 */}
-      <div className="px-4 py-3 border-b border-white/[0.07] flex items-center gap-2">
-        <span>🎰</span>
-        <span className="text-xs font-semibold text-white/80">老虎机</span>
+      <div className="px-4 py-3.5 border-b border-white/[0.07]">
+        <span className="text-sm font-semibold text-white/90 tracking-tight">老虎机</span>
       </div>
 
-      {/* 配色预设 */}
-      <DisclosureGroup title="配色预设" badge="素材 1–5" defaultOpen>
-        <PF label="浅色系">
-          <PresetGrid keys={LIGHT_PRESETS} active={activePreset} onSelect={applyPreset} />
-        </PF>
-        <PF label="深色系">
-          <PresetGrid keys={DARK_PRESETS} active={activePreset} onSelect={applyPreset} />
-        </PF>
-      </DisclosureGroup>
+      <Section id="配色预设" badge="素材 1–5">
+        {bgTone === 'dark' && (
+          <PF label="推荐 · 深色系">
+            <PresetGrid keys={DARK_PRESETS} active={activePreset} onSelect={applyPreset} />
+          </PF>
+        )}
+        {bgTone === 'light' && (
+          <PF label="推荐 · 浅色系">
+            <PresetGrid keys={LIGHT_PRESETS} active={activePreset} onSelect={applyPreset} />
+          </PF>
+        )}
+        {bgTone === 'promo' && (
+          <PF label="推荐 · 同色系">
+            <PresetGrid keys={WARM_PRESETS} active={activePreset} onSelect={applyPreset} />
+          </PF>
+        )}
+        {bgTone === 'both' && (
+          <>
+            <PF label="浅色系">
+              <PresetGrid keys={LIGHT_PRESETS} active={activePreset} onSelect={applyPreset} />
+            </PF>
+            <PF label="深色系">
+              <PresetGrid keys={DARK_PRESETS} active={activePreset} onSelect={applyPreset} />
+            </PF>
+          </>
+        )}
+      </Section>
 
-      {/* 会场背景色 */}
-      <DisclosureGroup title="会场背景色" badge="预览面板">
+      <Section id="会场背景色" badge="预览面板">
         <PF label="浅色系">
           <SwatchRow colors={BG_SWATCHES_LIGHT} active={config.bgColor} onSelect={c => setConfig({ bgColor: c })} />
         </PF>
@@ -223,23 +290,20 @@ export default function SlotPanel() {
           <SwatchRow colors={BG_SWATCHES_DARK} active={config.bgColor} onSelect={c => setConfig({ bgColor: c })} />
         </PF>
         <ColorField label="自定义" value={config.bgColor} onChange={c => setConfig({ bgColor: c })} />
-      </DisclosureGroup>
+      </Section>
 
-      {/* 文案设置 */}
-      <DisclosureGroup title="文案设置" badge="素材 2" defaultOpen>
+      <Section id="文案设置" badge="素材 2">
         <PF label="主标题文案">
           <PanelInput value={config.titleText} onChange={e => setConfig({ titleText: e.target.value })} placeholder="天天抽免单" />
         </PF>
         <ColorField label="标题文字色" value={config.titleColor} onChange={c => setConfig({ titleColor: c })} />
-      </DisclosureGroup>
+      </Section>
 
-      {/* 空态页 */}
-      <DisclosureGroup title="空态页设置" badge="素材 3">
+      <Section id="空态页设置" badge="素材 3">
         <EmptySection />
-      </DisclosureGroup>
+      </Section>
 
-      {/* 奖品图 */}
-      <DisclosureGroup title="奖品图设置" badge="素材 6" defaultOpen>
+      <Section id="奖品图设置" badge="素材 6">
         <div className="space-y-4">
           {config.prizes.map((prize, idx) => (
             <PrizeBlock
@@ -249,7 +313,32 @@ export default function SlotPanel() {
             />
           ))}
         </div>
-      </DisclosureGroup>
+      </Section>
+
+      {/* ── 老虎机弹窗 父标题 ── */}
+      <div className="px-4 py-3.5 border-t border-b border-white/[0.07] mt-1">
+        <span className="text-sm font-semibold text-white/90 tracking-tight">老虎机弹窗</span>
+      </div>
+
+      <Section id="弹窗按钮配色" badge="素材 7">
+        <div className="text-[11px] text-white/35 leading-relaxed mb-1">
+          跟随老虎机激活按钮配色
+        </div>
+        <div style={{ height: 40, borderRadius: 20, background: `linear-gradient(90deg, ${config.btnActiveFrom}, ${config.btnActiveTo})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#fff', marginBottom: 8 }}>
+          弹窗按钮预览
+        </div>
+        <ColorField label="渐变起始色" value={config.btnActiveFrom} onChange={c => setConfig({ btnActiveFrom: c })} />
+        <ColorField label="渐变结束色" value={config.btnActiveTo} onChange={c => setConfig({ btnActiveTo: c })} />
+      </Section>
+
+      <Section id="弹窗结果页配色" badge="素材 8">
+        <div className="text-[11px] text-white/35 leading-relaxed mb-1">
+          跟随老虎机主题背景色
+        </div>
+        <div style={{ height: 48, borderRadius: 10, background: `linear-gradient(120deg, ${config.slotTintFrom}, ${config.slotTintTo})`, marginBottom: 8 }} />
+        <ColorField label="背景起始色" value={config.slotTintFrom} onChange={c => setConfig({ slotTintFrom: c })} />
+        <ColorField label="背景结束色" value={config.slotTintTo} onChange={c => setConfig({ slotTintTo: c })} />
+      </Section>
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { AppProvider, useApp } from '@/contexts/AppContext'
 import { N4Provider } from '@/contexts/N4Context'
 import { N2Provider } from '@/contexts/N2Context'
@@ -13,10 +14,31 @@ import YituosiPage from '@/components/pages/YituosiPage'
 import GenericPage from '@/components/pages/GenericPage'
 import AssetsPage from '@/components/pages/AssetsPage'
 
+// 全局滚动检测：给正在滚动的元素加 is-scrolling，900ms 后移除
+function useGlobalScrollVisible() {
+  useEffect(() => {
+    const timers = new Map<EventTarget, ReturnType<typeof setTimeout>>()
+    const onScroll = (e: Event) => {
+      const el = e.target as HTMLElement
+      if (!el || !el.classList) return
+      el.classList.add('is-scrolling')
+      const prev = timers.get(el)
+      if (prev) clearTimeout(prev)
+      timers.set(el, setTimeout(() => {
+        el.classList.remove('is-scrolling')
+        timers.delete(el)
+      }, 900))
+    }
+    document.addEventListener('scroll', onScroll, { passive: true, capture: true })
+    return () => document.removeEventListener('scroll', onScroll, { capture: true })
+  }, [])
+}
+
 function MainContent() {
   const { page, currentComp, toast, hasPreview } = useApp()
+  useGlobalScrollVisible()
 
-  const PageContent = () => {
+  const pageContent = (() => {
     if (page === 'home') return <div className="page-enter"><HomePage /></div>
     if (page === 'assets') return <div className="page-enter"><AssetsPage /></div>
     if (page === 'comp') {
@@ -32,7 +54,7 @@ function MainContent() {
       return <div key={currentComp} className="page-enter">{inner}</div>
     }
     return <div className="page-enter"><HomePage /></div>
-  }
+  })()
 
   return (
     <div className="flex h-screen" style={{ background: 'var(--bg)' }}>
@@ -48,7 +70,7 @@ function MainContent() {
           className="flex-1 overflow-y-auto"
           style={{ marginTop: page !== 'home' ? 56 : 0 }}
         >
-          <PageContent />
+          {pageContent}
         </main>
       </div>
 
