@@ -495,7 +495,7 @@ export default function SlotPage() {
   const buildDialogButtons = useCallback(() => {
     const p: Record<string, string> = {}
     DIALOG_BUTTONS.forEach(v => {
-      p[v.key] = drawDialogButtonCanvas(v.text, config.btnActiveFrom, config.btnActiveTo, 'subText' in v ? v.subText : undefined).toDataURL()
+      p[v.key] = drawDialogButtonCanvas(v.text, config.btnActiveFrom, config.btnActiveTo, undefined).toDataURL()
     })
     setPreviews(prev => ({ ...prev, ...Object.fromEntries(Object.entries(p).map(([k, val]) => [`db_${k}`, val])) }))
   }, [config.btnActiveFrom, config.btnActiveTo])
@@ -546,7 +546,7 @@ export default function SlotPage() {
   }, [buildDialogResults])
 
   // ── 导出单张 ─────────────────────────────────────────────────────────────
-  const exportOne = useCallback(async (key: string, filename: string, builder: () => Promise<HTMLCanvasElement>) => {
+  const exportOne = useCallback(async (_key: string, filename: string, builder: () => Promise<HTMLCanvasElement>) => {
     showToast(`正在渲染 ${filename}…`)
     try {
       const canvas = await builder()
@@ -573,7 +573,7 @@ export default function SlotPage() {
       ])
       const c2 = drawSlotBgCanvas(config)
       const dialogBtnFiles = DIALOG_BUTTONS.map(v => ({
-        canvas: drawDialogButtonCanvas(v.text, config.btnActiveFrom, config.btnActiveTo, 'subText' in v ? v.subText : undefined),
+        canvas: drawDialogButtonCanvas(v.text, config.btnActiveFrom, config.btnActiveTo, undefined),
         name: `dialog_7_弹窗按钮_${v.label}_276x80.png`,
       }))
       const dialogResFiles = DIALOG_RESULTS.map(v => ({
@@ -734,7 +734,7 @@ export default function SlotPage() {
                 <ExportCard key={v.key} label={v.label} sub="276 × 80 px · PNG"
                   onExport={() => exportOne(
                     `db_${v.key}`, `dialog_7_弹窗按钮_${v.label}_276x80`,
-                    async () => drawDialogButtonCanvas(v.text, config.btnActiveFrom, config.btnActiveTo, 'subText' in v ? v.subText : undefined),
+                    async () => drawDialogButtonCanvas(v.text, config.btnActiveFrom, config.btnActiveTo, undefined),
                   )}
                 >
                   {previews[`db_${v.key}`]
