@@ -265,9 +265,9 @@ export function PrizeCardFull({
             background: 'linear-gradient(180deg, #FEF8DD 4%, #FBE5A2 50%, #FDF4C8 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <div style={{ fontSize: 20, fontWeight: 400, color: '#77321E', textAlign: 'center', lineHeight: 1.3, fontFamily: PF }}>
-              {prize.thanksText === '谢谢参与'
-                ? <>{prize.thanksText.slice(0, 2)}<br />{prize.thanksText.slice(2)}</>
+            <div style={{ fontSize: 27, fontWeight: 400, color: '#77321E', textAlign: 'center', lineHeight: '27px', fontFamily: PF }}>
+              {(prize.thanksText || '谢谢参与').length === 4
+                ? <>{(prize.thanksText || '谢谢参与').slice(0, 2)}<br />{(prize.thanksText || '谢谢参与').slice(2)}</>
                 : prize.thanksText || '谢谢参与'}
             </div>
           </div>
@@ -393,7 +393,7 @@ function PrizeEditorCard({ idx, prize, onExport, onPreview }: {
             )}
             {isThanks && (
               <div style={{ width: 99, height: 99, borderRadius: '50%', background: 'linear-gradient(180deg, #FEF8DD 4%, #FBE5A2 50%, #FDF4C8 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ fontSize: 20, fontWeight: 400, color: '#77321E', textAlign: 'center', lineHeight: 1.3, fontFamily: PF }}>
+                <div style={{ fontSize: 27, fontWeight: 400, color: '#77321E', textAlign: 'center', lineHeight: '27px', fontFamily: PF }}>
                   {(prize.thanksText || '谢谢参与').length === 4
                     ? <>{(prize.thanksText || '谢谢参与').slice(0, 2)}<br />{(prize.thanksText || '谢谢参与').slice(2)}</>
                     : prize.thanksText || '谢谢参与'}
