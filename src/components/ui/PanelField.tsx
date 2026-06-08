@@ -2,7 +2,7 @@
  * 侧边栏配置面板通用字段组件
  * Input / Textarea 用 Headless UI v2（data-[focus]/data-[hover] 状态）
  */
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, startTransition } from 'react'
 import {
   Input,
   Disclosure, DisclosureButton, DisclosurePanel,
@@ -68,7 +68,11 @@ export function PanelInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
 
   const emit = (val: string) => {
     lastEmitted.current = val
-    onChange?.({ target: { value: val } } as React.ChangeEvent<HTMLInputElement>)
+    // startTransition：让全局 setConfig 重渲染变成可中断的低优先级更新
+    // React 18 会在新输入事件到来时中断该渲染，确保输入/删除始终流畅
+    startTransition(() => {
+      onChange?.({ target: { value: val } } as React.ChangeEvent<HTMLInputElement>)
+    })
   }
 
   const triggerGlobal = (val: string) => {
@@ -158,7 +162,9 @@ export function PanelTextarea(props: React.TextareaHTMLAttributes<HTMLTextAreaEl
 
   const emit = (val: string) => {
     lastEmitted.current = val
-    onChange?.({ target: { value: val } } as React.ChangeEvent<HTMLTextAreaElement>)
+    startTransition(() => {
+      onChange?.({ target: { value: val } } as React.ChangeEvent<HTMLTextAreaElement>)
+    })
   }
 
   const triggerGlobal = (val: string) => {

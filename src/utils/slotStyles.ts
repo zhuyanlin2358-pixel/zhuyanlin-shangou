@@ -58,19 +58,16 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
   daily: {
     id: 'daily',
     label: '日常活动',
-    drawBg: (ctx, W, H, { tintFrom, tintTo }) => {
-      // Figma 层级（后→前）：
-      // ① 蒙版（主背景，横向渐变，覆盖全区，x:24 w:702 h:242）
-      // ② 矩形备份7（叠在主背景上，multiply 加深右上角，x:342 y:0 w:384 h:105 r:24）
-
-      // 1. 蒙版主背景：Figma 横向渐变，左浅→右深
+    // 固定粉色，不跟主题预设走（Figma gradient picker 精确值）
+    drawBg: (ctx, W, H, _colors) => {
+      // 1. 蒙版主背景：#FFF2F6 → #FEDCE2 横向渐变（截图精确值）
       const mainBg = ctx.createLinearGradient(0, 0, W, 0)
-      mainBg.addColorStop(0, tintFrom)
-      mainBg.addColorStop(1, tintTo)
+      mainBg.addColorStop(0, '#FFF2F6')
+      mainBg.addColorStop(1, '#FEDCE2')
       ctx.fillStyle = mainBg
       ctx.fillRect(0, 0, W, H)
 
-      // 2. 矩形备份7：x:342 y:0 w:384 h:105 r:24，multiply 自然加深右上区域
+      // 2. 矩形备份7：x:342 y:0 w:384 h:105 r:24，比主背景深一档，实色叠加
       ctx.save()
       ctx.beginPath()
       ctx.moveTo(366, 0)
@@ -82,19 +79,15 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
       ctx.arcTo(342, 0, 366, 0, 24)
       ctx.closePath()
       ctx.clip()
-      ctx.globalCompositeOperation = 'multiply'
-      ctx.globalAlpha = 0.38
       const rect7G = ctx.createLinearGradient(342, 0, 726, 0)
-      rect7G.addColorStop(0, tintFrom)
-      rect7G.addColorStop(1, tintTo)
+      rect7G.addColorStop(0, '#FEDCE2')
+      rect7G.addColorStop(1, '#F8C0D3')
       ctx.fillStyle = rect7G
       ctx.fillRect(342, 0, 384, 105)
       ctx.restore()
 
-      // 3. 顶部 1px 内描边（Figma inset 0px 1px 0px white）
-      ctx.globalCompositeOperation = 'source-over'
-      ctx.globalAlpha = 1
-      ctx.fillStyle = 'rgba(255,255,255,0.65)'
+      // 3. 顶部 1px 内描边
+      ctx.fillStyle = 'rgba(255,255,255,0.80)'
       ctx.fillRect(0, 0, W, 1)
     },
     prizeStyle: {
