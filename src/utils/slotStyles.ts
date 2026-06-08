@@ -59,14 +59,24 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
     id: 'daily',
     label: '日常活动',
     drawBg: (ctx, W, H, { tintFrom, tintTo }) => {
-      // 1. 主背景：竖向渐变（5% → 100%）
+      // Figma 分层结构（从下到上）：
+      // ① 白色底  ② 极淡主题渐变（背景层）  ③ 左侧柔光椭圆  ④ 右上同色圆角块（装饰层）
+
+      // 1. 白色底（banner 整体基底）
+      ctx.fillStyle = '#FFFFFF'
+      ctx.fillRect(0, 0, W, H)
+
+      // 2. 主背景：主题色竖向渐变，低透明度（约 25%）→ 产生极淡粉色感
+      ctx.save()
+      ctx.globalAlpha = 0.25
       const mainBg = ctx.createLinearGradient(0, 0, 0, H)
       mainBg.addColorStop(0.05, tintFrom)
       mainBg.addColorStop(1, tintTo)
       ctx.fillStyle = mainBg
       ctx.fillRect(0, 0, W, H)
+      ctx.restore()
 
-      // 2. 左侧大椭圆柔光（Figma：圆形2，center≈110.5,-20，rx:152.5，ry:121，blur:71px，rgba(255,249,254,0.7)）
+      // 3. 左侧大椭圆柔光（Figma 圆形2：center≈110.5,-20，rx:152.5 ry:121，blur 71px，white soft glow）
       ctx.save()
       ctx.filter = 'blur(71px)'
       ctx.beginPath()
@@ -76,26 +86,27 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
       ctx.filter = 'none'
       ctx.restore()
 
-      // 3. 右上角装饰块（x:342, y:0, w:384, h:105, r:24px 仅底左角圆润）
-      // 使用白色半透明渐变叠层，适配任意主题色
+      // 4. 右上角装饰块（Figma 矩形备份7：x:342 y:0 w:384 h:105 r:24px）
+      // 用主题色在 55% 透明度叠加，与背景同色系但更深，无"白方块"感
       ctx.save()
+      ctx.globalAlpha = 0.55
       ctx.beginPath()
-      ctx.moveTo(366, 0)           // top-left 圆角起点
-      ctx.lineTo(726, 0)           // 上边（右侧被 banner clip 裁切，不需圆角）
-      ctx.lineTo(726, 105)         // 右边
-      ctx.lineTo(366, 105)         // 下边
-      ctx.arcTo(342, 105, 342, 81, 24)  // 底左圆角
+      ctx.moveTo(366, 0)
+      ctx.lineTo(726, 0)
+      ctx.lineTo(726, 105)
+      ctx.lineTo(366, 105)
+      ctx.arcTo(342, 105, 342, 81, 24)
       ctx.lineTo(342, 24)
-      ctx.arcTo(342, 0, 366, 0, 24)     // 顶左圆角
+      ctx.arcTo(342, 0, 366, 0, 24)
       ctx.closePath()
-      const decG = ctx.createLinearGradient(726, 0, 342, 105)
-      decG.addColorStop(0, 'rgba(255,255,255,0.38)')
-      decG.addColorStop(1, 'rgba(255,255,255,0.00)')
+      const decG = ctx.createLinearGradient(726, 0, 342, 105)  // 232deg 斜向
+      decG.addColorStop(0, tintFrom)
+      decG.addColorStop(1, tintTo)
       ctx.fillStyle = decG
       ctx.fill()
       ctx.restore()
 
-      // 4. 顶部 1px 内描边
+      // 5. 顶部 1px 内描边（Figma inset 0px 1px 0px white）
       ctx.fillStyle = 'rgba(255,255,255,0.65)'
       ctx.fillRect(0, 0, W, 1)
     },
