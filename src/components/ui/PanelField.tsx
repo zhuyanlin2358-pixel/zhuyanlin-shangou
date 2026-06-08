@@ -48,31 +48,40 @@ export function PF({
   )
 }
 
-/* ── 文本输入（带 IME composition 保护，解决中文输入卡顿）── */
+/* ── 文本输入（IME 保护 + 防抖，彻底解决中文输入/删除卡顿）── */
 export function PanelInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   const { className, value, onChange, ...rest } = props
 
-  // 本地 state：输入法组合阶段只更新本地，不触发全局 setConfig
   const [local, setLocal] = useState(value ?? '')
   const composing = useRef(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // 外部 value 变化时同步（如重置、preset 切换等）
+  // 外部 value 变化时同步（重置、preset 切换等）
   useEffect(() => {
     if (!composing.current) setLocal(value ?? '')
   }, [value])
 
+  // 防抖触发全局更新（150ms 内连续操作只触发最后一次）
+  const triggerGlobal = (val: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      onChange?.({ target: { value: val } } as React.ChangeEvent<HTMLInputElement>)
+    }, 150)
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocal(e.target.value)
-    if (!composing.current) onChange?.(e)
+    if (!composing.current) triggerGlobal(e.target.value)
   }
 
   const handleCompositionStart = () => { composing.current = true }
 
   const handleCompositionEnd = (e: React.CompositionEvent<HTMLInputElement>) => {
     composing.current = false
-    // 组合结束（选字完成）时同步到全局
-    const synth = { ...e, target: e.target, currentTarget: e.currentTarget } as unknown as React.ChangeEvent<HTMLInputElement>
-    onChange?.(synth)
+    const val = (e.target as HTMLInputElement).value
+    // 选字完成后立即同步，不走防抖
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    onChange?.({ target: { value: val } } as React.ChangeEvent<HTMLInputElement>)
   }
 
   return (
@@ -133,22 +142,31 @@ export function PanelListbox<T extends string>({
   )
 }
 
-/* ── 多行文本（带 IME 保护）── */
+/* ── 多行文本（IME 保护 + 防抖）── */
 export function PanelTextarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   const { value, onChange, className, ...rest } = props
   const [local, setLocal] = useState(value ?? '')
   const composing = useRef(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => { if (!composing.current) setLocal(value ?? '') }, [value])
+  const triggerGlobal = (val: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      onChange?.({ target: { value: val } } as React.ChangeEvent<HTMLTextAreaElement>)
+    }, 150)
+  }
   return (
     <textarea
       {...rest}
       value={local}
       className={clsx(inputBase, 'resize-none', className)}
-      onChange={e => { setLocal(e.target.value); if (!composing.current) onChange?.(e) }}
+      onChange={e => { setLocal(e.target.value); if (!composing.current) triggerGlobal(e.target.value) }}
       onCompositionStart={() => { composing.current = true }}
       onCompositionEnd={e => {
         composing.current = false
-        onChange?.(e as unknown as React.ChangeEvent<HTMLTextAreaElement>)
+        const val = (e.target as HTMLTextAreaElement).value
+        if (debounceRef.current) clearTimeout(debounceRef.current)
+        onChange?.({ target: { value: val } } as React.ChangeEvent<HTMLTextAreaElement>)
       }}
     />
   )
