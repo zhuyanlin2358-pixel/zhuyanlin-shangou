@@ -6,6 +6,7 @@ import {
   PF, PanelInput, PanelSection,
   ColorField, PanelListbox,
 } from '@/components/ui/PanelField'
+import { SLOT_STYLE_LIST } from '@/utils/slotStyles'
 
 /* ── 配色预设 ── */
 const LIGHT_PRESETS = ['pink','rose','orange','yellow','green','teal','purple']
@@ -253,6 +254,31 @@ export default function SlotPanel() {
       {/* 组件标题 */}
       <div className="px-4 py-3.5 border-b border-white/[0.07]">
         <span className="text-sm font-semibold text-white/90 tracking-tight">老虎机</span>
+      </div>
+
+      {/* 风格选择 */}
+      <div className="px-4 py-3 border-b border-white/[0.07]">
+        <div className="text-[10.5px] font-medium text-white/40 tracking-[0.25px] mb-2">风格版本</div>
+        <div className="flex flex-wrap gap-1.5">
+          {SLOT_STYLE_LIST.map(style => {
+            const isActive = config.slotStyle === style.id
+            return (
+              <button
+                key={style.id}
+                onClick={() => setConfig({ slotStyle: style.id })}
+                className="px-3 py-1 rounded-full text-xs border transition-all"
+                style={{
+                  borderColor: isActive ? 'rgba(255,48,96,0.6)' : 'rgba(255,255,255,0.1)',
+                  background:  isActive ? 'rgba(255,48,96,0.12)' : 'rgba(255,255,255,0.04)',
+                  color:       isActive ? '#FF8FAA' : 'rgba(255,255,255,0.45)',
+                  fontWeight:  isActive ? 600 : 400,
+                }}
+              >
+                {style.label}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       <Section id="配色预设" badge="素材 1–5">

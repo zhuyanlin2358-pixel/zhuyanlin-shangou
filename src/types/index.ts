@@ -204,4 +204,5 @@ export interface SlotConfig {
   prizes: PrizeConfig[]
   prizeTransforms: ImgTransform[]
   tone: 'light' | 'dark'
+  slotStyle: string  // 老虎机风格 id，对应 SLOT_STYLE_REGISTRY
 }

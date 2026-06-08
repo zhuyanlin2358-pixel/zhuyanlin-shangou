@@ -1,5 +1,6 @@
 import html2canvas from 'html2canvas'
 import JSZip from 'jszip'
+import { getSlotStyle } from './slotStyles'
 
 export async function captureElement(
   el: HTMLElement,
@@ -73,6 +74,7 @@ export interface BannerConfig {
   titleText: string;    titleColor: string
   linksColor: string
   btnActiveFrom: string; btnActiveTo: string
+  slotStyle?: string
 }
 
 /** 绘制 slot_1 未抽奖状态 @2x → 1500×484，prizeCanvases 为 3 张奖品 canvas */
@@ -86,15 +88,11 @@ export async function drawSlotBannerCanvas(
   const ctx = canvas.getContext('2d')!
   ctx.scale(2, 2)
 
-  // 背景渐变（圆角裁切）
+  // 背景（圆角裁切 → 调用风格注册表）
   ctx.save()
   roundedRect(ctx, 0, 0, W, H, 20)
   ctx.clip()
-  const bg = ctx.createLinearGradient(0, 0, W, H)
-  bg.addColorStop(0, cfg.slotTintFrom)
-  bg.addColorStop(1, cfg.slotTintTo)
-  ctx.fillStyle = bg
-  ctx.fillRect(0, 0, W, H)
+  getSlotStyle(cfg.slotStyle).drawBg(ctx, W, H, { tintFrom: cfg.slotTintFrom, tintTo: cfg.slotTintTo })
 
   // 白色奖品框
   roundedRect(ctx, 43, 75, 427, 142, 24)
@@ -436,11 +434,7 @@ export function drawSlotBgCanvas(cfg: Pick<BannerConfig, 'slotTintFrom' | 'slotT
   ctx.save()
   roundedRect(ctx, 0, 0, W, H, 20)
   ctx.clip()
-  const bg = ctx.createLinearGradient(0, 0, W, H)
-  bg.addColorStop(0, cfg.slotTintFrom)
-  bg.addColorStop(1, cfg.slotTintTo)
-  ctx.fillStyle = bg
-  ctx.fillRect(0, 0, W, H)
+  getSlotStyle(cfg.slotStyle).drawBg(ctx, W, H, { tintFrom: cfg.slotTintFrom, tintTo: cfg.slotTintTo })
   roundedRect(ctx, 43, 75, 427, 142, 24)
   ctx.fillStyle = '#fff'
   ctx.fill()

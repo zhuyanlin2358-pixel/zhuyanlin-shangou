@@ -472,6 +472,7 @@ export default function SlotPage() {
     config.slotTintFrom, config.slotTintTo,
     config.btnActiveFrom, config.btnActiveTo,
     config.btnDisabledFrom, config.btnDisabledTo,
+    config.slotStyle,
   ])
 
   // ── 2. 奖品图预览（拖动/上传奖品时只更新 s6，不碰 s1/s2）
