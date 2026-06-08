@@ -134,14 +134,14 @@ export async function drawSlotBannerCanvas(
 
   ctx.restore() // 解除圆角裁切
 
-  // 两侧装饰箭头（Figma 位图备份3 4 / 位图4，26×26，y:139，用三角形近似）
-  // 左箭头 ◄ at x:31, y:139
-  ctx.fillStyle = 'rgba(222,152,60,0.75)'
-  ctx.beginPath()
-  ctx.moveTo(55, 139); ctx.lineTo(31, 152); ctx.lineTo(55, 165); ctx.closePath(); ctx.fill()
-  // 右箭头 ► at x:452, y:139
-  ctx.beginPath()
-  ctx.moveTo(452, 139); ctx.lineTo(478, 152); ctx.lineTo(452, 165); ctx.closePath(); ctx.fill()
+  // 两侧装饰箭头 — 仅日常活动版本（Figma 位图备份3 4 / 位图4，26×26，y:139）
+  if (cfg.slotStyle === 'daily') {
+    ctx.fillStyle = 'rgba(222,152,60,0.75)'
+    ctx.beginPath()
+    ctx.moveTo(55, 139); ctx.lineTo(31, 152); ctx.lineTo(55, 165); ctx.closePath(); ctx.fill()
+    ctx.beginPath()
+    ctx.moveTo(452, 139); ctx.lineTo(478, 152); ctx.lineTo(452, 165); ctx.closePath(); ctx.fill()
+  }
 
   // 奖品 canvas 贴入白框（水平居中）
   const innerW = 427 - 24  // 403
