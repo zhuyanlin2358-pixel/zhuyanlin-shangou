@@ -170,11 +170,12 @@ export default function PreviewPanel() {
                   <span style={{ margin: '0 8px', opacity: 0.6 }}>|</span>
                   <span>抽奖规则</span>
                 </div>
-                {/* 奖品框白底 */}
+                {/* 奖品框白底（Figma：白色 + 底部淡粉渐变 + 白色描边） */}
                 <div style={{
                   position: 'absolute', left: 43, top: 75,
                   width: 427, height: 142, borderRadius: 24,
-                  background: '#fff', border: '1px solid rgba(0,0,0,0.1)', zIndex: 1,
+                  background: 'linear-gradient(180deg, #fff 67%, rgba(255,246,249,1) 100%)',
+                  border: '1px solid #FFFFFF', zIndex: 1,
                 }} />
                 {/* 奖品层 — PrizeCardFull + prizeTransforms */}
                 <div style={{
