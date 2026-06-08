@@ -59,35 +59,32 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
     id: 'daily',
     label: '日常活动',
     drawBg: (ctx, W, H, { tintFrom, tintTo }) => {
-      // 1. 蒙版主背景：Figma 横向渐变（左浅→右深，跟随主题预设）
+      // ① 蒙版主背景（全区）：横向渐变 tintFrom → tintTo
       const mainBg = ctx.createLinearGradient(0, 0, W, 0)
       mainBg.addColorStop(0, tintFrom)
       mainBg.addColorStop(1, tintTo)
       ctx.fillStyle = mainBg
       ctx.fillRect(0, 0, W, H)
 
-      // 2. 矩形备份7：x:342 y:0 w:384 h:105 r:24，右上角叠加深色（tintTo再深一档）
+      // ② 矩形备份7（右上叠层）：x:342 y:0 w:384 h:105 r:24（左侧两角圆角）
+      // 用 tintTo 实色叠 30% 透明，比主背景深一档，任何主题下均可见
       ctx.save()
       ctx.beginPath()
-      ctx.moveTo(366, 0)
-      ctx.lineTo(726, 0)
-      ctx.lineTo(726, 105)
-      ctx.lineTo(366, 105)
-      ctx.arcTo(342, 105, 342, 81, 24)
-      ctx.lineTo(342, 24)
-      ctx.arcTo(342, 0, 366, 0, 24)
+      ctx.moveTo(366, 0)           // 左上圆角起始
+      ctx.lineTo(726, 0)           // 顶边 → 右上角（紧贴外框，无圆角）
+      ctx.lineTo(726, 105)         // 右侧 → 右下角
+      ctx.lineTo(366, 105)         // 底边 → 左下圆角前
+      ctx.arcTo(342, 105, 342, 81, 24) // 左下圆角
+      ctx.lineTo(342, 24)          // 左侧
+      ctx.arcTo(342, 0, 366, 0, 24)   // 左上圆角
       ctx.closePath()
       ctx.clip()
-      ctx.globalCompositeOperation = 'multiply'
-      ctx.globalAlpha = 0.55
-      const rect7G = ctx.createLinearGradient(342, 0, 726, 0)
-      rect7G.addColorStop(0, tintFrom)
-      rect7G.addColorStop(1, tintTo)
-      ctx.fillStyle = rect7G
+      ctx.globalAlpha = 0.30
+      ctx.fillStyle = tintTo       // 深色端叠加，统一增饱和度
       ctx.fillRect(342, 0, 384, 105)
       ctx.restore()
 
-      // 3. 顶部 1px 内描边
+      // ③ 顶部 1px 白色内描边
       ctx.globalCompositeOperation = 'source-over'
       ctx.globalAlpha = 1
       ctx.fillStyle = 'rgba(255,255,255,0.80)'
