@@ -58,16 +58,15 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
   daily: {
     id: 'daily',
     label: '日常活动',
-    // 固定粉色，不跟主题预设走（Figma gradient picker 精确值）
-    drawBg: (ctx, W, H, _colors) => {
-      // 1. 蒙版主背景：#FFF2F6 → #FEDCE2 横向渐变（截图精确值）
+    drawBg: (ctx, W, H, { tintFrom, tintTo }) => {
+      // 1. 蒙版主背景：Figma 横向渐变（左浅→右深，跟随主题预设）
       const mainBg = ctx.createLinearGradient(0, 0, W, 0)
-      mainBg.addColorStop(0, '#FFF2F6')
-      mainBg.addColorStop(1, '#FEDCE2')
+      mainBg.addColorStop(0, tintFrom)
+      mainBg.addColorStop(1, tintTo)
       ctx.fillStyle = mainBg
       ctx.fillRect(0, 0, W, H)
 
-      // 2. 矩形备份7：x:342 y:0 w:384 h:105 r:24，比主背景深一档，实色叠加
+      // 2. 矩形备份7：x:342 y:0 w:384 h:105 r:24，右上角叠加深色（tintTo再深一档）
       ctx.save()
       ctx.beginPath()
       ctx.moveTo(366, 0)
@@ -79,14 +78,18 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
       ctx.arcTo(342, 0, 366, 0, 24)
       ctx.closePath()
       ctx.clip()
+      ctx.globalCompositeOperation = 'multiply'
+      ctx.globalAlpha = 0.55
       const rect7G = ctx.createLinearGradient(342, 0, 726, 0)
-      rect7G.addColorStop(0, '#FEDCE2')
-      rect7G.addColorStop(1, '#F8C0D3')
+      rect7G.addColorStop(0, tintFrom)
+      rect7G.addColorStop(1, tintTo)
       ctx.fillStyle = rect7G
       ctx.fillRect(342, 0, 384, 105)
       ctx.restore()
 
       // 3. 顶部 1px 内描边
+      ctx.globalCompositeOperation = 'source-over'
+      ctx.globalAlpha = 1
       ctx.fillStyle = 'rgba(255,255,255,0.80)'
       ctx.fillRect(0, 0, W, 1)
     },

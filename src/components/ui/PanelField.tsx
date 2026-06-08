@@ -2,7 +2,7 @@
  * 侧边栏配置面板通用字段组件
  * Input / Textarea 用 Headless UI v2（data-[focus]/data-[hover] 状态）
  */
-import { useRef, useEffect, startTransition } from 'react'
+import { useRef, useEffect, useState, startTransition } from 'react'
 import {
   Input,
   Disclosure, DisclosureButton, DisclosurePanel,
@@ -48,49 +48,42 @@ export function PF({
   )
 }
 
-/* ── 文本输入（完全 uncontrolled，IME 保护，零 React re-render per keystroke）── */
+/* ── 文本输入（controlled + IME 保护 + startTransition，生产级流畅体验）── */
+// 本地 state 即时更新（用户每次按键都立刻看到变化）
+// 全局 setConfig 用 startTransition 降优先级 → React 并发调度，输入事件优先
+// canvas rebuild 防抖已在 SlotPage 的 useEffect 里做（400ms），输入层不需要再加
 export function PanelInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   const { className, value, onChange, ...rest } = props
-
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [local, setLocal] = useState(String(value ?? ''))
   const composing = useRef(false)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const lastEmitted = useRef(String(value ?? ''))
+  const extRef = useRef(String(value ?? ''))
 
-  // 只在外部 value 真正从外部改变时（preset 切换、重置等）才写 DOM
+  // 只在外部真正改变时同步（preset 切换 / 重置），不覆盖用户正在输入的内容
   useEffect(() => {
     const ext = String(value ?? '')
-    if (inputRef.current && ext !== lastEmitted.current) {
-      inputRef.current.value = ext
-      lastEmitted.current = ext
+    if (ext !== extRef.current && !composing.current) {
+      extRef.current = ext
+      setLocal(ext)
     }
   }, [value])
 
-  const emit = (val: string) => {
-    lastEmitted.current = val
-    // startTransition：让全局 setConfig 重渲染变成可中断的低优先级更新
-    // React 18 会在新输入事件到来时中断该渲染，确保输入/删除始终流畅
+  const commit = (val: string) => {
+    if (composing.current) return
     startTransition(() => {
       onChange?.({ target: { value: val } } as React.ChangeEvent<HTMLInputElement>)
     })
   }
 
-  const triggerGlobal = (val: string) => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => emit(val), 150)
-  }
-
   return (
     <input
-      ref={inputRef}
       {...rest}
-      defaultValue={String(value ?? '')}
-      onChange={e => { if (!composing.current) triggerGlobal(e.target.value) }}
+      value={local}
+      onChange={e => { setLocal(e.target.value); commit(e.target.value) }}
       onCompositionStart={() => { composing.current = true }}
       onCompositionEnd={e => {
         composing.current = false
-        if (debounceRef.current) clearTimeout(debounceRef.current)
-        emit(e.currentTarget.value)
+        setLocal(e.currentTarget.value)
+        commit(e.currentTarget.value)
       }}
       className={clsx(inputBase, className)}
     />
@@ -143,47 +136,39 @@ export function PanelListbox<T extends string>({
   )
 }
 
-/* ── 多行文本（完全 uncontrolled，IME 保护，零 React re-render per keystroke）── */
+/* ── 多行文本（controlled + IME 保护 + startTransition）── */
 export function PanelTextarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   const { value, onChange, className, ...rest } = props
-
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [local, setLocal] = useState(String(value ?? ''))
   const composing = useRef(false)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const lastEmitted = useRef(String(value ?? ''))
+  const extRef = useRef(String(value ?? ''))
 
   useEffect(() => {
     const ext = String(value ?? '')
-    if (textareaRef.current && ext !== lastEmitted.current) {
-      textareaRef.current.value = ext
-      lastEmitted.current = ext
+    if (ext !== extRef.current && !composing.current) {
+      extRef.current = ext
+      setLocal(ext)
     }
   }, [value])
 
-  const emit = (val: string) => {
-    lastEmitted.current = val
+  const commit = (val: string) => {
+    if (composing.current) return
     startTransition(() => {
       onChange?.({ target: { value: val } } as React.ChangeEvent<HTMLTextAreaElement>)
     })
   }
 
-  const triggerGlobal = (val: string) => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => emit(val), 150)
-  }
-
   return (
     <textarea
-      ref={textareaRef}
       {...rest}
-      defaultValue={String(value ?? '')}
+      value={local}
       className={clsx(inputBase, 'resize-none', className)}
-      onChange={e => { if (!composing.current) triggerGlobal(e.target.value) }}
+      onChange={e => { setLocal(e.target.value); commit(e.target.value) }}
       onCompositionStart={() => { composing.current = true }}
       onCompositionEnd={e => {
         composing.current = false
-        if (debounceRef.current) clearTimeout(debounceRef.current)
-        emit(e.currentTarget.value)
+        setLocal(e.currentTarget.value)
+        commit(e.currentTarget.value)
       }}
     />
   )
