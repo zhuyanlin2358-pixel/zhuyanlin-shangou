@@ -141,15 +141,16 @@ export default function PreviewPanel() {
               <div style={{
                 width: SLOT_W, height: 242,
                 position: 'relative', overflow: 'hidden',
-                background: config.slotStyle === 'daily' ? '#FFFFFF' : `linear-gradient(120deg, ${config.slotTintFrom}, ${config.slotTintTo})`,
+                background: `linear-gradient(90deg, ${config.slotTintFrom}, ${config.slotTintTo})`,
                 borderRadius: 20,
               }}>
-                {/* daily style：竖向渐变叠层 25% 透明度 */}
+                {/* daily style：矩形备份7，x:342 y:0 w:384 h:105 r:24，叠加让右上角区域加深 */}
                 {config.slotStyle === 'daily' && (
                   <div style={{
-                    position: 'absolute', inset: 0,
-                    background: `linear-gradient(180deg, ${config.slotTintFrom} 5%, ${config.slotTintTo} 100%)`,
-                    opacity: 0.25, pointerEvents: 'none',
+                    position: 'absolute', left: 342, top: 0,
+                    width: 384, height: 105, borderRadius: '0 20px 0 24px',
+                    background: `linear-gradient(90deg, ${config.slotTintFrom}, ${config.slotTintTo})`,
+                    mixBlendMode: 'multiply', opacity: 0.38, pointerEvents: 'none',
                   }} />
                 )}
                 {/* 标题 */}

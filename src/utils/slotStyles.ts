@@ -59,30 +59,18 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
     id: 'daily',
     label: '日常活动',
     drawBg: (ctx, W, H, { tintFrom, tintTo }) => {
-      // Figma 层级（前→后）：
-      // ① 矩形备份7（FRONT，顶层）→ ② 蒙版×2（背景渐变）→ ③ 圆形2（柔光）
+      // Figma 层级（后→前）：
+      // ① 蒙版（主背景，横向渐变，覆盖全区，x:24 w:702 h:242）
+      // ② 矩形备份7（叠在主背景上，multiply 加深右上角，x:342 y:0 w:384 h:105 r:24）
 
-      // 1. 主背景（蒙版层）：主题色竖向渐变 100% 不透明
-      ctx.save()
-      const mainBg = ctx.createLinearGradient(0, 0, 0, H)
-      mainBg.addColorStop(0.05, tintFrom)
+      // 1. 蒙版主背景：Figma 横向渐变，左浅→右深
+      const mainBg = ctx.createLinearGradient(0, 0, W, 0)
+      mainBg.addColorStop(0, tintFrom)
       mainBg.addColorStop(1, tintTo)
       ctx.fillStyle = mainBg
       ctx.fillRect(0, 0, W, H)
-      ctx.restore()
 
-      // 2. 左侧大椭圆柔光（圆形2：center 110.5,-20，rx:152.5 ry:121，blur 71px）
-      ctx.save()
-      ctx.filter = 'blur(71px)'
-      ctx.beginPath()
-      ctx.ellipse(110.5, -20, 152.5, 121, 0, 0, Math.PI * 2)
-      ctx.fillStyle = 'rgba(255,249,254,0.70)'
-      ctx.fill()
-      ctx.filter = 'none'
-      ctx.restore()
-
-      // 3. 矩形备份7（FRONT 顶层）：x:342 y:0 w:384 h:105 r:24px
-      // multiply 混合 → 与背景同色族自然加深，无硬边"方块"感
+      // 2. 矩形备份7：x:342 y:0 w:384 h:105 r:24，multiply 自然加深右上区域
       ctx.save()
       ctx.beginPath()
       ctx.moveTo(366, 0)
@@ -96,14 +84,16 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
       ctx.clip()
       ctx.globalCompositeOperation = 'multiply'
       ctx.globalAlpha = 0.38
-      const decG = ctx.createLinearGradient(726, 0, 342, 105)
-      decG.addColorStop(0, tintFrom)
-      decG.addColorStop(1, tintTo)
-      ctx.fillStyle = decG
+      const rect7G = ctx.createLinearGradient(342, 0, 726, 0)
+      rect7G.addColorStop(0, tintFrom)
+      rect7G.addColorStop(1, tintTo)
+      ctx.fillStyle = rect7G
       ctx.fillRect(342, 0, 384, 105)
       ctx.restore()
 
-      // 4. 顶部 1px 内描边（Figma inset 0px 1px 0px white）
+      // 3. 顶部 1px 内描边（Figma inset 0px 1px 0px white）
+      ctx.globalCompositeOperation = 'source-over'
+      ctx.globalAlpha = 1
       ctx.fillStyle = 'rgba(255,255,255,0.65)'
       ctx.fillRect(0, 0, W, 1)
     },
