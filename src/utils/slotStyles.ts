@@ -43,14 +43,14 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
       ctx.fillRect(0, 0, W, H)
     },
     prizeStyle: {
-      bgType: 'flat',
-      bgColor: '#FFE9B0',
-      bgColorEnd: '#FFE9B0',
-      borderColor: 'rgba(180,120,0,0.15)',
+      bgType: 'gradient',
+      bgColor: '#FDF6E8',    // rgba(253,246,232,1) 顶部极浅奶油
+      bgColorEnd: '#FBE6A6', // rgba(251,230,166,1) 底部浅金
+      borderColor: '#FFFFFF',
       useDashedBorder: false,
       labelBg: '#fff',
-      textPrimary: '#812D16',
-      textSecondary: '#7B3A00',
+      textPrimary: '#77321E',
+      textSecondary: '#77321E',
     },
   },
 
