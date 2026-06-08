@@ -2,6 +2,7 @@
  * 侧边栏配置面板通用字段组件
  * Input / Textarea 用 Headless UI v2（data-[focus]/data-[hover] 状态）
  */
+import { useRef, useState, useEffect } from 'react'
 import {
   Input,
   Disclosure, DisclosureButton, DisclosurePanel,
@@ -47,12 +48,40 @@ export function PF({
   )
 }
 
-/* ── 文本输入（Headless UI Input）── */
+/* ── 文本输入（带 IME composition 保护，解决中文输入卡顿）── */
 export function PanelInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  const { className, ...rest } = props
+  const { className, value, onChange, ...rest } = props
+
+  // 本地 state：输入法组合阶段只更新本地，不触发全局 setConfig
+  const [local, setLocal] = useState(value ?? '')
+  const composing = useRef(false)
+
+  // 外部 value 变化时同步（如重置、preset 切换等）
+  useEffect(() => {
+    if (!composing.current) setLocal(value ?? '')
+  }, [value])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocal(e.target.value)
+    if (!composing.current) onChange?.(e)
+  }
+
+  const handleCompositionStart = () => { composing.current = true }
+
+  const handleCompositionEnd = (e: React.CompositionEvent<HTMLInputElement>) => {
+    composing.current = false
+    // 组合结束（选字完成）时同步到全局
+    const synth = { ...e, target: e.target, currentTarget: e.currentTarget } as unknown as React.ChangeEvent<HTMLInputElement>
+    onChange?.(synth)
+  }
+
   return (
     <Input
       {...(rest as React.ComponentPropsWithoutRef<typeof Input>)}
+      value={local}
+      onChange={handleChange}
+      onCompositionStart={handleCompositionStart}
+      onCompositionEnd={handleCompositionEnd}
       className={clsx(inputBase, className)}
     />
   )
@@ -104,9 +133,25 @@ export function PanelListbox<T extends string>({
   )
 }
 
-/* ── 多行文本 ── */
+/* ── 多行文本（带 IME 保护）── */
 export function PanelTextarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea {...props} className={clsx(inputBase, 'resize-none', props.className)} />
+  const { value, onChange, className, ...rest } = props
+  const [local, setLocal] = useState(value ?? '')
+  const composing = useRef(false)
+  useEffect(() => { if (!composing.current) setLocal(value ?? '') }, [value])
+  return (
+    <textarea
+      {...rest}
+      value={local}
+      className={clsx(inputBase, 'resize-none', className)}
+      onChange={e => { setLocal(e.target.value); if (!composing.current) onChange?.(e) }}
+      onCompositionStart={() => { composing.current = true }}
+      onCompositionEnd={e => {
+        composing.current = false
+        onChange?.(e as unknown as React.ChangeEvent<HTMLTextAreaElement>)
+      }}
+    />
+  )
 }
 
 /* ── 分组标题区 ── */
