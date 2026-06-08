@@ -144,14 +144,14 @@ export default function PreviewPanel() {
                 background: `linear-gradient(90deg, ${config.slotTintFrom}, ${config.slotTintTo})`,
                 borderRadius: 20,
               }}>
-                {/* daily style：矩形备份7，x:342 y:0 w:384 h:105，右上角叠 tintTo 30% */}
+                {/* daily style：矩形备份7，x:342 y:0 w:384 h:105，左侧两角 r:24，右侧贴外框 */}
                 {config.slotStyle === 'daily' && (
                   <div style={{
                     position: 'absolute', left: 342, top: 0,
                     width: 384, height: 105,
-                    borderRadius: '0 20px 0 24px',
+                    borderRadius: '24px 0 0 24px',   // 左上24 左下24，右侧贴外框无圆角
                     backgroundColor: config.slotTintTo,
-                    opacity: 0.30, pointerEvents: 'none',
+                    opacity: 0.45, pointerEvents: 'none',
                   }} />
                 )}
                 {/* 标题 */}

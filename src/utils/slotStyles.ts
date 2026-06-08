@@ -79,8 +79,8 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
       ctx.arcTo(342, 0, 366, 0, 24)   // 左上圆角
       ctx.closePath()
       ctx.clip()
-      ctx.globalAlpha = 0.30
-      ctx.fillStyle = tintTo       // 深色端叠加，统一增饱和度
+      ctx.globalAlpha = 0.45      // HTML预览同步 0.45，两块形状边界清晰可辨
+      ctx.fillStyle = tintTo
       ctx.fillRect(342, 0, 384, 105)
       ctx.restore()
 
