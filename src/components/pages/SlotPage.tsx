@@ -528,6 +528,14 @@ export default function SlotPage() {
     return () => { if (prizeTimerRef.current) clearTimeout(prizeTimerRef.current) }
   }, [buildPrizes])
 
+  // 切换风格时同步刷新 banner + 奖品图（跳过 debounce，立即重建）
+  useEffect(() => {
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current)
+    if (prizeTimerRef.current) clearTimeout(prizeTimerRef.current)
+    bannerTimerRef.current = setTimeout(buildBanner, 50)
+    prizeTimerRef.current  = setTimeout(buildPrizes, 50)
+  }, [config.slotStyle]) // eslint-disable-line
+
   useEffect(() => {
     if (emptyTimerRef.current) clearTimeout(emptyTimerRef.current)
     emptyTimerRef.current = setTimeout(buildEmpty, 100)

@@ -266,12 +266,32 @@ export async function drawPrizeCanvas(prize: PrizeInfo, tr: XfTransform, styleNa
   const cX = (W - 111) / 2, cY = (H - 119) / 2  // 6.5, 2.5
 
   if (isThanks) {
-    ctx.beginPath(); ctx.arc(W / 2, H / 2, 55.5, 0, Math.PI * 2)
-    ctx.fillStyle = '#FFD060'; ctx.fill()
-    ctx.strokeStyle = 'rgba(180,120,0,0.2)'; ctx.lineWidth = 1; ctx.stroke()
-    ctx.font = `700 22px ${F}`; ctx.fillStyle = '#7B3A00'
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
-    ctx.fillText(prize.thanksText || '谢谢参与', W / 2, H / 2)
+    // Figma 还原：外圆(极浅金) + 内圆(三段渐变金) + 两行文字
+    const cx = W / 2, cy = H / 2
+    // 外圆 124×124，fill #FCEAAB
+    ctx.beginPath(); ctx.arc(cx, cy, 62, 0, Math.PI * 2)
+    ctx.fillStyle = '#FCEAAB'; ctx.fill()
+    // 内圆 111×111 at (6,6)，三段渐变
+    const ig = ctx.createLinearGradient(cx, cy - 55.5, cx, cy + 55.5)
+    ig.addColorStop(0.04, '#FEF8DD')
+    ig.addColorStop(0.50, '#FBE5A2')
+    ig.addColorStop(1.00, '#FDF4C8')
+    ctx.beginPath(); ctx.arc(cx, cy, 55.5, 0, Math.PI * 2)
+    ctx.fillStyle = ig; ctx.fill()
+    // 文字两行：谢谢 / 参与，30px，#77321E
+    const text = prize.thanksText || '谢谢参与'
+    ctx.fillStyle = '#77321E'
+    ctx.textAlign = 'center'
+    ctx.font = `400 30px ${F}`
+    if (text === '谢谢参与') {
+      ctx.textBaseline = 'middle'
+      ctx.fillText('谢谢', cx, cy - 15)
+      ctx.fillText('参与', cx, cy + 15)
+    } else {
+      ctx.textBaseline = 'middle'
+      ctx.font = `700 22px ${F}`
+      ctx.fillText(text, cx, cy)
+    }
     return downsample(canvas)
   }
 

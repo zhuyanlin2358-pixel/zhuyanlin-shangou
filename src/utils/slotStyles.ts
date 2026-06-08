@@ -15,10 +15,10 @@ export interface SlotPrizeStyle {
   bgColor: string      // flat 色 或 渐变起始色（顶部）
   bgColorEnd: string   // 渐变结束色（底部），flat 时忽略
   borderColor: string
-  useDashedBorder: boolean  // product-dashed 类型是否用虚线框
+  useDashedBorder: boolean
   labelBg: string
-  textPrimary: string   // 金额/大字颜色
-  textSecondary: string // 底部小字颜色
+  textPrimary: string
+  textSecondary: string
 }
 
 export interface SlotStyleDef {
@@ -59,29 +59,50 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
     id: 'daily',
     label: '日常活动',
     drawBg: (ctx, W, H, { tintFrom, tintTo }) => {
-      // 主背景：竖向渐变（top 5% → bottom 100%）
+      // 1. 主背景：竖向渐变（5% → 100%）
       const mainBg = ctx.createLinearGradient(0, 0, 0, H)
       mainBg.addColorStop(0.05, tintFrom)
       mainBg.addColorStop(1, tintTo)
       ctx.fillStyle = mainBg
       ctx.fillRect(0, 0, W, H)
 
-      // 右上角装饰块：从 x=342 到 x=726，高 105px
-      // 白色半透明对角渐变（右上→左下），制造层次感
+      // 2. 左侧大椭圆柔光（Figma：圆形2，center≈110.5,-20，rx:152.5，ry:121，blur:71px，rgba(255,249,254,0.7)）
+      ctx.save()
+      ctx.filter = 'blur(71px)'
+      ctx.beginPath()
+      ctx.ellipse(110.5, -20, 152.5, 121, 0, 0, Math.PI * 2)
+      ctx.fillStyle = 'rgba(255,249,254,0.70)'
+      ctx.fill()
+      ctx.filter = 'none'
+      ctx.restore()
+
+      // 3. 右上角装饰块（x:342, y:0, w:384, h:105, r:24px 仅底左角圆润）
+      // 使用白色半透明渐变叠层，适配任意主题色
+      ctx.save()
+      ctx.beginPath()
+      ctx.moveTo(366, 0)           // top-left 圆角起点
+      ctx.lineTo(726, 0)           // 上边（右侧被 banner clip 裁切，不需圆角）
+      ctx.lineTo(726, 105)         // 右边
+      ctx.lineTo(366, 105)         // 下边
+      ctx.arcTo(342, 105, 342, 81, 24)  // 底左圆角
+      ctx.lineTo(342, 24)
+      ctx.arcTo(342, 0, 366, 0, 24)     // 顶左圆角
+      ctx.closePath()
       const decG = ctx.createLinearGradient(726, 0, 342, 105)
-      decG.addColorStop(0, 'rgba(255,255,255,0.30)')
+      decG.addColorStop(0, 'rgba(255,255,255,0.38)')
       decG.addColorStop(1, 'rgba(255,255,255,0.00)')
       ctx.fillStyle = decG
-      ctx.fillRect(342, 0, 384, 105)
+      ctx.fill()
+      ctx.restore()
 
-      // 顶部 1px 内描边（白色）
+      // 4. 顶部 1px 内描边
       ctx.fillStyle = 'rgba(255,255,255,0.65)'
       ctx.fillRect(0, 0, W, 1)
     },
     prizeStyle: {
       bgType: 'gradient',
-      bgColor: '#FDF6E8',    // top: rgba(253,246,232,1)
-      bgColorEnd: '#FBE6A6', // bottom: rgba(251,230,166,1)
+      bgColor: '#FDF6E8',    // rgba(253,246,232,1)
+      bgColorEnd: '#FBE6A6', // rgba(251,230,166,1)
       borderColor: '#FFFFFF',
       useDashedBorder: false,
       labelBg: '#FFFFFF',
