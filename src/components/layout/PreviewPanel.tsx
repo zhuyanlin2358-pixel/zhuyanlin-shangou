@@ -140,9 +140,17 @@ export default function PreviewPanel() {
               <div style={{
                 width: SLOT_W, height: 242,
                 position: 'relative', overflow: 'hidden',
-                background: `linear-gradient(120deg, ${config.slotTintFrom}, ${config.slotTintTo})`,
+                background: config.slotStyle === 'daily' ? '#FFFFFF' : `linear-gradient(120deg, ${config.slotTintFrom}, ${config.slotTintTo})`,
                 borderRadius: 20,
               }}>
+                {/* daily style：竖向渐变叠层 25% 透明度 */}
+                {config.slotStyle === 'daily' && (
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    background: `linear-gradient(180deg, ${config.slotTintFrom} 5%, ${config.slotTintTo} 100%)`,
+                    opacity: 0.25, pointerEvents: 'none',
+                  }} />
+                )}
                 {/* 标题 */}
                 <div style={{
                   position: 'absolute', left: 43, top: 11,

@@ -6,6 +6,7 @@ import { useApp } from '@/contexts/AppContext'
 import { downloadCanvas, downloadZip, drawSlotBannerCanvas, drawSlotBgCanvas, drawButtonCanvas, drawLinkCanvas, drawEmptyStateCanvas, drawPrizeCanvas, drawDialogButtonCanvas, drawDialogResultCanvas } from '@/utils/exportUtils'
 import type { PrizeInfo, XfTransform } from '@/utils/exportUtils'
 import type { PrizeConfig, PrizeType, ImgTransform } from '@/types'
+import { getSlotStyle } from '@/utils/slotStyles'
 
 /* ── 通用可拖拽图片容器 ── */
 interface DraggableWrapProps {
@@ -165,9 +166,12 @@ export function PrizeCardFull({
   prize, transform, onClick,
 }: {
   prize: PrizeConfig
-  transform?: ImgTransform   // 商品图位移+缩放，不传则居中 scale(1)
+  transform?: ImgTransform
   onClick?: () => void
 }) {
+  const { config } = useSlot()
+  const ps = getSlotStyle(config.slotStyle).prizeStyle
+
   const isDashed  = prize.type === 'product-dashed'
   const isThanks  = prize.type === 'thanks'
   const isAmount  = prize.type === 'amount'
@@ -177,13 +181,17 @@ export function PrizeCardFull({
   const imgH = isDashed ? 78 : 72
   const tr = transform ?? { offsetX: 0, offsetY: 0, scale: 1 }
 
+  const cardBg = ps.bgType === 'gradient'
+    ? `linear-gradient(180deg, ${ps.bgColor} 0%, ${ps.bgColorEnd} 100%)`
+    : ps.bgColor
+
   const cardStyle: React.CSSProperties = isThanks
-    ? { width: 111, height: 111, borderRadius: '50%', background: '#FFD060',
-        border: '1px solid rgba(180,120,0,0.2)', position: 'relative', overflow: 'hidden',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'center' }
+    ? { width: 111, height: 111, borderRadius: '50%', background: '#FCEAAB',
+        position: 'relative', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', alignSelf: 'center', overflow: 'visible' }
     : { width: 111, height: 119, borderRadius: 17,
-        background: '#FFE9B0',
-        border: isDashed ? '1.5px dashed #F0A830' : '1px solid rgba(180,120,0,0.15)',
+        background: cardBg,
+        border: `1px solid ${ps.borderColor}`,
         position: 'relative', overflow: 'hidden',
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         fontFamily: PF }
@@ -194,10 +202,10 @@ export function PrizeCardFull({
         {/* 顶部标签（product-tag / amount 类型） */}
         {(prize.type === 'product-tag' || isAmount) && prize.tag && (
           <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-            width: 81, minHeight: 18, background: '#fff', borderRadius: '0 0 6px 6px',
+            width: 81, minHeight: 18, background: ps.labelBg, borderRadius: '0 0 6px 6px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: '2px 6px', zIndex: 2 }}>
-            <span style={{ fontSize: 12, color: '#812D16', lineHeight: 1.3, whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 12, color: ps.textPrimary, lineHeight: 1.3, whiteSpace: 'nowrap' }}>
               {prize.tag}
             </span>
           </div>
@@ -235,7 +243,7 @@ export function PrizeCardFull({
             }
           </div>
         )}
-        {/* 金额券：label 存在时内容下移 18px */}
+        {/* 金额券 */}
         {isAmount && (
           <div style={{
             position: 'absolute', left: 0, right: 0,
@@ -243,22 +251,30 @@ export function PrizeCardFull({
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-              <span style={{ fontSize: 60, fontWeight: 700, color: '#812D16', fontFamily: "'MeituanDigitalType',sans-serif", lineHeight: 1, letterSpacing: -4 }}>
+              <span style={{ fontSize: 60, fontWeight: 700, color: ps.textPrimary, fontFamily: "'MeituanDigitalType',sans-serif", lineHeight: 1, letterSpacing: -4 }}>
                 {prize.amount || '30'}
               </span>
-              <span style={{ fontSize: 16, fontWeight: 600, color: '#812D16' }}>{prize.unit || '元'}</span>
+              <span style={{ fontSize: 16, fontWeight: 600, color: ps.textPrimary }}>{prize.unit || '元'}</span>
             </div>
           </div>
         )}
-        {/* 谢谢参与 */}
+        {/* 谢谢参与：双圆设计（Figma还原） */}
         {isThanks && (
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: 22, fontWeight: 700, color: '#7B3A00', textAlign: 'center', whiteSpace: 'nowrap' }}>
-            {prize.thanksText || '谢谢参与'}
+          <div style={{
+            width: 99, height: 99, borderRadius: '50%',
+            background: 'linear-gradient(180deg, #FEF8DD 4%, #FBE5A2 50%, #FDF4C8 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <div style={{ fontSize: 20, fontWeight: 400, color: '#77321E', textAlign: 'center', lineHeight: 1.3, fontFamily: PF }}>
+              {prize.thanksText === '谢谢参与'
+                ? <>{prize.thanksText.slice(0, 2)}<br />{prize.thanksText.slice(2)}</>
+                : prize.thanksText || '谢谢参与'}
+            </div>
           </div>
         )}
         {/* 底部文字 */}
         {showBottom && (
-          <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, textAlign: 'center', fontSize: 13, color: '#7B3A00', fontWeight: 500, lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+          <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, textAlign: 'center', fontSize: 13, color: ps.textSecondary, fontWeight: 500, lineHeight: 1.2, whiteSpace: 'nowrap' }}>
             {prize.bottomText}
           </div>
         )}
@@ -332,8 +348,9 @@ function PrizeEditorCard({ idx, prize, onExport, onPreview }: {
   const isThanks = prize.type === 'thanks'
   const isAmount = prize.type === 'amount'
 
-  const CARD_BG = isThanks ? '#FFD060' : '#FFE9B0'
-  const CARD_BORDER = isThanks ? '1px solid rgba(180,120,0,0.2)' : isDashed ? '1.5px dashed #F0A830' : '1px solid rgba(180,120,0,0.15)'
+  const ps = getSlotStyle(config.slotStyle).prizeStyle
+  const CARD_BG = isThanks ? '#FCEAAB' : (ps.bgType === 'gradient' ? `linear-gradient(180deg, ${ps.bgColor} 0%, ${ps.bgColorEnd} 100%)` : ps.bgColor)
+  const CARD_BORDER = `1px solid ${ps.borderColor}`
 
   return (
     <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
@@ -348,8 +365,8 @@ function PrizeEditorCard({ idx, prize, onExport, onPreview }: {
             : { width: 111, height: 119, borderRadius: 17, background: CARD_BG, border: CARD_BORDER, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', fontFamily: PF }
           }>
             {(prize.type === 'product-tag' || isAmount) && prize.tag && (
-              <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 81, minHeight: 18, background: '#fff', borderRadius: '0 0 6px 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2px 6px', zIndex: 5 }}>
-                <span style={{ fontSize: 12, color: '#812D16', lineHeight: 1.3, whiteSpace: 'nowrap' }}>{prize.tag}</span>
+              <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 81, minHeight: 18, background: ps.labelBg, borderRadius: '0 0 6px 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2px 6px', zIndex: 5 }}>
+                <span style={{ fontSize: 12, color: ps.textPrimary, lineHeight: 1.3, whiteSpace: 'nowrap' }}>{prize.tag}</span>
               </div>
             )}
 
@@ -369,16 +386,22 @@ function PrizeEditorCard({ idx, prize, onExport, onPreview }: {
             {isAmount && (
               <div style={{ position: 'absolute', left: 0, right: 0, top: prize.tag ? 18 : 4, bottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                  <span style={{ fontSize: 60, fontWeight: 700, color: '#812D16', fontFamily: "'MeituanDigitalType',sans-serif", lineHeight: 1, letterSpacing: -4 }}>{prize.amount || '30'}</span>
-                  <span style={{ fontSize: 16, fontWeight: 600, color: '#812D16' }}>{prize.unit || '元'}</span>
+                  <span style={{ fontSize: 60, fontWeight: 700, color: ps.textPrimary, fontFamily: "'MeituanDigitalType',sans-serif", lineHeight: 1, letterSpacing: -4 }}>{prize.amount || '30'}</span>
+                  <span style={{ fontSize: 16, fontWeight: 600, color: ps.textPrimary }}>{prize.unit || '元'}</span>
                 </div>
               </div>
             )}
             {isThanks && (
-              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: 22, fontWeight: 700, color: '#7B3A00', textAlign: 'center', whiteSpace: 'nowrap' }}>{prize.thanksText || '谢谢参与'}</div>
+              <div style={{ width: 99, height: 99, borderRadius: '50%', background: 'linear-gradient(180deg, #FEF8DD 4%, #FBE5A2 50%, #FDF4C8 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ fontSize: 20, fontWeight: 400, color: '#77321E', textAlign: 'center', lineHeight: 1.3, fontFamily: PF }}>
+                  {(prize.thanksText || '谢谢参与').length === 4
+                    ? <>{(prize.thanksText || '谢谢参与').slice(0, 2)}<br />{(prize.thanksText || '谢谢参与').slice(2)}</>
+                    : prize.thanksText || '谢谢参与'}
+                </div>
+              </div>
             )}
             {!isThanks && (
-              <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, textAlign: 'center', fontSize: 13, color: '#7B3A00', fontWeight: 500, lineHeight: 1.2, whiteSpace: 'nowrap' }}>{prize.bottomText}</div>
+              <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, textAlign: 'center', fontSize: 13, color: ps.textSecondary, fontWeight: 500, lineHeight: 1.2, whiteSpace: 'nowrap' }}>{prize.bottomText}</div>
             )}
           </div>
         </div>
