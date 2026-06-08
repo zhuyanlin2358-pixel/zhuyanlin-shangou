@@ -5,16 +5,18 @@
   font-style: normal;
 }
 
-/* 方正兰亭黑系列 */
+/* 方正兰亭黑系列 — 权重：黑 < 准黑 < 中黑 < 大黑 */
 @font-face {
   font-family: 'FZLanTingHei-M';
-  src: url('@/assets/fonts/FZLTZHJW.TTF') format('truetype');
+  src: url('@/assets/fonts/FZLTHJW.TTF') format('truetype');
+  /* M-GBK = 黑（基础 Regular） */
   font-weight: 400;
   font-style: normal;
 }
 @font-face {
   font-family: 'FZLanTingHei-DB';
-  src: url('@/assets/fonts/FZLTZHUNHJW.TTF') format('truetype');
+  src: url('@/assets/fonts/FZLTZHJW.TTF') format('truetype');
+  /* DB-GBK = 中黑（Medium，标题/按钮） */
   font-weight: 400;
   font-style: normal;
 }
