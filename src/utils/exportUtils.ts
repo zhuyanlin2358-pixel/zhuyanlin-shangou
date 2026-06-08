@@ -1,6 +1,6 @@
 import html2canvas from 'html2canvas'
 import JSZip from 'jszip'
-import { getSlotStyle } from './slotStyles'
+import { getSlotStyle, type SlotPrizeStyle } from './slotStyles'
 
 export async function captureElement(
   el: HTMLElement,
@@ -249,13 +249,15 @@ export interface PrizeInfo {
 }
 export interface XfTransform { offsetX: number; offsetY: number; scale: number }
 
-/** 绘制 slot_6 奖品图 @2x → 248×248 */
-export async function drawPrizeCanvas(prize: PrizeInfo, tr: XfTransform): Promise<HTMLCanvasElement> {
+/** 绘制 slot_6 奖品图 @2x → 248×248；styleName 对应 SLOT_STYLE_REGISTRY */
+export async function drawPrizeCanvas(prize: PrizeInfo, tr: XfTransform, styleName?: string): Promise<HTMLCanvasElement> {
   const W = 124, H = 124
   const canvas = document.createElement('canvas')
   canvas.width = W * 2; canvas.height = H * 2
   const ctx = canvas.getContext('2d')!
   ctx.scale(2, 2)
+
+  const ps: SlotPrizeStyle = getSlotStyle(styleName).prizeStyle
   const isDashed = prize.type === 'product-dashed'
   const isThanks = prize.type === 'thanks'
   const isAmount = prize.type === 'amount'
@@ -270,16 +272,26 @@ export async function drawPrizeCanvas(prize: PrizeInfo, tr: XfTransform): Promis
     ctx.font = `700 22px ${F}`; ctx.fillStyle = '#7B3A00'
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
     ctx.fillText(prize.thanksText || '谢谢参与', W / 2, H / 2)
-    return downsample(canvas)  // 同其他类型一样做超采样缩回 1x
+    return downsample(canvas)
   }
 
   // Draw card background
   roundedRect(ctx, cX, cY, 111, 119, 17)
-  ctx.fillStyle = '#FFE9B0'; ctx.fill()
-  if (isDashed) {
-    ctx.setLineDash([3, 3]); ctx.strokeStyle = '#F0A830'; ctx.lineWidth = 1.5
+  if (ps.bgType === 'gradient') {
+    const bg = ctx.createLinearGradient(cX, cY, cX, cY + 119)
+    bg.addColorStop(0, ps.bgColor)
+    bg.addColorStop(1, ps.bgColorEnd)
+    ctx.fillStyle = bg
   } else {
-    ctx.setLineDash([]); ctx.strokeStyle = 'rgba(180,120,0,0.15)'; ctx.lineWidth = 1
+    ctx.fillStyle = ps.bgColor
+  }
+  ctx.fill()
+
+  // Border
+  if (isDashed && ps.useDashedBorder) {
+    ctx.setLineDash([3, 3]); ctx.strokeStyle = ps.borderColor; ctx.lineWidth = 1.5
+  } else {
+    ctx.setLineDash([]); ctx.strokeStyle = ps.borderColor; ctx.lineWidth = 1
   }
   ctx.stroke(); ctx.setLineDash([])
 
@@ -295,15 +307,14 @@ export async function drawPrizeCanvas(prize: PrizeInfo, tr: XfTransform): Promis
   // Top label（product-tag 和 amount 类型均支持）
   if ((prize.type === 'product-tag' || isAmount) && prize.tag) {
     const lx = cX + (111 - 81) / 2
-    roundedRect(ctx, lx, cY, 81, 18, [0, 0, 6, 6] as unknown as number)
     ctx.save()
     ctx.beginPath()
     ctx.moveTo(lx, cY); ctx.lineTo(lx + 81, cY)
     ctx.lineTo(lx + 81, cY + 18 - 6); ctx.arcTo(lx + 81, cY + 18, lx + 81 - 6, cY + 18, 6)
     ctx.lineTo(lx + 6, cY + 18); ctx.arcTo(lx, cY + 18, lx, cY + 18 - 6, 6)
     ctx.closePath()
-    ctx.fillStyle = '#fff'; ctx.fill(); ctx.restore()
-    ctx.font = `12px ${F}`; ctx.fillStyle = '#812D16'
+    ctx.fillStyle = ps.labelBg; ctx.fill(); ctx.restore()
+    ctx.font = `12px ${F}`; ctx.fillStyle = ps.textPrimary
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
     ctx.fillText(prize.tag, lx + 40.5, cY + 9)
   }
@@ -311,21 +322,16 @@ export async function drawPrizeCanvas(prize: PrizeInfo, tr: XfTransform): Promis
   if (isAmount) {
     const numStr = prize.amount || '30'
     const unitStr = prize.unit || '元'
-    ctx.fillStyle = '#812D16'
+    ctx.fillStyle = ps.textPrimary
     ctx.textAlign = 'left'
     ctx.textBaseline = 'alphabetic'
 
-    // 先量宽度，再居中
     ctx.font = `700 60px "MeituanDigitalType",${F}`
     const numW = ctx.measureText(numStr).width
     ctx.font = `600 16px ${F}`
     const unitW = ctx.measureText(unitStr).width
-
     const gap = 2
     const startX = cX + (111 - numW - gap - unitW) / 2
-
-    // baseline Y：有 label 时内容区从 18px 开始，下移约 10px
-    // 无 label: card center ≈ cY+70；有 label: content area 18~103, center ~60.5, baseline ~80
     const baseY = prize.tag ? cY + 80 : cY + 70
 
     ctx.font = `700 60px "MeituanDigitalType",${F}`
@@ -335,7 +341,7 @@ export async function drawPrizeCanvas(prize: PrizeInfo, tr: XfTransform): Promis
   }
   // Bottom text
   if (!isThanks && prize.bottomText) {
-    ctx.font = `500 13px ${F}`; ctx.fillStyle = '#7B3A00'
+    ctx.font = `500 13px ${F}`; ctx.fillStyle = ps.textSecondary
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
     ctx.fillText(prize.bottomText, W / 2, cY + 119 - 8 - 6.5)
   }

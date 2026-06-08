@@ -450,7 +450,7 @@ export default function SlotPage() {
   const buildBanner = useCallback(async () => {
     // 先用当前奖品 canvas（不重绘奖品，避免图片 decode 影响 s1 标题）
     const pcs = await Promise.all(
-      config.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform))
+      config.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform, config.slotStyle))
     )
     const [c1, c4a, c4d, c5p, c5r] = await Promise.all([
       drawSlotBannerCanvas(config, pcs),
@@ -478,13 +478,13 @@ export default function SlotPage() {
   // ── 2. 奖品图预览（拖动/上传奖品时只更新 s6，不碰 s1/s2）
   const buildPrizes = useCallback(async () => {
     const pcs = await Promise.all(
-      config.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform))
+      config.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform, config.slotStyle))
     )
     setPreviews(prev => ({
       ...prev,
       ...Object.fromEntries(pcs.map((c, i) => [`s6_${i}`, c.toDataURL()])),
     }))
-  }, [config.prizes, config.prizeTransforms]) // eslint-disable-line
+  }, [config.prizes, config.prizeTransforms, config.slotStyle]) // eslint-disable-line
 
   // ── 3. 空态页预览（只在空态配置变化时更新 s3）
   const buildEmpty = useCallback(async () => {
@@ -562,7 +562,7 @@ export default function SlotPage() {
     try {
       const p = config.prizes; const t = config.prizeTransforms
       const prizes = p.map((pr, i) => ({ prize: pr as PrizeInfo, tr: t[i] as XfTransform }))
-      const pcs = await Promise.all(prizes.map(x => drawPrizeCanvas(x.prize, x.tr)))
+      const pcs = await Promise.all(prizes.map(x => drawPrizeCanvas(x.prize, x.tr, config.slotStyle)))
       const [c1, c3, c4a, c4d, c5p, c5r, ...c6s] = await Promise.all([
         drawSlotBannerCanvas(config, pcs),
         drawEmptyStateCanvas(config.emptyImageUrl, config.emptyTransform as XfTransform, config.emptyText),
@@ -570,7 +570,7 @@ export default function SlotPage() {
         Promise.resolve(drawButtonCanvas('活动已结束', config.btnDisabledFrom, config.btnDisabledTo)),
         Promise.resolve(drawLinkCanvas([{ text: '我的奖品' }], config.linksColor, 96, 34, 22)),
         Promise.resolve(drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], config.linksColor, 109, 34, 22)),
-        ...prizes.map(x => drawPrizeCanvas(x.prize, x.tr)),
+        ...prizes.map(x => drawPrizeCanvas(x.prize, x.tr, config.slotStyle)),
       ])
       const c2 = drawSlotBgCanvas(config)
       const dialogBtnFiles = DIALOG_BUTTONS.map(v => ({
@@ -623,7 +623,7 @@ export default function SlotPage() {
         <div id="slot-section-1">
           <SectionTitle num={1} label="老虎机未抽奖状态" sub="含标题 + 奖品图 + 按钮 · 750 × 242 px" badge="素材 1" />
           <ExportCard label="老虎机 — 未抽奖状态" sub="750 × 242 px · PNG"
-            onExport={() => exportOne('s1', 'slot_1_未抽奖状态_750x242', async () => drawSlotBannerCanvas(config, await Promise.all(config.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform)))))}
+            onExport={() => exportOne('s1', 'slot_1_未抽奖状态_750x242', async () => drawSlotBannerCanvas(config, await Promise.all(config.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform, config.slotStyle)))))}
             onPreview={() => showToast('已同步到手机预览')}>
             {previews.s1
               ? <img src={previews.s1} style={{ width: 495, height: 160, borderRadius: 13, display: 'block', flexShrink: 0 }} />
@@ -714,7 +714,7 @@ export default function SlotPage() {
             {config.prizes.map((p, i) => (
               <PrizeEditorCard
                 key={i} idx={i} prize={p}
-                onExport={() => exportOne(`s6_${i}`, `slot_6_奖品${i+1}_124x124`, () => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform))}
+                onExport={() => exportOne(`s6_${i}`, `slot_6_奖品${i+1}_124x124`, () => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform, config.slotStyle))}
                 onPreview={() => showToast('已同步到手机预览')}
               />
             ))}
