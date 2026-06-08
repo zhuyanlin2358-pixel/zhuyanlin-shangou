@@ -59,16 +59,11 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
     id: 'daily',
     label: '日常活动',
     drawBg: (ctx, W, H, { tintFrom, tintTo }) => {
-      // Figma 分层结构（从下到上）：
-      // ① 白色底  ② 极淡主题渐变（背景层）  ③ 左侧柔光椭圆  ④ 右上同色圆角块（装饰层）
+      // Figma 层级（前→后）：
+      // ① 矩形备份7（FRONT，顶层）→ ② 蒙版×2（背景渐变）→ ③ 圆形2（柔光）
 
-      // 1. 白色底（banner 整体基底）
-      ctx.fillStyle = '#FFFFFF'
-      ctx.fillRect(0, 0, W, H)
-
-      // 2. 主背景：主题色竖向渐变，低透明度（约 25%）→ 产生极淡粉色感
+      // 1. 主背景（蒙版层）：主题色竖向渐变 100% 不透明
       ctx.save()
-      ctx.globalAlpha = 0.25
       const mainBg = ctx.createLinearGradient(0, 0, 0, H)
       mainBg.addColorStop(0.05, tintFrom)
       mainBg.addColorStop(1, tintTo)
@@ -76,7 +71,7 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
       ctx.fillRect(0, 0, W, H)
       ctx.restore()
 
-      // 3. 左侧大椭圆柔光（Figma 圆形2：center≈110.5,-20，rx:152.5 ry:121，blur 71px，white soft glow）
+      // 2. 左侧大椭圆柔光（圆形2：center 110.5,-20，rx:152.5 ry:121，blur 71px）
       ctx.save()
       ctx.filter = 'blur(71px)'
       ctx.beginPath()
@@ -86,10 +81,9 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
       ctx.filter = 'none'
       ctx.restore()
 
-      // 4. 右上角装饰块（Figma 矩形备份7：x:342 y:0 w:384 h:105 r:24px）
-      // 用主题色在 55% 透明度叠加，与背景同色系但更深，无"白方块"感
+      // 3. 矩形备份7（FRONT 顶层）：x:342 y:0 w:384 h:105 r:24px
+      // multiply 混合 → 与背景同色族自然加深，无硬边"方块"感
       ctx.save()
-      ctx.globalAlpha = 0.55
       ctx.beginPath()
       ctx.moveTo(366, 0)
       ctx.lineTo(726, 0)
@@ -99,14 +93,17 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
       ctx.lineTo(342, 24)
       ctx.arcTo(342, 0, 366, 0, 24)
       ctx.closePath()
-      const decG = ctx.createLinearGradient(726, 0, 342, 105)  // 232deg 斜向
+      ctx.clip()
+      ctx.globalCompositeOperation = 'multiply'
+      ctx.globalAlpha = 0.38
+      const decG = ctx.createLinearGradient(726, 0, 342, 105)
       decG.addColorStop(0, tintFrom)
       decG.addColorStop(1, tintTo)
       ctx.fillStyle = decG
-      ctx.fill()
+      ctx.fillRect(342, 0, 384, 105)
       ctx.restore()
 
-      // 5. 顶部 1px 内描边（Figma inset 0px 1px 0px white）
+      // 4. 顶部 1px 内描边（Figma inset 0px 1px 0px white）
       ctx.fillStyle = 'rgba(255,255,255,0.65)'
       ctx.fillRect(0, 0, W, 1)
     },
