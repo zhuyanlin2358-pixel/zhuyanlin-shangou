@@ -47,7 +47,7 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
       bgColor: '#FFE9B0',
       bgColorEnd: '#FFE9B0',
       borderColor: 'rgba(180,120,0,0.15)',
-      useDashedBorder: true,
+      useDashedBorder: false,
       labelBg: '#fff',
       textPrimary: '#812D16',
       textSecondary: '#7B3A00',
