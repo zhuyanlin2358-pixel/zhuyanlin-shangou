@@ -5,6 +5,26 @@
   font-style: normal;
 }
 
+/* 方正兰亭黑系列 */
+@font-face {
+  font-family: 'FZLanTingHei-M';
+  src: url('@/assets/fonts/FZLTZHJW.TTF') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'FZLanTingHei-DB';
+  src: url('@/assets/fonts/FZLTDHJW.TTF') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'FZLanTingHei';
+  src: url('@/assets/fonts/FZLTHJW.TTF') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

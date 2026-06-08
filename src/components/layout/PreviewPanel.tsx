@@ -2,7 +2,8 @@ import { useRef, useEffect } from 'react'
 import { useSlot } from '@/contexts/SlotContext'
 import { PrizeCardFull } from '@/components/pages/SlotPage'
 
-const PF = "'PingFang SC','Microsoft YaHei',sans-serif"
+const PF  = "'FZLanTingHei-M','PingFang SC','Microsoft YaHei',sans-serif"
+const PFB = "'FZLanTingHei-DB','FZLanTingHei-M','PingFang SC','Microsoft YaHei',sans-serif"
 const SLOT_W = 750
 const PANEL_W = 296            // 原版 panel-slot-inner-wrap 宽度
 const SCALE   = PANEL_W / SLOT_W // 0.3947
@@ -154,8 +155,8 @@ export default function PreviewPanel() {
                 {/* 标题 */}
                 <div style={{
                   position: 'absolute', left: 43, top: 11,
-                  fontSize: 38, fontWeight: 500, lineHeight: '58.8px',
-                  color: config.titleColor, fontFamily: PF,
+                  fontSize: 38, fontWeight: 400, lineHeight: '58.8px',
+                  color: config.titleColor, fontFamily: PFB,
                   whiteSpace: 'nowrap', zIndex: 3,
                 }}>
                   {config.titleText}
@@ -198,7 +199,7 @@ export default function PreviewPanel() {
                   width: 194, height: 80, borderRadius: 40, zIndex: 3,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   background: `linear-gradient(90deg, ${config.btnActiveFrom}, ${config.btnActiveTo})`,
-                  fontSize: 30, color: '#fff', fontFamily: PF,
+                  fontSize: 30, color: '#fff', fontFamily: PFB,
                 }}>
                   立即抽奖
                 </div>

@@ -48,9 +48,22 @@ function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   )
 }
 
+/** 预加载自定义字体，确保 Canvas 绘制时可用 */
+export async function preloadFonts(): Promise<void> {
+  if (typeof document === 'undefined' || !document.fonts) return
+  await Promise.allSettled([
+    document.fonts.load('400 16px "FZLanTingHei-M"'),
+    document.fonts.load('400 16px "FZLanTingHei-DB"'),
+    document.fonts.load('700 16px "MeituanDigitalType"'),
+  ])
+}
+
 // ── Canvas 直接绘制工具 ──────────────────────────────────────────────────────
 
-const F = '"PingFang SC","Microsoft YaHei",sans-serif'
+// FZLanTingHei-M-GBK：正文/链接/计数/底部文字
+const F  = '"FZLanTingHei-M","PingFang SC","Microsoft YaHei",sans-serif'
+// FZLanTingHei-DB-GBK：标题/按钮/大字
+const FB = '"FZLanTingHei-DB","FZLanTingHei-M","PingFang SC","Microsoft YaHei",sans-serif'
 
 function roundedRect(
   ctx: CanvasRenderingContext2D,
@@ -141,28 +154,28 @@ export async function drawSlotBannerCanvas(
   // 文字部分（重置 globalAlpha 防止 path/透明度污染）
   ctx.globalAlpha = 1
   ctx.beginPath()
-  ctx.font = `500 38px ${F}`
+  ctx.font = `400 38px ${FB}`   // FZLanTingHei-DB-GBK
   ctx.fillStyle = cfg.titleColor
   ctx.textAlign = 'left'
   ctx.textBaseline = 'middle'
   ctx.fillText(cfg.titleText, 43, 40)
 
-  // 链接文字（右对齐）
-  ctx.font = `28px ${F}`
+  // 链接文字（右对齐）FZLanTingHei-M-GBK
+  ctx.font = `400 28px ${F}`
   ctx.fillStyle = cfg.linksColor
   ctx.textAlign = 'right'
   ctx.textBaseline = 'middle'
   ctx.fillText('我的奖品 | 抽奖规则', W - 48, 33)
 
-  // 按钮文字
-  ctx.font = `500 30px ${F}`
+  // 按钮文字 FZLanTingHei-DB-GBK
+  ctx.font = `400 30px ${FB}`
   ctx.fillStyle = '#fff'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillText('立即抽奖', btnX + 97, 144)
 
-  // 剩余次数
-  ctx.font = `20px ${F}`
+  // 剩余次数 FZLanTingHei-M-GBK
+  ctx.font = `400 20px ${F}`
   ctx.fillStyle = cfg.linksColor
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
@@ -226,7 +239,7 @@ export function drawButtonCanvas(text: string, from: string, to: string): HTMLCa
   const g = ctx.createLinearGradient(0, 0, 194, 0)
   g.addColorStop(0, from); g.addColorStop(1, to)
   ctx.fillStyle = g; ctx.fill()
-  ctx.font = `500 30px ${F}`; ctx.fillStyle = '#fff'
+  ctx.font = `400 30px ${FB}`; ctx.fillStyle = '#fff'
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
   ctx.fillText(text, 97, 40)
   return downsample(canvas)
@@ -489,7 +502,7 @@ export function drawSlotBgCanvas(cfg: Pick<BannerConfig, 'slotTintFrom' | 'slotT
 
   ctx.globalAlpha = 1
   ctx.beginPath()
-  ctx.font = `500 38px ${F}`
+  ctx.font = `400 38px ${FB}`
   ctx.fillStyle = cfg.titleColor
   ctx.textAlign = 'left'
   ctx.textBaseline = 'middle'

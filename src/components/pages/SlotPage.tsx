@@ -3,7 +3,7 @@ import { gsap } from 'gsap'
 import { Eye, Download } from 'lucide-react'
 import { useSlot } from '@/contexts/SlotContext'
 import { useApp } from '@/contexts/AppContext'
-import { downloadCanvas, downloadZip, drawSlotBannerCanvas, drawSlotBgCanvas, drawButtonCanvas, drawLinkCanvas, drawEmptyStateCanvas, drawPrizeCanvas, drawDialogButtonCanvas, drawDialogResultCanvas } from '@/utils/exportUtils'
+import { downloadCanvas, downloadZip, drawSlotBannerCanvas, drawSlotBgCanvas, drawButtonCanvas, drawLinkCanvas, drawEmptyStateCanvas, drawPrizeCanvas, drawDialogButtonCanvas, drawDialogResultCanvas, preloadFonts } from '@/utils/exportUtils'
 import type { PrizeInfo, XfTransform } from '@/utils/exportUtils'
 import type { PrizeConfig, PrizeType, ImgTransform } from '@/types'
 import { getSlotStyle } from '@/utils/slotStyles'
@@ -123,7 +123,8 @@ function DraggableImageWrap({
   )
 }
 
-const PF = "'PingFang SC','Microsoft YaHei',sans-serif"
+const PF  = "'FZLanTingHei-M','PingFang SC','Microsoft YaHei',sans-serif"
+const PFB = "'FZLanTingHei-DB','FZLanTingHei-M','PingFang SC','Microsoft YaHei',sans-serif"
 
 /* ── Spotlight 鼠标跟踪 hook ── */
 function useSpotlight(ref: React.RefObject<HTMLDivElement | null>) {
@@ -458,6 +459,9 @@ const DIALOG_RESULTS = [
 export default function SlotPage() {
   const { config, setEmptyTransform } = useSlot()
   const { showToast, registerExportAll } = useApp()
+
+  // 字体预加载（确保 Canvas 绘制时自定义字体可用）
+  useEffect(() => { preloadFonts() }, [])
 
   // 监听 toast 事件
   useEffect(() => {
