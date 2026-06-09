@@ -276,3 +276,12 @@ body.dark-mode .is-scrolling::-webkit-scrollbar-thumb { background: rgba(255,255
 *:hover { scrollbar-color: rgba(0,0,0,0.15) transparent; }
 body.dark-mode *:hover,
 .has-preview *:hover { scrollbar-color: rgba(255,255,255,0.2) transparent; }
+
+/* ── 预览图渐显：canvas 重建时淡入，不硬闪 ── */
+.slot-card-preview img {
+  animation: preview-fadein 0.2s ease;
+}
+@keyframes preview-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

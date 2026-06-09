@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, lazy, Suspense } from 'react'
 import { AppProvider, useApp } from '@/contexts/AppContext'
 import { N4Provider } from '@/contexts/N4Context'
 import { N2Provider } from '@/contexts/N2Context'
@@ -7,12 +7,14 @@ import Sidebar from '@/components/layout/Sidebar'
 import TopBar from '@/components/layout/TopBar'
 import PreviewPanel from '@/components/layout/PreviewPanel'
 import HomePage from '@/components/pages/HomePage'
-import SlotPage from '@/components/pages/SlotPage'
-import N4Page from '@/components/pages/N4Page'
-import N2Page from '@/components/pages/N2Page'
-import YituosiPage from '@/components/pages/YituosiPage'
-import GenericPage from '@/components/pages/GenericPage'
-import AssetsPage from '@/components/pages/AssetsPage'
+
+// 按需加载：只有用户点进对应组件时才下载该模块，首屏不打包进来
+const SlotPage    = lazy(() => import('@/components/pages/SlotPage'))
+const N4Page      = lazy(() => import('@/components/pages/N4Page'))
+const N2Page      = lazy(() => import('@/components/pages/N2Page'))
+const YituosiPage = lazy(() => import('@/components/pages/YituosiPage'))
+const GenericPage = lazy(() => import('@/components/pages/GenericPage'))
+const AssetsPage  = lazy(() => import('@/components/pages/AssetsPage'))
 
 // 全局滚动检测：给正在滚动的元素加 is-scrolling，900ms 后移除
 function useGlobalScrollVisible() {
@@ -34,13 +36,21 @@ function useGlobalScrollVisible() {
   }, [])
 }
 
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center h-64 text-white/20 text-sm">
+      加载中…
+    </div>
+  )
+}
+
 function MainContent() {
   const { page, currentComp, toast, hasPreview } = useApp()
   useGlobalScrollVisible()
 
   const pageContent = (() => {
     if (page === 'home') return <div className="page-enter"><HomePage /></div>
-    if (page === 'assets') return <div className="page-enter"><AssetsPage /></div>
+    if (page === 'assets') return <div className="page-enter"><Suspense fallback={<PageLoader />}><AssetsPage /></Suspense></div>
     if (page === 'comp') {
       const inner = (() => {
         switch (currentComp) {
@@ -51,7 +61,11 @@ function MainContent() {
           default:        return <GenericPage />
         }
       })()
-      return <div key={currentComp} className="page-enter">{inner}</div>
+      return (
+        <div key={currentComp} className="page-enter">
+          <Suspense fallback={<PageLoader />}>{inner}</Suspense>
+        </div>
+      )
     }
     return <div className="page-enter"><HomePage /></div>
   })()
