@@ -124,7 +124,6 @@ function DraggableImageWrap({
 }
 
 const PF  = "'FZLanTingHei-M','PingFang SC','Microsoft YaHei',sans-serif"
-const PFB = "'FZLanTingHei-DB','FZLanTingHei-M','PingFang SC','Microsoft YaHei',sans-serif"
 
 /* ── Spotlight 鼠标跟踪 hook ── */
 function useSpotlight(ref: React.RefObject<HTMLDivElement | null>) {

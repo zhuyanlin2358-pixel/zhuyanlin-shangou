@@ -480,7 +480,7 @@ export async function drawEmptyStateCanvas(
 }
 
 /** 绘制 slot_2 背景 750×242（无奖品无按钮） */
-export function drawSlotBgCanvas(cfg: Pick<BannerConfig, 'slotTintFrom' | 'slotTintTo' | 'titleText' | 'titleColor'>): HTMLCanvasElement {
+export function drawSlotBgCanvas(cfg: Pick<BannerConfig, 'slotTintFrom' | 'slotTintTo' | 'titleText' | 'titleColor' | 'slotStyle'>): HTMLCanvasElement {
   const W = 750, H = 242
   const canvas = document.createElement('canvas')
   canvas.width = W * 2; canvas.height = H * 2
