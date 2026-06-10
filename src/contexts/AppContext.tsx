@@ -11,6 +11,7 @@ interface AppContextValue {
   goHome: () => void
   enterComp: (id: ComponentId) => void
   goAssets: () => void
+  goReview: () => void
   toast: string
   showToast: (msg: string) => void
   // 当前组件页注册的导出全部回调
@@ -59,6 +60,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setHasPreview(false)
   }
 
+  const goReview = () => {
+    setPage('review')
+    setCurrentComp(null)
+    setHasPreview(false)
+  }
+
   const showToast = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(''), 2500)
@@ -76,7 +83,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       darkMode, toggleDarkMode,
       hasPreview, setHasPreview,
       page, currentComp,
-      goHome, enterComp, goAssets,
+      goHome, enterComp, goAssets, goReview,
       toast, showToast,
       registerExportAll, triggerExportAll, hasExportAll,
     }}>

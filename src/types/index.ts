@@ -1,5 +1,5 @@
 export type ComponentStatus = 'done' | 'coming'
-export type PageId = 'home' | 'comp' | 'assets'
+export type PageId = 'home' | 'comp' | 'assets' | 'review'
 
 export type ComponentId =
   | 'yituosi' | 'n4' | 'n2' | 'yituoer' | 'diaotong' | 'xin-zujian'
@@ -205,4 +205,24 @@ export interface SlotConfig {
   prizeTransforms: ImgTransform[]
   tone: 'light' | 'dark'
   slotStyle: string  // 老虎机风格 id，对应 SLOT_STYLE_REGISTRY
+}
+
+// ── 审核流程 ────────────────────────────────────────────────────────────────
+export type ReviewStatus = 'pending' | 'approved' | 'rejected'
+
+export interface SubmissionAsset {
+  name: string       // 素材名称，如「slot_1_未抽奖状态_750x242」
+  dataUrl: string    // 缩略图 base64（压缩后）
+}
+
+export interface Submission {
+  id: string
+  createdAt: number  // timestamp ms
+  submitter: string  // 提交人
+  projectName: string
+  notes: string
+  assets: SubmissionAsset[]
+  status: ReviewStatus
+  statusNote?: string   // 审核意见
+  webhookSent: boolean  // 是否已发大象通知
 }

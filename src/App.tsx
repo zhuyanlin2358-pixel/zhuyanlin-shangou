@@ -15,6 +15,7 @@ const N2Page      = lazy(() => import('@/components/pages/N2Page'))
 const YituosiPage = lazy(() => import('@/components/pages/YituosiPage'))
 const GenericPage = lazy(() => import('@/components/pages/GenericPage'))
 const AssetsPage  = lazy(() => import('@/components/pages/AssetsPage'))
+const ReviewPage  = lazy(() => import('@/components/pages/ReviewPage'))
 
 // 全局滚动检测：给正在滚动的元素加 is-scrolling，900ms 后移除
 function useGlobalScrollVisible() {
@@ -51,6 +52,7 @@ function MainContent() {
   const pageContent = (() => {
     if (page === 'home') return <div className="page-enter"><HomePage /></div>
     if (page === 'assets') return <div className="page-enter"><Suspense fallback={<PageLoader />}><AssetsPage /></Suspense></div>
+    if (page === 'review') return <div className="page-enter"><Suspense fallback={<PageLoader />}><ReviewPage /></Suspense></div>
     if (page === 'comp') {
       const inner = (() => {
         switch (currentComp) {

@@ -1,4 +1,4 @@
-import { ArrowLeft, Package, Sun, Moon } from 'lucide-react'
+import { ArrowLeft, Package, Sun, Moon, ClipboardCheck } from 'lucide-react'
 import { useApp } from '@/contexts/AppContext'
 import CompBrowser from './CompBrowser'
 import SlotPanel from '@/components/panels/SlotPanel'
@@ -8,7 +8,7 @@ import GenericPanel from '@/components/panels/GenericPanel'
 import YituosiPanel from '@/components/panels/YituosiPanel'
 
 export default function Sidebar() {
-  const { page, currentComp, goHome, goAssets, darkMode, toggleDarkMode } = useApp()
+  const { page, currentComp, goHome, goAssets, goReview, darkMode, toggleDarkMode } = useApp()
   const isConfig = page === 'comp' && currentComp !== null
 
   const panel = (() => {
@@ -71,10 +71,18 @@ export default function Sidebar() {
           <button
             onClick={goAssets}
             className="w-full flex items-center gap-2 px-4 py-3 text-xs transition-colors hover:opacity-80"
-            style={{ color: 'var(--text-2)' }}
+            style={{ color: page === 'assets' ? 'var(--accent)' : 'var(--text-2)' }}
           >
             <Package size={14} style={{ flexShrink: 0 }} />
             <span>我的资产</span>
+          </button>
+          <button
+            onClick={goReview}
+            className="w-full flex items-center gap-2 px-4 py-3 text-xs transition-colors hover:opacity-80 border-t"
+            style={{ color: page === 'review' ? 'var(--accent)' : 'var(--text-2)', borderColor: 'var(--sidebar-border)' }}
+          >
+            <ClipboardCheck size={14} style={{ flexShrink: 0 }} />
+            <span>提交审核</span>
           </button>
           <button
             onClick={toggleDarkMode}
