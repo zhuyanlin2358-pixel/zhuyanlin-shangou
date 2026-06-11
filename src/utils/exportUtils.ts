@@ -161,14 +161,14 @@ export async function drawSlotBannerCanvas(
   // 文字部分（重置 globalAlpha 防止 path/透明度污染）
   ctx.globalAlpha = 1
   ctx.beginPath()
-  ctx.font = `400 38px ${FB}`   // FZLanTingHei-DB-GBK
+  ctx.font = `400 38px ${F}`
   ctx.fillStyle = cfg.titleColor
   ctx.textAlign = 'left'
   ctx.textBaseline = 'middle'
   ctx.fillText(cfg.titleText, 43, 40)
 
-  // 链接文字（右对齐）Banner 内 20px，确保不超过按钮左边界
-  ctx.font = `400 20px ${F}`
+  // 链接文字（右对齐）Banner 内 24px
+  ctx.font = `400 24px ${F}`
   ctx.fillStyle = cfg.linksColor
   ctx.textAlign = 'right'
   ctx.textBaseline = 'middle'
@@ -538,7 +538,7 @@ export async function drawSlotBgCanvas(
 
   ctx.globalAlpha = 1
   ctx.beginPath()
-  ctx.font = `400 38px ${FB}`
+  ctx.font = `400 38px ${F}`
   ctx.fillStyle = cfg.titleColor
   ctx.textAlign = 'left'
   ctx.textBaseline = 'middle'
