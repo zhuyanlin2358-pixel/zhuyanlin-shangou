@@ -38,7 +38,7 @@ export const SLOT_PRESETS: Record<string, SlotPreset & { label: string; tone: 'l
   },
   lan: {
     label: '蓝色', tone: 'light',
-    from: '#30E100', to: '#86DE0C',
+    from: '#0598FE', to: '#06AFFE',
     disFrom: '#0598FE', disTo: '#06AFFE',
     slotFrom: '#B8F8FF', slotTo: '#88F4FE',
     rect7From: '#27D5FE', rect7To: '#1BD7F8',

@@ -143,14 +143,15 @@ export default function PreviewPanel() {
                 position: 'relative', overflow: 'hidden',
                 // 背景色完全跟随 preset（daily/minimal 均使用 slotTintFrom/To）
                 background: `linear-gradient(90deg, ${config.slotTintFrom}, ${config.slotTintTo})`,
-                borderRadius: 20,
+                borderRadius: 24,
               }}>
                 {/* daily style：矩形备份7（跟随 preset 的 rect7 颜色）+ 真实箭头图片 */}
                 {config.slotStyle === 'daily' && (<>
                   <div style={{
                     position: 'absolute', left: 342, top: 0,
-                    width: 384, height: 105,
-                    borderRadius: '24px 0 0 24px',
+                    width: 384, height: 72,
+                    // 梯形裁剪：仅显示弧形缺口区域（canvas x≈405~462, y 0~72）
+                    clipPath: 'polygon(63.5px 0px, 384px 0px, 384px 72px, 120.5px 72px)',
                     background: `linear-gradient(90deg, ${config.slotRect7From ?? '#FFD8DA'}, ${config.slotRect7To ?? '#FFC7D4'})`,
                     pointerEvents: 'none',
                   }} />
