@@ -102,13 +102,10 @@ export async function drawSlotBannerCanvas(
   const ctx = canvas.getContext('2d')!
   ctx.scale(2, 2)
 
-  // 背景（圆角裁切 → 调用风格注册表）
-  ctx.save()
-  roundedRect(ctx, 0, 0, W, H, 20)
-  ctx.clip()
+  // 背景：调用风格注册表（背景在各自的702×242区域内自绘，无全宽clip）
   getSlotStyle(cfg.slotStyle).drawBg(ctx, W, H, { tintFrom: cfg.slotTintFrom, tintTo: cfg.slotTintTo })
 
-  // 白色奖品框（Figma：白色填充 + 底部淡粉渐变 + 白色 outside 描边 + 内阴影）
+  // 白色奖品框（Figma 13:431：白色 + 底部淡粉渐变 + 白色描边 + 内阴影）
   roundedRect(ctx, 43, 75, 427, 142, 24)
   const boxFill = ctx.createLinearGradient(43, 75, 43, 75 + 142)
   boxFill.addColorStop(0, '#FFFFFF')
@@ -116,7 +113,6 @@ export async function drawSlotBannerCanvas(
   boxFill.addColorStop(1, 'rgba(255,246,249,1)')
   ctx.fillStyle = boxFill; ctx.fill()
   ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 1; ctx.stroke()
-  // 内阴影：底部白色 inset（用白色半透明渐变模拟）
   roundedRect(ctx, 43, 75, 427, 142, 24)
   const boxInner = ctx.createLinearGradient(43, 217 - 4, 43, 217)
   boxInner.addColorStop(0, 'rgba(255,255,255,0)')
@@ -131,8 +127,6 @@ export async function drawSlotBannerCanvas(
   btnG.addColorStop(1, cfg.btnActiveTo)
   ctx.fillStyle = btnG
   ctx.fill()
-
-  ctx.restore() // 解除圆角裁切
 
   // 两侧装饰箭头 — 仅日常活动（Figma 位图备份3 4 / 位图4，26×26）
   // x:31 y:139（左）/ x:452 y:139（右），来自 Figma API 精确坐标
@@ -497,9 +491,6 @@ export function drawSlotBgCanvas(cfg: Pick<BannerConfig, 'slotTintFrom' | 'slotT
   const ctx = canvas.getContext('2d')!
   ctx.scale(2, 2)
 
-  ctx.save()
-  roundedRect(ctx, 0, 0, W, H, 20)
-  ctx.clip()
   getSlotStyle(cfg.slotStyle).drawBg(ctx, W, H, { tintFrom: cfg.slotTintFrom, tintTo: cfg.slotTintTo })
   roundedRect(ctx, 43, 75, 427, 142, 24)
   const boxFill2 = ctx.createLinearGradient(43, 75, 43, 217)
@@ -509,7 +500,6 @@ export function drawSlotBgCanvas(cfg: Pick<BannerConfig, 'slotTintFrom' | 'slotT
   ctx.strokeStyle = '#FFFFFF'
   ctx.lineWidth = 1
   ctx.stroke()
-  ctx.restore()
 
   ctx.globalAlpha = 1
   ctx.beginPath()
