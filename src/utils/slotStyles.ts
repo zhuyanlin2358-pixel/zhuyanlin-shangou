@@ -29,6 +29,24 @@ export interface SlotStyleDef {
   prizeStyle: SlotPrizeStyle
 }
 
+// 皮肤区域常量：702×242，左右各 24px 留白
+const SX = 24, SW = 702, R = 24
+
+// 在 ctx 上画皮肤圆角矩形路径（SX, 0, SW, H, r=24）
+function skinPath(ctx: CanvasRenderingContext2D, H: number) {
+  ctx.beginPath()
+  ctx.moveTo(SX + R, 0)
+  ctx.lineTo(SX + SW - R, 0)
+  ctx.arcTo(SX + SW, 0, SX + SW, R, R)
+  ctx.lineTo(SX + SW, H - R)
+  ctx.arcTo(SX + SW, H, SX + SW - R, H, R)
+  ctx.lineTo(SX + R, H)
+  ctx.arcTo(SX, H, SX, H - R, R)
+  ctx.lineTo(SX, R)
+  ctx.arcTo(SX, 0, SX + R, 0, R)
+  ctx.closePath()
+}
+
 export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
 
   // ── 常规极简 ─────────────────────────────────────────────────────────────
@@ -36,13 +54,15 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
     id: 'minimal',
     label: '常规极简',
     drawBg: (ctx, W, H, { tintFrom, tintTo }) => {
-      // 背景皮肤702×242，居中于750px canvas（左右各24px留白）
-      const SX = 24, SW = 702
+      ctx.save()
+      skinPath(ctx, H)
+      ctx.clip()
       const bg = ctx.createLinearGradient(SX, 0, SX + SW, H)
       bg.addColorStop(0, tintFrom)
       bg.addColorStop(1, tintTo)
       ctx.fillStyle = bg
       ctx.fillRect(SX, 0, SW, H)
+      ctx.restore()
     },
     prizeStyle: {
       bgType: 'gradient',
@@ -62,7 +82,10 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
     label: '日常活动',
     // Figma API 精确还原（节点 13:417 蒙版 + 13:416 矩形备份7 + 13:429 圆形2）
     drawBg: (ctx, W, H, _colors) => {
-      const SX = 24, SW = 702  // 皮肤702×242，居中于750px canvas，左右各24px留白
+      // 全部绘制在皮肤圆角区域内（702×242，r=24）
+      ctx.save()
+      skinPath(ctx, H)
+      ctx.clip()
 
       // ① 蒙版主背景（13:417）：#FFF2F6→#FEDCE2 横向渐变
       const mainBg = ctx.createLinearGradient(SX, 0, SX + SW, 0)
@@ -106,6 +129,8 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
       ctx.globalAlpha = 1
       ctx.fillStyle = 'rgba(255,255,255,0.80)'
       ctx.fillRect(SX, 0, SW, 1)
+
+      ctx.restore()  // 释放 skinPath clip
     },
     prizeStyle: {
       bgType: 'gradient',
