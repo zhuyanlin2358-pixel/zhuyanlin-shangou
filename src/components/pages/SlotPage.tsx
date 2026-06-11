@@ -622,7 +622,7 @@ export default function SlotPage() {
       const c2 = await drawSlotBgCanvas(config)
       const dialogBtnFiles = DIALOG_BUTTONS.map(v => ({
         canvas: drawDialogButtonCanvas(v.text, config.btnActiveFrom, config.btnActiveTo, undefined, config.btnTextColor),
-        name: `dialog_7_弹窗按钮_${v.label}_276x80.png`,
+        name: `dialog_7_弹窗按钮_${v.label}_276x118.png`,
       }))
       const dialogResFiles = DIALOG_RESULTS.map(v => ({
         canvas: drawDialogResultCanvas(v.state, config.slotTintFrom, config.slotTintTo, config.titleColor),
@@ -776,10 +776,10 @@ export default function SlotPage() {
 
           {/* ── 7 弹窗按钮 ── */}
           <div style={{ marginBottom: 32 }}>
-            <SectionTitle num={7} label="弹窗按钮" sub="276 × 80 px · 7 款 · 随配色自动适配" />
+            <SectionTitle num={7} label="弹窗按钮" sub="276 × 118 px（含空隙）· 按钮本体 276 × 80 · 7 款" />
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
               {DIALOG_BUTTONS.map(v => (
-                <ExportCard key={v.key} label={v.label} sub="276 × 80 px · PNG"
+                <ExportCard key={v.key} label={v.label} sub="276 × 118 px · PNG"
                   onExport={() => exportOne(
                     `db_${v.key}`, `dialog_7_弹窗按钮_${v.label}_276x80`,
                     async () => drawDialogButtonCanvas(v.text, config.btnActiveFrom, config.btnActiveTo, undefined, config.btnTextColor),
@@ -787,7 +787,7 @@ export default function SlotPage() {
                 >
                   {previews[`db_${v.key}`]
                     ? <img src={previews[`db_${v.key}`]} style={{ width: '100%', maxWidth: 276, height: 'auto', display: 'block', objectFit: 'contain' }} />
-                    : <div style={{ width: '100%', maxWidth: 276, aspectRatio: '276/80', borderRadius: 40, background: `linear-gradient(90deg,${config.btnActiveFrom},${config.btnActiveTo})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#fff', fontFamily: PF }}>{v.text}</div>
+                    : <div style={{ width: '100%', maxWidth: 276, aspectRatio: '276/118', borderRadius: 40, background: `linear-gradient(90deg,${config.btnActiveFrom},${config.btnActiveTo})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#fff', fontFamily: PF }}>{v.text}</div>
                   }
                 </ExportCard>
               ))}
