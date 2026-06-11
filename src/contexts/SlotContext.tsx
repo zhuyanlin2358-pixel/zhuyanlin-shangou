@@ -62,20 +62,22 @@ export const SLOT_PRESETS: Record<string, SlotPreset & { label: string; tone: 'l
   },
   nianhuo: {
     label: '年货红', tone: 'dark',
-    from: '#FFDCAB', to: '#FFF9C9',
+    from: '#FFDCAB', to: '#FFF9C9',       // 金色渐变按钮
     disFrom: '#FFDCAB', disTo: '#FFF9C9',
     slotFrom: '#FF5F5F', slotTo: '#FF5B60',
     rect7From: '#FF4248', rect7To: '#FF7073',
-    linksColor: '#9D9D9D', titleColor: '#FFFFFF', isDark: true,
+    linksColor: '#FFFFFF', titleColor: '#FFFFFF',
+    btnTextColor: '#DC2300',              // 浅色按钮用深红文字
+    isDark: true,
   },
   // ── 深色（1款）────────────────────────────────────────────────────────────
   zi: {
     label: '紫色', tone: 'dark',
-    from: '#FED7BF', to: '#FCF0E3',
-    disFrom: '#FF3328', disTo: '#FF7632',
+    from: '#27126D', to: '#552CC8',       // 深紫按钮（Figma 确认，之前误用了禁用色）
+    disFrom: '#FF3227', disTo: '#FF7632',
     slotFrom: '#3819A2', slotTo: '#6E4BC3',
     rect7From: '#5A2EE3', rect7To: '#231355',
-    linksColor: '#9D9D9D', titleColor: '#FFFFFF', isDark: true,
+    linksColor: '#FFFFFF', titleColor: '#FFFFFF', isDark: true,
   },
 }
 
@@ -95,6 +97,7 @@ const INITIAL_CONFIG: SlotConfig = {
   slotRect7To: '#FFC7D4',
   linksColor: '#9D9D9D',
   titleColor: '#770101',
+  btnTextColor: '#FFFFFF',
   titleText: '惊喜抽奖',
   emptyText: '活动太火爆，请稍后重试...',
   emptyImageUrl: `${BASE}empty-illus.png`,
@@ -155,6 +158,7 @@ export function SlotProvider({ children }: { children: ReactNode }) {
       slotRect7To: p.rect7To,
       linksColor: p.linksColor,
       titleColor: p.titleColor,
+      btnTextColor: p.btnTextColor ?? '#FFFFFF',
       tone: p.tone,
     }))
     setActivePreset(key)

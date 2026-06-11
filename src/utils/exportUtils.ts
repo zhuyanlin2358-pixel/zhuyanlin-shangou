@@ -89,6 +89,7 @@ export interface BannerConfig {
   titleText: string;    titleColor: string
   linksColor: string
   btnActiveFrom: string; btnActiveTo: string
+  btnTextColor?: string  // 按钮文字颜色，默认 #fff
   slotStyle?: string
 }
 
@@ -175,7 +176,7 @@ export async function drawSlotBannerCanvas(
 
   // 按钮文字 FZLanTingHei-DB-GBK
   ctx.font = `400 34px ${FB}`
-  ctx.fillStyle = '#fff'
+  ctx.fillStyle = cfg.btnTextColor ?? '#fff'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillText('立即抽奖', btnX + 97, 144)
@@ -235,8 +236,8 @@ function drawContainedImage(
   ctx.restore()
 }
 
-/** 绘制 slot_4 按钮 @2x → 388×160 */
-export function drawButtonCanvas(text: string, from: string, to: string): HTMLCanvasElement {
+/** 绘制 slot_4 按钮 @2x → 388×160；textColor 默认白色，浅色按钮（年货红）传深色 */
+export function drawButtonCanvas(text: string, from: string, to: string, textColor = '#fff'): HTMLCanvasElement {
   const canvas = document.createElement('canvas')
   canvas.width = 388; canvas.height = 160
   const ctx = canvas.getContext('2d')!
@@ -245,7 +246,7 @@ export function drawButtonCanvas(text: string, from: string, to: string): HTMLCa
   const g = ctx.createLinearGradient(0, 0, 194, 0)
   g.addColorStop(0, from); g.addColorStop(1, to)
   ctx.fillStyle = g; ctx.fill()
-  ctx.font = `400 34px ${FB}`; ctx.fillStyle = '#fff'
+  ctx.font = `400 34px ${FB}`; ctx.fillStyle = textColor
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
   ctx.fillText(text, 97, 40)
   return downsample(canvas)

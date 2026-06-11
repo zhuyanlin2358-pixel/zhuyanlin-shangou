@@ -149,10 +149,6 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
       ctx.fillRect(SX, 0, SW, H)
       ctx.restore()
 
-      // ④ 顶部 1px 内描边
-      ctx.fillStyle = 'rgba(255,255,255,0.80)'
-      ctx.fillRect(SX, 0, SW, 1)
-
       ctx.restore()  // 释放 skinPath clip
     },
     prizeStyle: {

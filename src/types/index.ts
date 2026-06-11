@@ -163,10 +163,11 @@ export interface SlotPreset {
   disTo: string
   slotFrom: string
   slotTo: string
-  rect7From: string   // 矩形备份7 渐变起始色（日常活动背景叠层）
-  rect7To: string     // 矩形备份7 渐变结束色
+  rect7From: string
+  rect7To: string
   linksColor: string
   titleColor: string
+  btnTextColor?: string  // 按钮文字颜色，默认 #fff；浅色按钮（年货红）需设深色
   isDark: boolean
 }
 
@@ -201,6 +202,7 @@ export interface SlotConfig {
   slotRect7To: string
   linksColor: string
   titleColor: string
+  btnTextColor: string
   titleText: string
   emptyText: string
   emptyImageUrl: string

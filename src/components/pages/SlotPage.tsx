@@ -481,8 +481,8 @@ export default function SlotPage() {
     const [c1, c2, c4a, c4d, c5p, c5r] = await Promise.all([
       drawSlotBannerCanvas(config, pcs),
       drawSlotBgCanvas(config),
-      Promise.resolve(drawButtonCanvas('立即抽奖', config.btnActiveFrom, config.btnActiveTo)),
-      Promise.resolve(drawButtonCanvas('活动已结束', config.btnDisabledFrom, config.btnDisabledTo)),
+      Promise.resolve(drawButtonCanvas('立即抽奖', config.btnActiveFrom, config.btnActiveTo, config.btnTextColor)),
+      Promise.resolve(drawButtonCanvas('活动已结束', config.btnDisabledFrom, config.btnDisabledTo, config.btnTextColor)),
       Promise.resolve(drawLinkCanvas([{ text: '我的奖品' }], config.linksColor, 96, 34, 28, 2)),
       Promise.resolve(drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], config.linksColor, 109, 34, 28, 2)),
     ])
@@ -613,8 +613,8 @@ export default function SlotPage() {
       const [c1, c3, c4a, c4d, c5p, c5r, ...c6s] = await Promise.all([
         drawSlotBannerCanvas(config, pcs),
         drawEmptyStateCanvas(config.emptyImageUrl, config.emptyTransform as XfTransform, config.emptyText),
-        Promise.resolve(drawButtonCanvas('立即抽奖', config.btnActiveFrom, config.btnActiveTo)),
-        Promise.resolve(drawButtonCanvas('活动已结束', config.btnDisabledFrom, config.btnDisabledTo)),
+        Promise.resolve(drawButtonCanvas('立即抽奖', config.btnActiveFrom, config.btnActiveTo, config.btnTextColor)),
+        Promise.resolve(drawButtonCanvas('活动已结束', config.btnDisabledFrom, config.btnDisabledTo, config.btnTextColor)),
         Promise.resolve(drawLinkCanvas([{ text: '我的奖品' }], config.linksColor, 96, 34, 28, 2)),
         Promise.resolve(drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], config.linksColor, 109, 34, 28, 2)),
         ...prizes.map(x => drawPrizeCanvas(x.prize, x.tr, config.slotStyle)),
@@ -715,14 +715,14 @@ export default function SlotPage() {
           <SectionTitle num={4} label="抽奖按钮" sub="194 × 80 px · 随配色自动适配" badge="素材 4–5" />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <ExportCard label="按钮 — 立即抽奖" sub="194 × 80 px · PNG"
-              onExport={() => exportOne('s4a', 'slot_4_按钮立即抽奖_194x80', async () => drawButtonCanvas('立即抽奖', config.btnActiveFrom, config.btnActiveTo))}>
+              onExport={() => exportOne('s4a', 'slot_4_按钮立即抽奖_194x80', async () => drawButtonCanvas('立即抽奖', config.btnActiveFrom, config.btnActiveTo, config.btnTextColor))}>
               {previews.s4a
                 ? <img src={previews.s4a} style={{ width: 194, height: 80, display: 'block', flexShrink: 0, objectFit: 'contain' }} />
                 : <div style={{ width: 194, height: 80, borderRadius: 40, background: `linear-gradient(90deg,${config.btnActiveFrom},${config.btnActiveTo})`, flexShrink: 0 }} />
               }
             </ExportCard>
             <ExportCard label="按钮 — 活动已结束" sub="194 × 80 px · PNG"
-              onExport={() => exportOne('s4d', 'slot_4_按钮活动结束_194x80', async () => drawButtonCanvas('活动已结束', config.btnDisabledFrom, config.btnDisabledTo))}>
+              onExport={() => exportOne('s4d', 'slot_4_按钮活动结束_194x80', async () => drawButtonCanvas('活动已结束', config.btnDisabledFrom, config.btnDisabledTo, config.btnTextColor))}>
               {previews.s4d
                 ? <img src={previews.s4d} style={{ width: 194, height: 80, display: 'block', flexShrink: 0, objectFit: 'contain' }} />
                 : <div style={{ width: 194, height: 80, borderRadius: 40, background: `linear-gradient(90deg,${config.btnDisabledFrom},${config.btnDisabledTo})`, flexShrink: 0 }} />
