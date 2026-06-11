@@ -504,6 +504,15 @@ export async function drawSlotBgCanvas(
     rect7From: cfg.slotRect7From, rect7To: cfg.slotRect7To,
   })
 
+  // 白色奖品框（与 slot_1 相同，slot_2 保留框体但不放奖品图）
+  roundedRect(ctx, 43, 75, 427, 142, 24)
+  const boxFill2 = ctx.createLinearGradient(43, 75, 43, 217)
+  boxFill2.addColorStop(0, '#FFFFFF')
+  boxFill2.addColorStop(0.67, '#FFFFFF')
+  boxFill2.addColorStop(1, 'rgba(255,246,249,1)')
+  ctx.fillStyle = boxFill2; ctx.fill()
+  ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 1; ctx.stroke()
+
   // 日常活动：两侧装饰箭头（与 slot_1 完全相同）
   if (cfg.slotStyle === 'daily') {
     const BASE = import.meta.env.BASE_URL
