@@ -1,6 +1,6 @@
 # 闪购会场组件自助设计工具 — Claude Code 上下文文档
 
-> 最后更新：2026-06-10
+> 最后更新：2026-06-11
 
 ---
 
@@ -96,8 +96,10 @@ src/
 | 2 | 背景（含主标题，无商品图） | 750×242 |
 | 3 | 空态页 | 854×284 @2x |
 | 4 | 抽奖按钮（激活/禁用两款） | 194×80 |
-| 5 | 链接文字（我的奖品/抽奖规则） | 96×34 / 109×34 |
+| 5 | 链接文字（我的奖品/抽奖规则） | 186×44 / 218×44 |
 | 6 | 奖品图×3 | 124×124 |
+| 7 | 弹窗按钮 × 7 | **276×118**（画布含空隙，按钮本体 276×80，r=40）|
+| 8 | 弹窗结果页 × 5 | 750×612 |
 
 ### 风格注册表（slotStyles.ts）
 
@@ -122,22 +124,30 @@ SLOT_STYLE_REGISTRY = {
 | `drawSlotBannerCanvas(cfg, prizeCanvases)` | 750×242 |
 | `drawSlotBgCanvas(cfg)` | 750×242 |
 | `drawEmptyStateCanvas(imageUrl, transform, text)` | 854×284 |
-| `drawButtonCanvas(text, from, to)` | 194×80 |
-| `drawLinkCanvas(parts, color, w, h, fontSize)` | w×h |
+| `drawButtonCanvas(text, from, to, textColor)` | 194×80 |
+| `drawLinkCanvas(parts, color, w, h, fontSize)` | w×h（我的奖品 186×44，抽奖规则 218×44，45px）|
 | `drawPrizeCanvas(prize, transform, styleName?)` | 124×124 |
-| `preloadFonts()` | 预加载方正兰亭黑，Canvas 绘制前调用 |
+| `drawDialogButtonCanvas(text, from, to, subText?, textColor)` | **276×118**（画布含空隙，按钮本体 276×80 居中）|
+| `drawDialogResultCanvas(state, tintFrom, tintTo, titleColor)` | 750×612 |
+| `preloadFonts()` | 预加载方正兰亭黑 + MeituanDigitalType |
 
 字体常量：
-- `F`  = FZLanTingHei-M（正文/链接/计数）
-- `FB` = FZLanTingHei-DB（标题/按钮/大字）
+- `F` = FZLanTingHei-M（正文/链接/按钮/标题，统一用 M，不用 DB）
+- `FB` = FZLanTingHei-DB（已声明但当前未使用，保留备用）
+- MeituanDigitalType-Bold（金额券大数字专用）
 
 ### 三路独立预览 Build（SlotPage.tsx）
 
 ```
-buildBanner (400ms debounce) → 依赖配色/文案/风格 → 更新 s1,s2,s4,s5
+buildBanner (400ms debounce) → 依赖配色/文案/风格/奖品 → 更新 s1,s2,s4,s5，setSlotBannerUrl
 buildPrizes (300ms debounce) → 依赖奖品图/transform → 更新 s6_0/1/2
-buildEmpty  (100ms debounce) → 依赖空态配置 → 更新 s3
+buildEmpty  (100ms debounce) → 依赖空态配置 → 更新 s3（画布预览图）
 ```
+
+**预览按钮逻辑（统一规则）**：手机预览永远显示 Section 1 完整 banner。
+- Section 1 预览按钮 → 立即调 `buildBanner()`
+- Section 3 预览按钮 → `buildEmptyPreview()`：完整 banner + 空态叠入白框（x43 y75 w427 h142）→ `setSlotBannerUrl`
+- Section 6 预览按钮 → 立即调 `buildBanner()`（奖品已含在 banner 内）
 
 所有 build 使用 `setPreviews(prev => ({...prev, ...}))` 合并更新，防止旧预览图闪空。
 
@@ -145,11 +155,14 @@ buildEmpty  (100ms debounce) → 依赖空态配置 → 更新 s3
 
 ### 输入框（PanelField.tsx）
 
-`PanelInput` / `PanelTextarea` 采用 **controlled + startTransition** 方案：
-- 本地 `useState` 即时更新，每次按键立刻显示
-- 全局 `setConfig` 用 `startTransition` 包裹 → 低优先级渲染，不阻塞按键响应
+`PanelInput` / `PanelTextarea`：
+- 本地 `useState` 即时更新，每次按键立刻显示（无 startTransition 延迟）
 - IME（中文输入法）保护：`onCompositionStart/End` 防止拼音中间状态触发全局更新
 - 外部 value 变化（preset 切换）通过 `extRef` 对比同步，不覆盖正在输入的内容
+
+颜色选择器（`ColorPickerPopup`）：
+- 原生 `addEventListener('pointerdown/pointermove')` + `setPointerCapture`，支持拖拽
+- `position: fixed` popup 防止被 `overflow:auto` 侧边栏裁切
 
 ### 左侧配置面板（SlotPanel.tsx）
 
