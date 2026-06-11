@@ -117,10 +117,12 @@ interface SlotContextValue {
   config: SlotConfig
   activePreset: string | null
   activeStep: number
+  slotBannerUrl: string
   setConfig: (patch: Partial<SlotConfig>) => void
   applyPreset: (key: string) => void
   setPrize: (idx: number, patch: Partial<import('@/types').PrizeConfig>) => void
   setActiveStep: (n: number) => void
+  setSlotBannerUrl: (url: string) => void
   setEmptyTransform: (t: Partial<import('@/types').ImgTransform>) => void
   setPrizeTransform: (idx: number, t: Partial<import('@/types').ImgTransform>) => void
   resetEmptyTransform: () => void
@@ -133,6 +135,7 @@ export function SlotProvider({ children }: { children: ReactNode }) {
   const [config, setConfigState] = useState<SlotConfig>(INITIAL_CONFIG)
   const [activePreset, setActivePreset] = useState<string | null>('dacuhong')
   const [activeStep, setActiveStep] = useState(1)
+  const [slotBannerUrl, setSlotBannerUrl] = useState('')
 
   const setConfig = (patch: Partial<SlotConfig>) =>
     setConfigState(prev => ({ ...prev, ...patch }))
@@ -182,7 +185,7 @@ export function SlotProvider({ children }: { children: ReactNode }) {
     }))
 
   return (
-    <SlotContext.Provider value={{ config, activePreset, activeStep, setConfig, applyPreset, setPrize, setActiveStep, setEmptyTransform, setPrizeTransform, resetEmptyTransform, resetPrizeTransform }}>
+    <SlotContext.Provider value={{ config, activePreset, activeStep, slotBannerUrl, setConfig, applyPreset, setPrize, setActiveStep, setSlotBannerUrl, setEmptyTransform, setPrizeTransform, resetEmptyTransform, resetPrizeTransform }}>
       {children}
     </SlotContext.Provider>
   )

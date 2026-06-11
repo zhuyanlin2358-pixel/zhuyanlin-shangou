@@ -456,7 +456,7 @@ const DIALOG_RESULTS = [
 
 /* ── 主页面 ── */
 export default function SlotPage() {
-  const { config, activePreset, setEmptyTransform } = useSlot()
+  const { config, activePreset, setEmptyTransform, setSlotBannerUrl } = useSlot()
   const { showToast, registerExportAll } = useApp()
 
   // 字体预加载（确保 Canvas 绘制时自定义字体可用）
@@ -486,6 +486,7 @@ export default function SlotPage() {
       Promise.resolve(drawLinkCanvas([{ text: '我的奖品' }], config.linksColor, 96, 34, 28, 2)),
       Promise.resolve(drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], config.linksColor, 109, 34, 28, 2)),
     ])
+    setSlotBannerUrl(c1.toDataURL())
     setPreviews(prev => ({
       ...prev,
       s1: c1.toDataURL(), s2: c2.toDataURL(),
