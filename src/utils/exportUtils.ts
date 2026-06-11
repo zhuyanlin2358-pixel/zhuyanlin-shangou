@@ -414,16 +414,16 @@ export async function drawPrizeCanvas(prize: PrizeInfo, tr: XfTransform, styleNa
   return downsample(canvas)
 }
 
-/** 绘制弹窗按钮 @2x → 276×118（Figma node 15:5614 精确值）；textColor 默认白色 */
+/** 绘制弹窗按钮 @2x → 276×80 */
 export function drawDialogButtonCanvas(
   text: string, from: string, to: string, subText?: string, textColor = '#fff',
 ): HTMLCanvasElement {
-  const W = 276, H = 118
+  const W = 276, H = 80
   const canvas = document.createElement('canvas')
   canvas.width = W * 2; canvas.height = H * 2
   const ctx = canvas.getContext('2d')!
   ctx.scale(2, 2)
-  roundedRect(ctx, 0, 0, W, H, 59)  // 59 = H/2，完美胶囊形
+  roundedRect(ctx, 0, 0, W, H, 40)
   const g = ctx.createLinearGradient(W * 0.2, H, W * 0.8, 0)
   g.addColorStop(0, from); g.addColorStop(1, to)
   ctx.fillStyle = g; ctx.fill()
