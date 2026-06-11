@@ -456,7 +456,7 @@ const DIALOG_RESULTS = [
 
 /* ── 主页面 ── */
 export default function SlotPage() {
-  const { config, setEmptyTransform } = useSlot()
+  const { config, activePreset, setEmptyTransform } = useSlot()
   const { showToast, registerExportAll } = useApp()
 
   // 字体预加载（确保 Canvas 绘制时自定义字体可用）
@@ -555,12 +555,23 @@ export default function SlotPage() {
   }, [buildPrizes])
 
   // 切换风格时同步刷新 banner + 奖品图（跳过 debounce，立即重建）
+  // 切换风格 → 立即重建（50ms，跳过 400ms 防抖）
   useEffect(() => {
     if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current)
     if (prizeTimerRef.current) clearTimeout(prizeTimerRef.current)
     bannerTimerRef.current = setTimeout(buildBanner, 50)
     prizeTimerRef.current  = setTimeout(buildPrizes, 50)
   }, [config.slotStyle]) // eslint-disable-line
+
+  // 切换配色预设 → 立即重建（手机预览与 canvas 完全同步）
+  useEffect(() => {
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current)
+    if (dialogBtnTimer.current) clearTimeout(dialogBtnTimer.current)
+    if (dialogResTimer.current) clearTimeout(dialogResTimer.current)
+    bannerTimerRef.current = setTimeout(buildBanner, 50)
+    dialogBtnTimer.current = setTimeout(buildDialogButtons, 100)
+    dialogResTimer.current = setTimeout(buildDialogResults, 100)
+  }, [activePreset]) // eslint-disable-line
 
   useEffect(() => {
     if (emptyTimerRef.current) clearTimeout(emptyTimerRef.current)
