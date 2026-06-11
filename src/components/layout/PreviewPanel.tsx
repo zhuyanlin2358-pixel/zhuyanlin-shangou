@@ -137,21 +137,24 @@ export default function PreviewPanel() {
               transformOrigin: 'top left',
               pointerEvents: 'none',
             }}>
-              {/* ── asset-slot-ready 克隆 ── */}
+              {/* ── asset-slot-ready 克隆（与 canvas drawBg 颜色完全同步）── */}
               <div style={{
                 width: SLOT_W, height: 242,
                 position: 'relative', overflow: 'hidden',
-                background: `linear-gradient(90deg, ${config.slotTintFrom}, ${config.slotTintTo})`,
+                // daily 用 Figma 精确色，minimal 用主题预设色
+                background: config.slotStyle === 'daily'
+                  ? 'linear-gradient(90deg, #FFF2F6, #FEDCE2)'
+                  : `linear-gradient(90deg, ${config.slotTintFrom}, ${config.slotTintTo})`,
                 borderRadius: 20,
               }}>
-                {/* daily style：矩形备份7 + 真实箭头图片（Figma API 精确坐标） */}
+                {/* daily style：矩形备份7（Figma精确色）+ 真实箭头图片 */}
                 {config.slotStyle === 'daily' && (<>
                   <div style={{
                     position: 'absolute', left: 342, top: 0,
                     width: 384, height: 105,
                     borderRadius: '24px 0 0 24px',
-                    backgroundColor: config.slotTintTo,
-                    opacity: 0.45, pointerEvents: 'none',
+                    background: 'linear-gradient(90deg, #FFD8DA, #FFC7D4)',
+                    pointerEvents: 'none',
                   }} />
                   <img src={`${import.meta.env.BASE_URL}arrow-left.png`} alt=""
                     style={{ position: 'absolute', left: 31, top: 139, width: 26, height: 26, pointerEvents: 'none' }} />
@@ -223,8 +226,46 @@ export default function PreviewPanel() {
           </div>
         </div>
 
+        {/* 空态页预览（与 section 1 同步背景样式，奖品区换成空态插图）*/}
+        <div style={{ margin: '8px 12px 0', opacity: 0.7 }}>
+          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginBottom: 4, textAlign: 'center' }}>
+            空态页
+          </div>
+          <div style={{
+            width: '100%', borderRadius: 12, overflow: 'hidden',
+            background: config.slotStyle === 'daily'
+              ? 'linear-gradient(90deg, #FFF2F6, #FEDCE2)'
+              : `linear-gradient(90deg, ${config.slotTintFrom}, ${config.slotTintTo})`,
+            position: 'relative',
+          }}>
+            {/* 标题 */}
+            <div style={{
+              padding: '6px 16px 0', fontSize: 14, fontWeight: 400,
+              color: config.titleColor, fontFamily: PFB, whiteSpace: 'nowrap',
+            }}>
+              {config.titleText}
+            </div>
+            {/* 空态框 */}
+            <div style={{
+              margin: '4px 16px 10px',
+              background: '#fff', borderRadius: 9,
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              padding: '8px 0', minHeight: 56,
+            }}>
+              {config.emptyImageUrl && (
+                <img src={config.emptyImageUrl} alt=""
+                  style={{ height: 36, objectFit: 'contain', marginBottom: 4 }} />
+              )}
+              <div style={{ fontSize: 9, color: '#999', textAlign: 'center', padding: '0 8px' }}>
+                {config.emptyText}
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div style={{
-          marginTop: 12, fontSize: 11,
+          marginTop: 8, fontSize: 11,
           color: 'rgba(255,255,255,0.2)', textAlign: 'center',
         }}>
           拖动老虎机区域可上下移动
