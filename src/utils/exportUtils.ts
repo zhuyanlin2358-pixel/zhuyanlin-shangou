@@ -409,9 +409,9 @@ export async function drawPrizeCanvas(prize: PrizeInfo, tr: XfTransform, styleNa
   return downsample(canvas)
 }
 
-/** 绘制弹窗按钮 @2x → 276×80；subText 为第二行小字（如"已无抽奖次数"） */
+/** 绘制弹窗按钮 @2x → 276×80；textColor 默认白色，浅色按钮（年货红）传深色 */
 export function drawDialogButtonCanvas(
-  text: string, from: string, to: string, subText?: string,
+  text: string, from: string, to: string, subText?: string, textColor = '#fff',
 ): HTMLCanvasElement {
   const W = 276, H = 80
   const canvas = document.createElement('canvas')
@@ -422,7 +422,7 @@ export function drawDialogButtonCanvas(
   const g = ctx.createLinearGradient(W * 0.2, H, W * 0.8, 0)
   g.addColorStop(0, from); g.addColorStop(1, to)
   ctx.fillStyle = g; ctx.fill()
-  ctx.fillStyle = '#fff'
+  ctx.fillStyle = textColor
   ctx.textAlign = 'center'
   if (subText) {
     ctx.font = `400 22px ${F}`; ctx.textBaseline = 'middle'

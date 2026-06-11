@@ -524,7 +524,7 @@ export default function SlotPage() {
   const buildDialogButtons = useCallback(() => {
     const p: Record<string, string> = {}
     DIALOG_BUTTONS.forEach(v => {
-      p[v.key] = drawDialogButtonCanvas(v.text, config.btnActiveFrom, config.btnActiveTo, undefined).toDataURL()
+      p[v.key] = drawDialogButtonCanvas(v.text, config.btnActiveFrom, config.btnActiveTo, undefined, config.btnTextColor).toDataURL()
     })
     setPreviews(prev => ({ ...prev, ...Object.fromEntries(Object.entries(p).map(([k, val]) => [`db_${k}`, val])) }))
   }, [config.btnActiveFrom, config.btnActiveTo])
@@ -621,7 +621,7 @@ export default function SlotPage() {
       ])
       const c2 = await drawSlotBgCanvas(config)
       const dialogBtnFiles = DIALOG_BUTTONS.map(v => ({
-        canvas: drawDialogButtonCanvas(v.text, config.btnActiveFrom, config.btnActiveTo, undefined),
+        canvas: drawDialogButtonCanvas(v.text, config.btnActiveFrom, config.btnActiveTo, undefined, config.btnTextColor),
         name: `dialog_7_弹窗按钮_${v.label}_276x80.png`,
       }))
       const dialogResFiles = DIALOG_RESULTS.map(v => ({
@@ -782,7 +782,7 @@ export default function SlotPage() {
                 <ExportCard key={v.key} label={v.label} sub="276 × 80 px · PNG"
                   onExport={() => exportOne(
                     `db_${v.key}`, `dialog_7_弹窗按钮_${v.label}_276x80`,
-                    async () => drawDialogButtonCanvas(v.text, config.btnActiveFrom, config.btnActiveTo, undefined),
+                    async () => drawDialogButtonCanvas(v.text, config.btnActiveFrom, config.btnActiveTo, undefined, config.btnTextColor),
                   )}
                 >
                   {previews[`db_${v.key}`]
