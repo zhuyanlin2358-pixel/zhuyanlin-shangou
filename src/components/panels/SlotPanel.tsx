@@ -264,7 +264,7 @@ export default function SlotPanel() {
       <div className="px-4 py-3 border-b border-white/[0.07]">
         <div className="text-[10.5px] font-medium text-white/40 tracking-[0.25px] mb-2">风格版本</div>
         <div className="flex flex-wrap gap-1.5">
-          {SLOT_STYLE_LIST.map(style => {
+          {SLOT_STYLE_LIST.filter(s => s.id !== 'minimal').map(style => {
             const isActive = config.slotStyle === style.id
             return (
               <button

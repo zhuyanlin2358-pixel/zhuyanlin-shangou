@@ -252,30 +252,46 @@ export function drawButtonCanvas(text: string, from: string, to: string, textCol
   return downsample(canvas)
 }
 
-/** 绘制 slot_5 链接文字（透明底）@2x；letterSpacing 来自 Figma API（我的奖品/抽奖规则 = 2px） */
+/** 绘制 slot_5 链接文字（透明底）@2x
+ *  letterSpacing 的宽度 measureText 不计入，需手动补偿，且自动扩展 canvas 防裁切 */
 export function drawLinkCanvas(
   parts: { text: string; opacity?: number }[],
   color: string, w: number, h: number, fontSize: number,
   letterSpacing = 0,
 ): HTMLCanvasElement {
+  // 先在临时 canvas 上量文字，得到实际宽度（含 letterSpacing 补偿）
+  const probe = document.createElement('canvas').getContext('2d')!
+  probe.font = `${fontSize}px ${F}`
+  if (letterSpacing > 0 && 'letterSpacing' in probe) {
+    (probe as unknown as { letterSpacing: string }).letterSpacing = `${letterSpacing}px`
+  }
+  let totalW = 0
+  for (const p of parts) {
+    const tw = probe.measureText(p.text).width
+    // measureText 不保证包含 letterSpacing，手动加上每字符间隙
+    const lsExtra = letterSpacing * Math.max(0, p.text.length - 1)
+    totalW += tw + lsExtra + (p.opacity !== undefined ? 8 : 0)
+  }
+  // canvas 宽度 = max(传入期望宽, 实测宽+padding)，保证文字不被裁切
+  const actualW = Math.max(w, Math.ceil(totalW) + 12)
+
   const canvas = document.createElement('canvas')
-  canvas.width = w * 2; canvas.height = h * 2
+  canvas.width = actualW * 2; canvas.height = h * 2
   const ctx = canvas.getContext('2d')!
   ctx.scale(2, 2)
   ctx.font = `${fontSize}px ${F}`; ctx.textBaseline = 'middle'
-  // 设置 letterSpacing（Canvas 2D API，Chrome 99+ / Firefox 109+）
   if (letterSpacing > 0 && 'letterSpacing' in ctx) {
     (ctx as unknown as { letterSpacing: string }).letterSpacing = `${letterSpacing}px`
   }
-  // measure total width first
-  let totalW = 0
-  for (const p of parts) totalW += ctx.measureText(p.text).width + (p.opacity !== undefined ? 8 : 0)
-  let x = (w - totalW + 8) / 2  // centered
+  // 居中起始 x
+  let x = (actualW - totalW) / 2
   for (const p of parts) {
+    const tw = ctx.measureText(p.text).width
+    const lsExtra = letterSpacing * Math.max(0, p.text.length - 1)
     ctx.globalAlpha = p.opacity ?? 1
     ctx.fillStyle = color
     ctx.fillText(p.text, x, h / 2)
-    x += ctx.measureText(p.text).width + 8
+    x += tw + lsExtra + 8
   }
   ctx.globalAlpha = 1
   return downsample(canvas)

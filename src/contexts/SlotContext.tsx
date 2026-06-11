@@ -113,7 +113,7 @@ const INITIAL_CONFIG: SlotConfig = {
     { offsetX: 0, offsetY: 0, scale: 1 },
   ],
   tone: 'light',
-  slotStyle: 'minimal',
+  slotStyle: 'daily',
 }
 
 interface SlotContextValue {
