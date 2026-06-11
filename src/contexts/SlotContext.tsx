@@ -8,9 +8,9 @@ export const SLOT_PRESETS: Record<string, SlotPreset & { label: string; tone: 'l
     label: '情人粉', tone: 'light',
     from: '#F952FF', to: '#FF443C',
     disFrom: '#FF3048', disTo: '#FF035D',
-    slotFrom: '#FFEDF6', slotTo: '#FFCEF4',
-    rect7From: '#FFF0F8', rect7To: '#FFCCF8',
-    linksColor: '#9D9D9D', titleColor: '#770101', isDark: false,
+    slotFrom: '#FFECF5', slotTo: '#FFCEF4',   // Figma 15:5914 精确值
+    rect7From: '#FFEFF8', rect7To: '#FFCCF7',  // Figma 15:5917 精确值
+    linksColor: '#9D9D9D', titleColor: '#760101', isDark: false,
   },
   dacuhong: {
     label: '大促红', tone: 'light',
