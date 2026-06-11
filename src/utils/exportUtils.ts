@@ -167,15 +167,17 @@ export async function drawSlotBannerCanvas(
   ctx.textBaseline = 'middle'
   ctx.fillText(cfg.titleText, 43, 40)
 
-  // 链接文字（右对齐）FZLanTingHei-M-GBK
-  ctx.font = `400 28px ${F}`
+  // 链接文字（右对齐）Figma: 45px FZLanTingHei-M-GBK，letterSpacing=2
+  ctx.font = `400 45px ${F}`
+  if ('letterSpacing' in ctx) (ctx as unknown as { letterSpacing: string }).letterSpacing = '2px'
   ctx.fillStyle = cfg.linksColor
   ctx.textAlign = 'right'
   ctx.textBaseline = 'middle'
-  ctx.fillText('我的奖品 | 抽奖规则', W - 48, 33)
+  ctx.fillText('我的奖品 | 抽奖规则', W - 48, 38)
+  if ('letterSpacing' in ctx) (ctx as unknown as { letterSpacing: string }).letterSpacing = '0px'
 
-  // 按钮文字 FZLanTingHei-DB-GBK
-  ctx.font = `400 34px ${FB}`
+  // 按钮文字 FZLanTingHei-M（比 DB 细一度，用户要求）
+  ctx.font = `400 34px ${F}`
   ctx.fillStyle = cfg.btnTextColor ?? '#fff'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
@@ -236,7 +238,7 @@ function drawContainedImage(
   ctx.restore()
 }
 
-/** 绘制 slot_4 按钮 @2x → 388×160；textColor 默认白色，浅色按钮（年货红）传深色 */
+/** 绘制 slot_4 按钮 @2x → 388×160；使用 M 字体（比 DB 细一度）*/
 export function drawButtonCanvas(text: string, from: string, to: string, textColor = '#fff'): HTMLCanvasElement {
   const canvas = document.createElement('canvas')
   canvas.width = 388; canvas.height = 160
@@ -246,7 +248,7 @@ export function drawButtonCanvas(text: string, from: string, to: string, textCol
   const g = ctx.createLinearGradient(0, 0, 194, 0)
   g.addColorStop(0, from); g.addColorStop(1, to)
   ctx.fillStyle = g; ctx.fill()
-  ctx.font = `400 34px ${FB}`; ctx.fillStyle = textColor
+  ctx.font = `400 34px ${F}`; ctx.fillStyle = textColor
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
   ctx.fillText(text, 97, 40)
   return downsample(canvas)
@@ -414,16 +416,16 @@ export async function drawPrizeCanvas(prize: PrizeInfo, tr: XfTransform, styleNa
   return downsample(canvas)
 }
 
-/** 绘制弹窗按钮 @2x → 276×80；textColor 默认白色，浅色按钮（年货红）传深色 */
+/** 绘制弹窗按钮 @2x → 276×118（Figma node 15:5614 精确值）；textColor 默认白色 */
 export function drawDialogButtonCanvas(
   text: string, from: string, to: string, subText?: string, textColor = '#fff',
 ): HTMLCanvasElement {
-  const W = 276, H = 80
+  const W = 276, H = 118
   const canvas = document.createElement('canvas')
   canvas.width = W * 2; canvas.height = H * 2
   const ctx = canvas.getContext('2d')!
   ctx.scale(2, 2)
-  roundedRect(ctx, 0, 0, W, H, 40)
+  roundedRect(ctx, 0, 0, W, H, 59)  // 59 = H/2，完美胶囊形
   const g = ctx.createLinearGradient(W * 0.2, H, W * 0.8, 0)
   g.addColorStop(0, from); g.addColorStop(1, to)
   ctx.fillStyle = g; ctx.fill()
@@ -434,10 +436,10 @@ export function drawDialogButtonCanvas(
     ctx.globalAlpha = 0.7
     ctx.fillText(subText, W / 2, H / 2 - 14)
     ctx.globalAlpha = 1
-    ctx.font = `400 34px ${FB}`  // with subText: 34px DB
+    ctx.font = `400 34px ${F}`
     ctx.fillText(text, W / 2, H / 2 + 14)
   } else {
-    ctx.font = `400 38px ${FB}`; ctx.textBaseline = 'middle'  // Figma: DB-GBK 38px
+    ctx.font = `400 38px ${F}`; ctx.textBaseline = 'middle'
     ctx.fillText(text, W / 2, H / 2)
   }
   return downsample(canvas)
