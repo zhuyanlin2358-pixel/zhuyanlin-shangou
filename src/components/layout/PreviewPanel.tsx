@@ -1,9 +1,13 @@
+import { useState, useRef } from 'react'
 import { useSlot } from '@/contexts/SlotContext'
 
 const MOCK_BG_MIN_H = Math.round(1624 * 320 / 750) // 693px
 
 export default function PreviewPanel() {
   const { config, slotBannerUrl } = useSlot()
+  const [offsetY, setOffsetY] = useState(0)
+  const startY = useRef(0)
+  const startOffset = useRef(0)
 
   return (
     <aside style={{
@@ -58,17 +62,44 @@ export default function PreviewPanel() {
             transition: 'background-color 0.3s',
             minHeight: MOCK_BG_MIN_H,
             padding: 12,
+            position: 'relative',
+            overflow: 'hidden',
           }}>
-            {/* 老虎机 banner — 直接复用 canvas 生成图，保证像素级一致 */}
-            {slotBannerUrl
-              ? <img src={slotBannerUrl} alt="老虎机预览"
-                  style={{ width: '100%', display: 'block', borderRadius: 8 }} />
-              : <div style={{
-                  width: '100%', aspectRatio: '750/242', borderRadius: 8,
-                  background: `linear-gradient(90deg, ${config.slotTintFrom}, ${config.slotTintTo})`,
-                }} />
-            }
+            {/* 老虎机 banner — 可上下拖拽，直接复用 canvas 图片 */}
+            <div
+              style={{
+                transform: `translateY(${offsetY}px)`,
+                cursor: 'grab',
+                touchAction: 'none',
+              }}
+              onPointerDown={e => {
+                e.preventDefault()
+                ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+                startY.current = e.clientY
+                startOffset.current = offsetY
+              }}
+              onPointerMove={e => {
+                if (!(e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) return
+                setOffsetY(startOffset.current + (e.clientY - startY.current))
+              }}
+              onPointerUp={e => {
+                ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
+              }}
+            >
+              {slotBannerUrl
+                ? <img src={slotBannerUrl} alt="老虎机预览"
+                    style={{ width: '100%', display: 'block', borderRadius: 8, pointerEvents: 'none' }} />
+                : <div style={{
+                    width: '100%', aspectRatio: '750/242', borderRadius: 8,
+                    background: `linear-gradient(90deg, ${config.slotTintFrom}, ${config.slotTintTo})`,
+                  }} />
+              }
+            </div>
           </div>
+        </div>
+
+        <div style={{ marginTop: 8, fontSize: 11, color: 'rgba(255,255,255,0.2)', textAlign: 'center' }}>
+          拖动老虎机可上下移动
         </div>
       </div>
     </aside>

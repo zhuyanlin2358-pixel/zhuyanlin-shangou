@@ -244,7 +244,7 @@ function hsvToHex(h: number, s: number, v: number): string {
 
 function isValidHex(v: string) { return /^#[0-9A-Fa-f]{6}$/.test(v) }
 
-/* ── 自定义颜色拾色器弹窗（position:fixed 防裁切，拖拽完整支持）── */
+/* ── 自定义颜色拾色器弹窗（pointer capture 拖拽，position:fixed 防裁切）── */
 function ColorPickerPopup({
   value, onChange, onClose, top, left,
 }: {
@@ -255,72 +255,32 @@ function ColorPickerPopup({
     isValidHex(value) ? hexToHsv(value) : { h: 0, s: 1, v: 1 }
   )
   const [hexInput, setHexInput] = useState(value)
-
-  // 外部 value 变化时同步（如预设切换）
-  useEffect(() => {
-    if (isValidHex(value) && value !== hsvToHex(hsv.h, hsv.s, hsv.v)) {
-      setHsv(hexToHsv(value))
-      setHexInput(value)
-    }
-  }, [value]) // eslint-disable-line
-
-  const sbRef = useRef<HTMLDivElement>(null)
-  const hueRef = useRef<HTMLDivElement>(null)
-  const dragging = useRef<'sb' | 'hue' | null>(null)
   const popupRef = useRef<HTMLDivElement>(null)
   const onChangeRef = useRef(onChange)
   useEffect(() => { onChangeRef.current = onChange }, [onChange])
 
-  // 更新 HSV 并通知父组件
-  const applyHsv = useCallback((h: number, s: number, v: number) => {
-    setHsv({ h, s, v })
-    const hex = hsvToHex(h, s, v)
-    setHexInput(hex)
-    onChangeRef.current(hex)
-  }, [])
-
-  // 全局 mousemove/mouseup（注册一次，用 functional update 读最新 hsv）
+  // 外部 value 变化时同步
   useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      if (!dragging.current) return
-      if (dragging.current === 'sb' && sbRef.current) {
-        const r = sbRef.current.getBoundingClientRect()
-        const s = clamp01((e.clientX - r.left) / r.width)
-        const v = clamp01(1 - (e.clientY - r.top) / r.height)
-        setHsv(prev => {
-          const hex = hsvToHex(prev.h, s, v)
-          setHexInput(hex); onChangeRef.current(hex)
-          return { h: prev.h, s, v }
-        })
-      }
-      if (dragging.current === 'hue' && hueRef.current) {
-        const r = hueRef.current.getBoundingClientRect()
-        const h = Math.max(0, Math.min(360, ((e.clientX - r.left) / r.width) * 360))
-        setHsv(prev => {
-          const hex = hsvToHex(h, prev.s, prev.v)
-          setHexInput(hex); onChangeRef.current(hex)
-          return { ...prev, h }
-        })
-      }
+    if (isValidHex(value) && value !== hsvToHex(hsv.h, hsv.s, hsv.v)) {
+      const newHsv = hexToHsv(value)
+      setHsv(newHsv)
+      setHexInput(value)
     }
-    const onUp = () => { dragging.current = null }
-    document.addEventListener('mousemove', onMove)
-    document.addEventListener('mouseup', onUp)
-    return () => {
-      document.removeEventListener('mousemove', onMove)
-      document.removeEventListener('mouseup', onUp)
-    }
-  }, []) // 只注册一次，通过 functional update + ref 读最新值
+  }, [value]) // eslint-disable-line
 
-  // 点击外部关闭（drag 时不关闭）
+  // 点击外部关闭
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (dragging.current) return
       if (!popupRef.current?.contains(e.target as Node)) onClose()
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [onClose])
+
+  const apply = (h: number, s: number, v: number) => {
+    const hex = hsvToHex(h, s, v)
+    setHsv({ h, s, v }); setHexInput(hex); onChangeRef.current(hex)
+  }
 
   const hueColor = `hsl(${hsv.h}, 100%, 50%)`
   const curHex = hsvToHex(hsv.h, hsv.s, hsv.v)
@@ -328,27 +288,37 @@ function ColorPickerPopup({
   return (
     <div
       ref={popupRef}
-      onMouseDown={e => e.stopPropagation()} // 阻止冒泡到外部关闭 handler
+      onMouseDown={e => e.stopPropagation()}
       style={{
         position: 'fixed', top, left, zIndex: 2000,
-        background: '#fff', borderRadius: 10, overflow: 'visible',
+        background: '#fff', borderRadius: 10, overflow: 'hidden',
         boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
         width: 220, userSelect: 'none',
       }}
     >
-      {/* SB 渐变区 */}
+      {/* SB 渐变区 — pointer capture 确保拖出区域仍可响应 */}
       <div
-        ref={sbRef}
-        onMouseDown={e => {
+        onPointerDown={e => {
           e.preventDefault()
-          dragging.current = 'sb'
-          const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
-          applyHsv(hsv.h, clamp01((e.clientX - r.left) / r.width), clamp01(1 - (e.clientY - r.top) / r.height))
+          ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+          const r = e.currentTarget.getBoundingClientRect()
+          apply(hsv.h, clamp01((e.clientX - r.left) / r.width), clamp01(1 - (e.clientY - r.top) / r.height))
         }}
+        onPointerMove={e => {
+          if (!(e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) return
+          const r = e.currentTarget.getBoundingClientRect()
+          setHsv(prev => {
+            const s = clamp01((e.clientX - r.left) / r.width)
+            const v = clamp01(1 - (e.clientY - r.top) / r.height)
+            const hex = hsvToHex(prev.h, s, v)
+            setHexInput(hex); onChangeRef.current(hex)
+            return { h: prev.h, s, v }
+          })
+        }}
+        onPointerUp={e => { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId) }}
         style={{
           width: '100%', height: 150, position: 'relative',
-          cursor: 'crosshair', borderRadius: '10px 10px 0 0', overflow: 'hidden',
-          background: hueColor,
+          cursor: 'crosshair', background: hueColor, touchAction: 'none',
         }}
       >
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, #fff, transparent)' }} />
@@ -357,66 +327,60 @@ function ColorPickerPopup({
           position: 'absolute',
           left: `${hsv.s * 100}%`, top: `${(1 - hsv.v) * 100}%`,
           width: 14, height: 14, borderRadius: '50%',
-          border: '2px solid #fff',
-          boxShadow: '0 0 3px rgba(0,0,0,0.5)',
-          transform: 'translate(-50%, -50%)',
-          pointerEvents: 'none',
+          border: '2px solid #fff', boxShadow: '0 0 3px rgba(0,0,0,0.5)',
+          transform: 'translate(-50%, -50%)', pointerEvents: 'none',
           background: curHex,
         }} />
       </div>
 
-      {/* 底部控制区 */}
       <div style={{ padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {/* 色相滑块 */}
+        {/* 色相滑块 — pointer capture */}
         <div
-          ref={hueRef}
-          onMouseDown={e => {
+          onPointerDown={e => {
             e.preventDefault()
-            dragging.current = 'hue'
-            const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
-            const h = Math.max(0, Math.min(360, ((e.clientX - r.left) / r.width) * 360))
-            applyHsv(h, hsv.s, hsv.v)
+            ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+            const r = e.currentTarget.getBoundingClientRect()
+            apply(Math.max(0, Math.min(360, ((e.clientX - r.left) / r.width) * 360)), hsv.s, hsv.v)
           }}
+          onPointerMove={e => {
+            if (!(e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) return
+            const r = e.currentTarget.getBoundingClientRect()
+            setHsv(prev => {
+              const h = Math.max(0, Math.min(360, ((e.clientX - r.left) / r.width) * 360))
+              const hex = hsvToHex(h, prev.s, prev.v)
+              setHexInput(hex); onChangeRef.current(hex)
+              return { ...prev, h }
+            })
+          }}
+          onPointerUp={e => { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId) }}
           style={{
             position: 'relative', height: 12, borderRadius: 6, cursor: 'pointer',
             background: 'linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)',
+            touchAction: 'none',
           }}
         >
           <div style={{
-            position: 'absolute',
-            left: `${(hsv.h / 360) * 100}%`, top: '50%',
+            position: 'absolute', left: `${(hsv.h / 360) * 100}%`, top: '50%',
             width: 18, height: 18, borderRadius: '50%',
-            border: '2px solid #fff',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
-            background: hueColor,
-            transform: 'translate(-50%, -50%)',
-            pointerEvents: 'none',
+            border: '2px solid #fff', boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
+            background: hueColor, transform: 'translate(-50%, -50%)', pointerEvents: 'none',
           }} />
         </div>
 
-        {/* 预览 + Hex 输入 */}
+        {/* 预览 + Hex */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: 6, flexShrink: 0,
-            background: curHex,
-            boxShadow: '0 0 0 1px rgba(0,0,0,0.12)',
-          }} />
+          <div style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, background: curHex, boxShadow: '0 0 0 1px rgba(0,0,0,0.12)' }} />
           <input
             value={hexInput}
             onChange={e => {
               setHexInput(e.target.value)
               if (isValidHex(e.target.value)) {
-                const newHsv = hexToHsv(e.target.value)
-                setHsv(newHsv)
+                setHsv(hexToHsv(e.target.value))
                 onChangeRef.current(e.target.value)
               }
             }}
             maxLength={7}
-            style={{
-              flex: 1, padding: '4px 8px', fontSize: 12, fontFamily: 'monospace',
-              border: '1px solid #ddd', borderRadius: 6, outline: 'none',
-              background: '#fafafa', color: '#333',
-            }}
+            style={{ flex: 1, padding: '4px 8px', fontSize: 12, fontFamily: 'monospace', border: '1px solid #ddd', borderRadius: 6, outline: 'none', background: '#fafafa', color: '#333' }}
           />
         </div>
       </div>

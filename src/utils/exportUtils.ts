@@ -252,46 +252,35 @@ export function drawButtonCanvas(text: string, from: string, to: string, textCol
   return downsample(canvas)
 }
 
-/** 绘制 slot_5 链接文字（透明底）@2x
- *  letterSpacing 的宽度 measureText 不计入，需手动补偿，且自动扩展 canvas 防裁切 */
+/** 绘制 slot_5 链接文字（透明底）@2x；w 应比实际文字宽留 padding，确保不裁切 */
 export function drawLinkCanvas(
   parts: { text: string; opacity?: number }[],
   color: string, w: number, h: number, fontSize: number,
   letterSpacing = 0,
 ): HTMLCanvasElement {
-  // 先在临时 canvas 上量文字，得到实际宽度（含 letterSpacing 补偿）
-  const probe = document.createElement('canvas').getContext('2d')!
-  probe.font = `${fontSize}px ${F}`
-  if (letterSpacing > 0 && 'letterSpacing' in probe) {
-    (probe as unknown as { letterSpacing: string }).letterSpacing = `${letterSpacing}px`
-  }
-  let totalW = 0
-  for (const p of parts) {
-    const tw = probe.measureText(p.text).width
-    // measureText 不保证包含 letterSpacing，手动加上每字符间隙
-    const lsExtra = letterSpacing * Math.max(0, p.text.length - 1)
-    totalW += tw + lsExtra + (p.opacity !== undefined ? 8 : 0)
-  }
-  // canvas 宽度 = max(传入期望宽, 实测宽+padding)，保证文字不被裁切
-  const actualW = Math.max(w, Math.ceil(totalW) + 12)
-
   const canvas = document.createElement('canvas')
-  canvas.width = actualW * 2; canvas.height = h * 2
+  canvas.width = w * 2; canvas.height = h * 2
   const ctx = canvas.getContext('2d')!
   ctx.scale(2, 2)
   ctx.font = `${fontSize}px ${F}`; ctx.textBaseline = 'middle'
   if (letterSpacing > 0 && 'letterSpacing' in ctx) {
     (ctx as unknown as { letterSpacing: string }).letterSpacing = `${letterSpacing}px`
   }
-  // 居中起始 x
-  let x = (actualW - totalW) / 2
+  // 计算总宽（补偿 measureText 可能不计入 letterSpacing）
+  let totalW = 0
+  for (const p of parts) {
+    totalW += ctx.measureText(p.text).width
+    totalW += letterSpacing * Math.max(0, p.text.length - 1)
+    if (p.opacity !== undefined) totalW += 8
+  }
+  let x = (w - totalW) / 2
   for (const p of parts) {
     const tw = ctx.measureText(p.text).width
-    const lsExtra = letterSpacing * Math.max(0, p.text.length - 1)
+    const lsEx = letterSpacing * Math.max(0, p.text.length - 1)
     ctx.globalAlpha = p.opacity ?? 1
     ctx.fillStyle = color
     ctx.fillText(p.text, x, h / 2)
-    x += tw + lsExtra + 8
+    x += tw + lsEx + (p.opacity !== undefined ? 8 : 0)
   }
   ctx.globalAlpha = 1
   return downsample(canvas)

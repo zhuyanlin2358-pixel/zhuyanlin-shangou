@@ -127,19 +127,19 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
       // 顶部弧形缺口：从 x≈405 到 x≈462 下降到 y=72，让矩形备份7在该区域显出
       ctx.save()
       ctx.beginPath()
-      ctx.moveTo(405.479, 0)
-      ctx.bezierCurveTo(416.106, 0, 425.469, 6.989, 428.489, 17.179)
-      ctx.lineTo(440.24, 56.824)
-      ctx.bezierCurveTo(443.856, 65.972, 452.7, 72, 462.559, 72)
+      ctx.moveTo(450.479, 0)
+      ctx.bezierCurveTo(461.106, 0, 470.469, 6.989, 473.489, 17.179)
+      ctx.lineTo(485.24, 56.824)
+      ctx.bezierCurveTo(488.856, 65.972, 497.7, 72, 507.559, 72)
       ctx.lineTo(702, 72)
-      ctx.bezierCurveTo(715.255, 72, 726, 82.745, 726, 96)  // top-right r:24
+      ctx.bezierCurveTo(715.255, 72, 726, 82.745, 726, 96)
       ctx.lineTo(726, 218)
-      ctx.bezierCurveTo(726, 231.255, 715.255, 242, 702, 242)  // bottom-right r:24
+      ctx.bezierCurveTo(726, 231.255, 715.255, 242, 702, 242)
       ctx.lineTo(48, 242)
-      ctx.bezierCurveTo(34.745, 242, 24, 231.255, 24, 218)    // bottom-left r:24
+      ctx.bezierCurveTo(34.745, 242, 24, 231.255, 24, 218)
       ctx.lineTo(24, 24)
-      ctx.bezierCurveTo(24, 10.745, 34.745, 0, 48, 0)         // top-left r:24
-      ctx.lineTo(405.479, 0)
+      ctx.bezierCurveTo(24, 10.745, 34.745, 0, 48, 0)
+      ctx.lineTo(450.479, 0)
       ctx.closePath()
       ctx.clip()
       const mainBg = ctx.createLinearGradient(SX, 0, SX + SW, 0)
