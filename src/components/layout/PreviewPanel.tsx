@@ -208,7 +208,7 @@ export default function PreviewPanel() {
                   width: 194, height: 80, borderRadius: 40, zIndex: 3,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   background: `linear-gradient(90deg, ${config.btnActiveFrom}, ${config.btnActiveTo})`,
-                  fontSize: 30, color: '#fff', fontFamily: PFB,
+                  fontSize: 34, color: '#fff', fontFamily: PFB,
                 }}>
                   立即抽奖
                 </div>

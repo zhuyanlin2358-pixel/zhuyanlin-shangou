@@ -173,7 +173,7 @@ export async function drawSlotBannerCanvas(
   ctx.fillText('我的奖品 | 抽奖规则', W - 48, 33)
 
   // 按钮文字 FZLanTingHei-DB-GBK
-  ctx.font = `400 30px ${FB}`
+  ctx.font = `400 34px ${FB}`
   ctx.fillStyle = '#fff'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
@@ -244,7 +244,7 @@ export function drawButtonCanvas(text: string, from: string, to: string): HTMLCa
   const g = ctx.createLinearGradient(0, 0, 194, 0)
   g.addColorStop(0, from); g.addColorStop(1, to)
   ctx.fillStyle = g; ctx.fill()
-  ctx.font = `400 30px ${FB}`; ctx.fillStyle = '#fff'
+  ctx.font = `400 34px ${FB}`; ctx.fillStyle = '#fff'
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
   ctx.fillText(text, 97, 40)
   return downsample(canvas)
@@ -427,10 +427,10 @@ export function drawDialogButtonCanvas(
     ctx.globalAlpha = 0.7
     ctx.fillText(subText, W / 2, H / 2 - 14)
     ctx.globalAlpha = 1
-    ctx.font = `500 30px ${F}`
+    ctx.font = `400 34px ${FB}`  // with subText: 34px DB
     ctx.fillText(text, W / 2, H / 2 + 14)
   } else {
-    ctx.font = `500 34px ${F}`; ctx.textBaseline = 'middle'
+    ctx.font = `400 38px ${FB}`; ctx.textBaseline = 'middle'  // Figma: DB-GBK 38px
     ctx.fillText(text, W / 2, H / 2)
   }
   return downsample(canvas)
