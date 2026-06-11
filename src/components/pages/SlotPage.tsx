@@ -520,18 +520,21 @@ export default function SlotPage() {
     setPreviews(prev => ({ ...prev, s3: c3.toDataURL() }))
   }, [config.emptyImageUrl, config.emptyTransform, config.emptyText])
 
-  // ── 3b. 空态手机预览：把空态插图合成到老虎机背景白框里 → 推手机预览
+  // ── 3b. 空态手机预览：Section 1 完整 banner + 空态叠入白框 → 推手机预览
   const buildEmptyPreview = useCallback(async () => {
-    const [bg, empty] = await Promise.all([
-      drawSlotBgCanvas(config),
+    const pcs = await Promise.all(
+      config.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform, config.slotStyle))
+    )
+    const [banner, empty] = await Promise.all([
+      drawSlotBannerCanvas(config, pcs),  // 完整 Section 1（含按钮、文字）
       drawEmptyStateCanvas(config.emptyImageUrl, config.emptyTransform as XfTransform, config.emptyText),
     ])
-    // bg 是 750×242 @1x；empty 是 854×284 (@2x of 427×142)，叠入白框 x43 y75
+    // 把空态覆盖到白框区域 x43 y75 w427 h142（empty 是 854×284 @2x，缩入即可）
     const out = document.createElement('canvas')
-    out.width = bg.width; out.height = bg.height
+    out.width = banner.width; out.height = banner.height
     const ctx2 = out.getContext('2d')!
-    ctx2.drawImage(bg, 0, 0)
-    ctx2.drawImage(empty, 43, 75, 427, 142)  // scale 854×284 → 427×142
+    ctx2.drawImage(banner, 0, 0)
+    ctx2.drawImage(empty, 43, 75, 427, 142)
     setSlotBannerUrl(out.toDataURL())
   }, [config, setSlotBannerUrl])
 
@@ -686,7 +689,7 @@ export default function SlotPage() {
           <SectionTitle num={1} label="老虎机未抽奖状态" sub="含标题 + 奖品图 + 按钮 · 750 × 242 px" badge="素材 1" />
           <ExportCard label="老虎机 — 未抽奖状态" sub="750 × 242 px · PNG"
             onExport={() => exportOne('s1', 'slot_1_未抽奖状态_750x242', async () => drawSlotBannerCanvas(config, await Promise.all(config.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform, config.slotStyle)))))}
-            onPreview={() => showToast('已同步到手机预览')}>
+            onPreview={() => { buildBanner(); showToast('已同步到手机预览') }}>
             {previews.s1
               ? <img src={previews.s1} style={{ width: 495, height: 160, borderRadius: 13, display: 'block', flexShrink: 0 }} />
               : <div style={{ width: 495, height: 160, borderRadius: 13, background: `linear-gradient(120deg,${config.slotTintFrom},${config.slotTintTo})`, flexShrink: 0 }} />
@@ -777,7 +780,7 @@ export default function SlotPage() {
               <PrizeEditorCard
                 key={i} idx={i} prize={p}
                 onExport={() => exportOne(`s6_${i}`, `slot_6_奖品${i+1}_124x124`, () => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform, config.slotStyle))}
-                onPreview={() => showToast('已同步到手机预览')}
+                onPreview={() => { buildBanner(); showToast('已同步到手机预览') }}
               />
             ))}
           </div>
