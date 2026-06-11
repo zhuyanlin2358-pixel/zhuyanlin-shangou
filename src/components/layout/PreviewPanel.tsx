@@ -174,7 +174,7 @@ export default function PreviewPanel() {
                 <div style={{
                   position: 'absolute', top: 11, right: 48,
                   display: 'flex', alignItems: 'center',
-                  fontSize: 28, lineHeight: '44px', color: config.linksColor, fontFamily: PF, zIndex: 3,
+                  fontSize: 28, lineHeight: '44px', color: config.linksColor, fontFamily: PF, zIndex: 3, letterSpacing: '2px',
                 }}>
                   <span>我的奖品</span>
                   <span style={{ margin: '0 8px', opacity: 0.6 }}>|</span>
@@ -222,43 +222,63 @@ export default function PreviewPanel() {
                   还剩 999 次抽奖机会
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
 
-        {/* 空态页预览（与 section 1 同步背景样式，奖品区换成空态插图）*/}
-        <div style={{ margin: '8px 12px 0', opacity: 0.7 }}>
-          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginBottom: 4, textAlign: 'center' }}>
-            空态页
-          </div>
-          <div style={{
-            width: '100%', borderRadius: 12, overflow: 'hidden',
-            background: config.slotStyle === 'daily'
-              ? 'linear-gradient(90deg, #FFF2F6, #FEDCE2)'
-              : `linear-gradient(90deg, ${config.slotTintFrom}, ${config.slotTintTo})`,
-            position: 'relative',
-          }}>
-            {/* 标题 */}
-            <div style={{
-              padding: '6px 16px 0', fontSize: 14, fontWeight: 400,
-              color: config.titleColor, fontFamily: PFB, whiteSpace: 'nowrap',
-            }}>
-              {config.titleText}
-            </div>
-            {/* 空态框 */}
-            <div style={{
-              margin: '4px 16px 10px',
-              background: '#fff', borderRadius: 9,
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center',
-              padding: '8px 0', minHeight: 56,
-            }}>
-              {config.emptyImageUrl && (
-                <img src={config.emptyImageUrl} alt=""
-                  style={{ height: 36, objectFit: 'contain', marginBottom: 4 }} />
-              )}
-              <div style={{ fontSize: 9, color: '#999', textAlign: 'center', padding: '0 8px' }}>
-                {config.emptyText}
+              {/* ── 空态页版本（同一个banner，奖品框换成空态插图，在手机内部紧接着显示）── */}
+              <div style={{
+                width: SLOT_W, height: 242,
+                position: 'relative', overflow: 'hidden',
+                background: config.slotStyle === 'daily'
+                  ? 'linear-gradient(90deg, #FFF2F6, #FEDCE2)'
+                  : `linear-gradient(90deg, ${config.slotTintFrom}, ${config.slotTintTo})`,
+                borderRadius: 20,
+                marginTop: 8,
+              }}>
+                {config.slotStyle === 'daily' && (<>
+                  <div style={{
+                    position: 'absolute', left: 342, top: 0, width: 384, height: 105,
+                    borderRadius: '24px 0 0 24px',
+                    background: 'linear-gradient(90deg, #FFD8DA, #FFC7D4)', pointerEvents: 'none',
+                  }} />
+                  <img src={`${import.meta.env.BASE_URL}arrow-left.png`} alt=""
+                    style={{ position: 'absolute', left: 31, top: 139, width: 26, height: 26, pointerEvents: 'none' }} />
+                  <img src={`${import.meta.env.BASE_URL}arrow-right.png`} alt=""
+                    style={{ position: 'absolute', left: 452, top: 139, width: 26, height: 26, pointerEvents: 'none' }} />
+                </>)}
+                {/* 标题 */}
+                <div style={{
+                  position: 'absolute', left: 43, top: 11, fontSize: 38, fontWeight: 400,
+                  lineHeight: '58.8px', color: config.titleColor, fontFamily: PFB,
+                  whiteSpace: 'nowrap', zIndex: 3,
+                }}>{config.titleText}</div>
+                {/* 链接 */}
+                <div style={{
+                  position: 'absolute', top: 11, right: 48, display: 'flex', alignItems: 'center',
+                  fontSize: 28, lineHeight: '44px', color: config.linksColor, fontFamily: PF, zIndex: 3, letterSpacing: '2px',
+                }}>
+                  <span>我的奖品</span><span style={{ margin: '0 8px', opacity: 0.6 }}>|</span><span>抽奖规则</span>
+                </div>
+                {/* 空态框：与奖品框完全同位（x:43 y:75 w:427 h:142 r:24）*/}
+                <div style={{
+                  position: 'absolute', left: 43, top: 75, width: 427, height: 142, borderRadius: 24,
+                  background: 'linear-gradient(180deg, #fff 67%, rgba(255,246,249,1) 100%)',
+                  border: '1px solid #FFFFFF', zIndex: 2,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}>
+                  {config.emptyImageUrl && (
+                    <img src={config.emptyImageUrl} alt=""
+                      style={{ height: 72, objectFit: 'contain' }} />
+                  )}
+                  <div style={{ fontSize: 18, color: '#999', textAlign: 'center', padding: '0 16px' }}>
+                    {config.emptyText}
+                  </div>
+                </div>
+                {/* 按钮（活动已结束） */}
+                <div style={{
+                  position: 'absolute', right: 57, top: 104, width: 194, height: 80, borderRadius: 40, zIndex: 3,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: `linear-gradient(90deg, ${config.btnDisabledFrom}, ${config.btnDisabledTo})`,
+                  fontSize: 30, color: '#fff', fontFamily: PFB,
+                }}>活动已结束</div>
               </div>
             </div>
           </div>

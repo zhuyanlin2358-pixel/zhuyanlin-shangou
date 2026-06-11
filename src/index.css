@@ -15,8 +15,8 @@
 }
 @font-face {
   font-family: 'FZLanTingHei-DB';
-  src: url('@/assets/fonts/FZLTZHJW.TTF') format('truetype');
-  /* DB-GBK = 中黑（Medium，标题/按钮） */
+  src: url('@/assets/fonts/FZLTDHJW.TTF') format('truetype');
+  /* DB-GBK = 大黑（Figma API确认：FZLanTingHei-DB-GBK，标题/按钮） */
   font-weight: 400;
   font-style: normal;
 }

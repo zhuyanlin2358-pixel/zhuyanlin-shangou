@@ -482,8 +482,8 @@ export default function SlotPage() {
       drawSlotBannerCanvas(config, pcs),
       Promise.resolve(drawButtonCanvas('立即抽奖', config.btnActiveFrom, config.btnActiveTo)),
       Promise.resolve(drawButtonCanvas('活动已结束', config.btnDisabledFrom, config.btnDisabledTo)),
-      Promise.resolve(drawLinkCanvas([{ text: '我的奖品' }], config.linksColor, 96, 34, 22)),
-      Promise.resolve(drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], config.linksColor, 109, 34, 22)),
+      Promise.resolve(drawLinkCanvas([{ text: '我的奖品' }], config.linksColor, 96, 34, 28, 2)),
+      Promise.resolve(drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], config.linksColor, 109, 34, 28, 2)),
     ])
     const c2 = drawSlotBgCanvas(config)
     setPreviews(prev => ({
@@ -602,8 +602,8 @@ export default function SlotPage() {
         drawEmptyStateCanvas(config.emptyImageUrl, config.emptyTransform as XfTransform, config.emptyText),
         Promise.resolve(drawButtonCanvas('立即抽奖', config.btnActiveFrom, config.btnActiveTo)),
         Promise.resolve(drawButtonCanvas('活动已结束', config.btnDisabledFrom, config.btnDisabledTo)),
-        Promise.resolve(drawLinkCanvas([{ text: '我的奖品' }], config.linksColor, 96, 34, 22)),
-        Promise.resolve(drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], config.linksColor, 109, 34, 22)),
+        Promise.resolve(drawLinkCanvas([{ text: '我的奖品' }], config.linksColor, 96, 34, 28, 2)),
+        Promise.resolve(drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], config.linksColor, 109, 34, 28, 2)),
         ...prizes.map(x => drawPrizeCanvas(x.prize, x.tr, config.slotStyle)),
       ])
       const c2 = drawSlotBgCanvas(config)
@@ -723,14 +723,14 @@ export default function SlotPage() {
           <SectionTitle num={5} label="链接文字" sub="透明背景 · 随配色自动适配" />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <ExportCard label="我的奖品" sub="96 × 34 px · PNG"
-              onExport={() => exportOne('s5p', 'slot_5_我的奖品_96x34', async () => drawLinkCanvas([{ text: '我的奖品' }], config.linksColor, 96, 34, 22))}>
+              onExport={() => exportOne('s5p', 'slot_5_我的奖品_96x34', async () => drawLinkCanvas([{ text: '我的奖品' }], config.linksColor, 96, 34, 28, 2))}>
               {previews.s5p
                 ? <img src={previews.s5p} style={{ width: 96, height: 34, display: 'block', flexShrink: 0 }} />
                 : <div style={{ width: 96, height: 34, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: config.linksColor, fontFamily: PF }}>我的奖品</div>
               }
             </ExportCard>
             <ExportCard label="抽奖规则" sub="109 × 34 px · PNG"
-              onExport={() => exportOne('s5r', 'slot_5_抽奖规则_109x34', async () => drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], config.linksColor, 109, 34, 22))}>
+              onExport={() => exportOne('s5r', 'slot_5_抽奖规则_109x34', async () => drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], config.linksColor, 109, 34, 28, 2))}>
               {previews.s5r
                 ? <img src={previews.s5r} style={{ width: 109, height: 34, display: 'block', flexShrink: 0 }} />
                 : <div style={{ width: 109, height: 34, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: config.linksColor, fontFamily: PF }}>

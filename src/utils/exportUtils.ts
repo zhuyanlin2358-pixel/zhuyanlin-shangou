@@ -250,16 +250,21 @@ export function drawButtonCanvas(text: string, from: string, to: string): HTMLCa
   return downsample(canvas)
 }
 
-/** 绘制 slot_5 链接文字（透明底）@2x */
+/** 绘制 slot_5 链接文字（透明底）@2x；letterSpacing 来自 Figma API（我的奖品/抽奖规则 = 2px） */
 export function drawLinkCanvas(
   parts: { text: string; opacity?: number }[],
   color: string, w: number, h: number, fontSize: number,
+  letterSpacing = 0,
 ): HTMLCanvasElement {
   const canvas = document.createElement('canvas')
   canvas.width = w * 2; canvas.height = h * 2
   const ctx = canvas.getContext('2d')!
   ctx.scale(2, 2)
   ctx.font = `${fontSize}px ${F}`; ctx.textBaseline = 'middle'
+  // 设置 letterSpacing（Canvas 2D API，Chrome 99+ / Firefox 109+）
+  if (letterSpacing > 0 && 'letterSpacing' in ctx) {
+    (ctx as unknown as { letterSpacing: string }).letterSpacing = `${letterSpacing}px`
+  }
   // measure total width first
   let totalW = 0
   for (const p of parts) totalW += ctx.measureText(p.text).width + (p.opacity !== undefined ? 8 : 0)
