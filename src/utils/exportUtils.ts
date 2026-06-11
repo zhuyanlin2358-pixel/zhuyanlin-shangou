@@ -167,14 +167,12 @@ export async function drawSlotBannerCanvas(
   ctx.textBaseline = 'middle'
   ctx.fillText(cfg.titleText, 43, 40)
 
-  // 链接文字（右对齐）Banner 内 28px（Figma 节点 6:163），letterSpacing=2
+  // 链接文字（右对齐）Banner 内 28px，无 letterSpacing（Figma 节点 6:163）
   ctx.font = `400 28px ${F}`
-  if ('letterSpacing' in ctx) (ctx as unknown as { letterSpacing: string }).letterSpacing = '2px'
   ctx.fillStyle = cfg.linksColor
   ctx.textAlign = 'right'
   ctx.textBaseline = 'middle'
   ctx.fillText('我的奖品 | 抽奖规则', W - 48, 33)
-  if ('letterSpacing' in ctx) (ctx as unknown as { letterSpacing: string }).letterSpacing = '0px'
 
   // 按钮文字 FZLanTingHei-M（比 DB 细一度，用户要求）
   ctx.font = `400 34px ${F}`
