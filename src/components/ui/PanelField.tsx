@@ -1,7 +1,7 @@
 /**
  * 侧边栏配置面板通用字段组件
  */
-import { useRef, useEffect, useState, startTransition, useCallback } from 'react'
+import { useRef, useEffect, useState, useCallback } from 'react'
 import {
   Disclosure, DisclosureButton, DisclosurePanel,
   Listbox, ListboxButton, ListboxOptions, ListboxOption,
@@ -42,7 +42,7 @@ export function PF({
   )
 }
 
-/* ── 文本输入（controlled + IME 保护 + startTransition）── */
+/* ── 文本输入（controlled + IME 保护，直接同步 onChange，canvas rebuild 有自己的 debounce）── */
 export function PanelInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   const { className, value, onChange, ...rest } = props
   const [local, setLocal] = useState(String(value ?? ''))
@@ -59,10 +59,8 @@ export function PanelInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
 
   const commit = (val: string) => {
     if (composing.current) return
-    extRef.current = val  // 防止 useEffect 重复触发 setLocal
-    startTransition(() => {
-      onChange?.({ target: { value: val } } as React.ChangeEvent<HTMLInputElement>)
-    })
+    extRef.current = val
+    onChange?.({ target: { value: val } } as React.ChangeEvent<HTMLInputElement>)
   }
 
   return (
@@ -143,9 +141,7 @@ export function PanelTextarea(props: React.TextareaHTMLAttributes<HTMLTextAreaEl
   const commit = (val: string) => {
     if (composing.current) return
     extRef.current = val
-    startTransition(() => {
-      onChange?.({ target: { value: val } } as React.ChangeEvent<HTMLTextAreaElement>)
-    })
+    onChange?.({ target: { value: val } } as React.ChangeEvent<HTMLTextAreaElement>)
   }
 
   return (
@@ -244,144 +240,122 @@ function hsvToHex(h: number, s: number, v: number): string {
 
 function isValidHex(v: string) { return /^#[0-9A-Fa-f]{6}$/.test(v) }
 
-/* ── 自定义颜色拾色器弹窗（pointer capture 拖拽，position:fixed 防裁切）── */
+/* ── 自定义颜色拾色器（原生 DOM 监听器 + pointer capture，对标 react-colorful）── */
 function ColorPickerPopup({
   value, onChange, onClose, top, left,
 }: {
   value: string; onChange: (v: string) => void; onClose: () => void
   top: number; left: number
 }) {
-  const [hsv, setHsv] = useState(() =>
-    isValidHex(value) ? hexToHsv(value) : { h: 0, s: 1, v: 1 }
-  )
+  const [hsv, setHsv] = useState(() => isValidHex(value) ? hexToHsv(value) : { h: 0, s: 1, v: 1 })
   const [hexInput, setHexInput] = useState(value)
   const popupRef = useRef<HTMLDivElement>(null)
+  const sbRef    = useRef<HTMLDivElement>(null)
+  const hueRef   = useRef<HTMLDivElement>(null)
   const onChangeRef = useRef(onChange)
   useEffect(() => { onChangeRef.current = onChange }, [onChange])
 
-  // 外部 value 变化时同步
+  // 外部 value 变化时同步（preset 切换）
   useEffect(() => {
     if (isValidHex(value) && value !== hsvToHex(hsv.h, hsv.s, hsv.v)) {
-      const newHsv = hexToHsv(value)
-      setHsv(newHsv)
-      setHexInput(value)
+      setHsv(hexToHsv(value)); setHexInput(value)
     }
   }, [value]) // eslint-disable-line
 
   // 点击外部关闭
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const h = (e: MouseEvent) => {
       if (!popupRef.current?.contains(e.target as Node)) onClose()
     }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
   }, [onClose])
 
-  const apply = (h: number, s: number, v: number) => {
-    const hex = hsvToHex(h, s, v)
-    setHsv({ h, s, v }); setHexInput(hex); onChangeRef.current(hex)
-  }
+  // ── SB 渐变区：原生 pointer 监听，pointer capture 确保拖出仍响应 ──
+  useEffect(() => {
+    const el = sbRef.current; if (!el) return
+    const down = (e: PointerEvent) => {
+      e.preventDefault(); el.setPointerCapture(e.pointerId)
+      const r = el.getBoundingClientRect()
+      const s = clamp01((e.clientX - r.left) / r.width)
+      const v = clamp01(1 - (e.clientY - r.top) / r.height)
+      setHsv(prev => { const hex = hsvToHex(prev.h, s, v); setHexInput(hex); onChangeRef.current(hex); return { h: prev.h, s, v } })
+    }
+    const move = (e: PointerEvent) => {
+      if (!el.hasPointerCapture(e.pointerId)) return
+      const r = el.getBoundingClientRect()
+      const s = clamp01((e.clientX - r.left) / r.width)
+      const v = clamp01(1 - (e.clientY - r.top) / r.height)
+      setHsv(prev => { const hex = hsvToHex(prev.h, s, v); setHexInput(hex); onChangeRef.current(hex); return { h: prev.h, s, v } })
+    }
+    el.addEventListener('pointerdown', down)
+    el.addEventListener('pointermove', move)
+    return () => { el.removeEventListener('pointerdown', down); el.removeEventListener('pointermove', move) }
+  }, [])
+
+  // ── 色相滑块：同样原生监听 ──
+  useEffect(() => {
+    const el = hueRef.current; if (!el) return
+    const calc = (e: PointerEvent) => {
+      const r = el.getBoundingClientRect()
+      return Math.max(0, Math.min(360, ((e.clientX - r.left) / r.width) * 360))
+    }
+    const down = (e: PointerEvent) => {
+      e.preventDefault(); el.setPointerCapture(e.pointerId)
+      const h = calc(e)
+      setHsv(prev => { const hex = hsvToHex(h, prev.s, prev.v); setHexInput(hex); onChangeRef.current(hex); return { ...prev, h } })
+    }
+    const move = (e: PointerEvent) => {
+      if (!el.hasPointerCapture(e.pointerId)) return
+      const h = calc(e)
+      setHsv(prev => { const hex = hsvToHex(h, prev.s, prev.v); setHexInput(hex); onChangeRef.current(hex); return { ...prev, h } })
+    }
+    el.addEventListener('pointerdown', down)
+    el.addEventListener('pointermove', move)
+    return () => { el.removeEventListener('pointerdown', down); el.removeEventListener('pointermove', move) }
+  }, [])
 
   const hueColor = `hsl(${hsv.h}, 100%, 50%)`
-  const curHex = hsvToHex(hsv.h, hsv.s, hsv.v)
+  const curHex   = hsvToHex(hsv.h, hsv.s, hsv.v)
 
   return (
-    <div
-      ref={popupRef}
-      onMouseDown={e => e.stopPropagation()}
-      style={{
-        position: 'fixed', top, left, zIndex: 2000,
-        background: '#fff', borderRadius: 10, overflow: 'hidden',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-        width: 220, userSelect: 'none',
-      }}
+    <div ref={popupRef} onMouseDown={e => e.stopPropagation()}
+      style={{ position: 'fixed', top, left, zIndex: 2000, background: '#fff',
+        borderRadius: 10, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+        width: 220, userSelect: 'none' }}
     >
-      {/* SB 渐变区 — pointer capture 确保拖出区域仍可响应 */}
-      <div
-        onPointerDown={e => {
-          e.preventDefault()
-          ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
-          const r = e.currentTarget.getBoundingClientRect()
-          apply(hsv.h, clamp01((e.clientX - r.left) / r.width), clamp01(1 - (e.clientY - r.top) / r.height))
-        }}
-        onPointerMove={e => {
-          if (!(e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) return
-          const r = e.currentTarget.getBoundingClientRect()
-          setHsv(prev => {
-            const s = clamp01((e.clientX - r.left) / r.width)
-            const v = clamp01(1 - (e.clientY - r.top) / r.height)
-            const hex = hsvToHex(prev.h, s, v)
-            setHexInput(hex); onChangeRef.current(hex)
-            return { h: prev.h, s, v }
-          })
-        }}
-        onPointerUp={e => { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId) }}
-        style={{
-          width: '100%', height: 150, position: 'relative',
-          cursor: 'crosshair', background: hueColor, touchAction: 'none',
-        }}
-      >
+      {/* SB 渐变区 */}
+      <div ref={sbRef} style={{ width: '100%', height: 150, position: 'relative',
+          cursor: 'crosshair', background: hueColor, touchAction: 'none' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, #fff, transparent)' }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, #000)' }} />
-        <div style={{
-          position: 'absolute',
-          left: `${hsv.s * 100}%`, top: `${(1 - hsv.v) * 100}%`,
-          width: 14, height: 14, borderRadius: '50%',
-          border: '2px solid #fff', boxShadow: '0 0 3px rgba(0,0,0,0.5)',
-          transform: 'translate(-50%, -50%)', pointerEvents: 'none',
-          background: curHex,
-        }} />
+        <div style={{ position: 'absolute', left: `${hsv.s * 100}%`, top: `${(1 - hsv.v) * 100}%`,
+            width: 14, height: 14, borderRadius: '50%',
+            border: '2px solid #fff', boxShadow: '0 0 3px rgba(0,0,0,0.5)',
+            transform: 'translate(-50%,-50%)', pointerEvents: 'none', background: curHex }} />
       </div>
 
       <div style={{ padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {/* 色相滑块 — pointer capture */}
-        <div
-          onPointerDown={e => {
-            e.preventDefault()
-            ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
-            const r = e.currentTarget.getBoundingClientRect()
-            apply(Math.max(0, Math.min(360, ((e.clientX - r.left) / r.width) * 360)), hsv.s, hsv.v)
-          }}
-          onPointerMove={e => {
-            if (!(e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) return
-            const r = e.currentTarget.getBoundingClientRect()
-            setHsv(prev => {
-              const h = Math.max(0, Math.min(360, ((e.clientX - r.left) / r.width) * 360))
-              const hex = hsvToHex(h, prev.s, prev.v)
-              setHexInput(hex); onChangeRef.current(hex)
-              return { ...prev, h }
-            })
-          }}
-          onPointerUp={e => { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId) }}
-          style={{
-            position: 'relative', height: 12, borderRadius: 6, cursor: 'pointer',
-            background: 'linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)',
-            touchAction: 'none',
-          }}
-        >
-          <div style={{
-            position: 'absolute', left: `${(hsv.h / 360) * 100}%`, top: '50%',
-            width: 18, height: 18, borderRadius: '50%',
-            border: '2px solid #fff', boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
-            background: hueColor, transform: 'translate(-50%, -50%)', pointerEvents: 'none',
-          }} />
+        {/* 色相滑块 */}
+        <div ref={hueRef} style={{ position: 'relative', height: 12, borderRadius: 6,
+            cursor: 'pointer', touchAction: 'none',
+            background: 'linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)' }}>
+          <div style={{ position: 'absolute', left: `${(hsv.h / 360) * 100}%`, top: '50%',
+              width: 18, height: 18, borderRadius: '50%',
+              border: '2px solid #fff', boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
+              background: hueColor, transform: 'translate(-50%,-50%)', pointerEvents: 'none' }} />
         </div>
-
         {/* 预览 + Hex */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, background: curHex, boxShadow: '0 0 0 1px rgba(0,0,0,0.12)' }} />
-          <input
-            value={hexInput}
+          <div style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0,
+              background: curHex, boxShadow: '0 0 0 1px rgba(0,0,0,0.12)' }} />
+          <input value={hexInput} maxLength={7}
             onChange={e => {
               setHexInput(e.target.value)
-              if (isValidHex(e.target.value)) {
-                setHsv(hexToHsv(e.target.value))
-                onChangeRef.current(e.target.value)
-              }
+              if (isValidHex(e.target.value)) { setHsv(hexToHsv(e.target.value)); onChangeRef.current(e.target.value) }
             }}
-            maxLength={7}
-            style={{ flex: 1, padding: '4px 8px', fontSize: 12, fontFamily: 'monospace', border: '1px solid #ddd', borderRadius: 6, outline: 'none', background: '#fafafa', color: '#333' }}
-          />
+            style={{ flex: 1, padding: '4px 8px', fontSize: 12, fontFamily: 'monospace',
+              border: '1px solid #ddd', borderRadius: 6, outline: 'none', background: '#fafafa', color: '#333' }} />
         </div>
       </div>
     </div>
