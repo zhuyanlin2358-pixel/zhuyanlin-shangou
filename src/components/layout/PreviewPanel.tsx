@@ -144,16 +144,20 @@ export default function PreviewPanel() {
                 background: `linear-gradient(90deg, ${config.slotTintFrom}, ${config.slotTintTo})`,
                 borderRadius: 20,
               }}>
-                {/* daily style：矩形备份7，x:342 y:0 w:384 h:105，左侧两角 r:24，右侧贴外框 */}
-                {config.slotStyle === 'daily' && (
+                {/* daily style：矩形备份7 + 真实箭头图片（Figma API 精确坐标） */}
+                {config.slotStyle === 'daily' && (<>
                   <div style={{
                     position: 'absolute', left: 342, top: 0,
                     width: 384, height: 105,
-                    borderRadius: '24px 0 0 24px',   // 左上24 左下24，右侧贴外框无圆角
+                    borderRadius: '24px 0 0 24px',
                     backgroundColor: config.slotTintTo,
                     opacity: 0.45, pointerEvents: 'none',
                   }} />
-                )}
+                  <img src={`${import.meta.env.BASE_URL}arrow-left.png`} alt=""
+                    style={{ position: 'absolute', left: 31, top: 139, width: 26, height: 26, pointerEvents: 'none' }} />
+                  <img src={`${import.meta.env.BASE_URL}arrow-right.png`} alt=""
+                    style={{ position: 'absolute', left: 452, top: 139, width: 26, height: 26, pointerEvents: 'none' }} />
+                </>)}
                 {/* 标题 */}
                 <div style={{
                   position: 'absolute', left: 43, top: 11,
