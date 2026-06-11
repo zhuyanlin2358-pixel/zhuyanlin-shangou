@@ -520,6 +520,21 @@ export default function SlotPage() {
     setPreviews(prev => ({ ...prev, s3: c3.toDataURL() }))
   }, [config.emptyImageUrl, config.emptyTransform, config.emptyText])
 
+  // ── 3b. 空态手机预览：把空态插图合成到老虎机背景白框里 → 推手机预览
+  const buildEmptyPreview = useCallback(async () => {
+    const [bg, empty] = await Promise.all([
+      drawSlotBgCanvas(config),
+      drawEmptyStateCanvas(config.emptyImageUrl, config.emptyTransform as XfTransform, config.emptyText),
+    ])
+    // bg 是 750×242 @1x；empty 是 854×284 (@2x of 427×142)，叠入白框 x43 y75
+    const out = document.createElement('canvas')
+    out.width = bg.width; out.height = bg.height
+    const ctx2 = out.getContext('2d')!
+    ctx2.drawImage(bg, 0, 0)
+    ctx2.drawImage(empty, 43, 75, 427, 142)  // scale 854×284 → 427×142
+    setSlotBannerUrl(out.toDataURL())
+  }, [config, setSlotBannerUrl])
+
   // ── 4. 弹窗按钮预览（配色变化时重建）
   const buildDialogButtons = useCallback(() => {
     const p: Record<string, string> = {}
@@ -696,7 +711,7 @@ export default function SlotPage() {
           <SectionTitle num={3} label="老虎机空态页" sub="854 × 284 px @2x" badge="素材 3" />
           <ExportCard label="老虎机空态页" sub="854 × 284 px · PNG"
             onExport={() => exportOne('s3', 'slot_3_空态页_854x284', () => drawEmptyStateCanvas(config.emptyImageUrl, config.emptyTransform as XfTransform, config.emptyText))}
-            onPreview={() => showToast('空态页插图已同步，可在上方预览卡查看')}>
+            onPreview={() => { buildEmptyPreview(); showToast('已在手机预览中显示空态效果') }}>
             <div style={{ width: 427, height: 142, borderRadius: 12, background: '#fff', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
               <DraggableImageWrap w={239} h={96} transform={config.emptyTransform} imageUrl={config.emptyImageUrl}
                 onTransformChange={t => setEmptyTransform(t)} emptyHint="点击上传\n自定义插图" minScale={0} maxScale={2} cursor="grab" />
