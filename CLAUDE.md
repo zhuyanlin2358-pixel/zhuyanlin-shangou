@@ -1,6 +1,6 @@
 # 闪购会场组件自助设计工具 — Claude Code 上下文文档
 
-> 最后更新：2026-06-11
+> 最后更新：2026-06-12
 
 ---
 
@@ -155,13 +155,20 @@ buildEmpty  (100ms debounce) → 依赖空态配置 → 更新 s3（画布预览
 
 ### 输入框（PanelField.tsx）
 
-`PanelInput` / `PanelTextarea`：
-- 本地 `useState` 即时更新，每次按键立刻显示（无 startTransition 延迟）
-- IME（中文输入法）保护：`onCompositionStart/End` 防止拼音中间状态触发全局更新
-- 外部 value 变化（preset 切换）通过 `extRef` 对比同步，不覆盖正在输入的内容
+`PanelInput` / `PanelTextarea`（非受控方案，根治失焦）：
+- `defaultValue` 非受控，浏览器原生管理 DOM，React re-render 不干扰光标
+- Preset 切换时通过 `inputRef.current.value = ext` 命令式同步
+- `onChangeRef` 存 onChange 函数引用，防止闭包不一致
+- IME 保护：`onCompositionStart/End`
+
+⚠️ **绝对不要把子组件定义在父组件函数体内**（如 `const Section = () => ...`）
+每次父组件 re-render 都会产生新函数引用 → React unmount+remount 子树 → input 失焦。
+必须提取到模块顶层，通过 props 传入需要的状态。
 
 颜色选择器（`ColorPickerPopup`）：
-- 原生 `addEventListener('pointerdown/pointermove')` + `setPointerCapture`，支持拖拽
+- React 合成事件 `onPointerDown` + `onPointerMove`（不用 useEffect + addEventListener）
+- `e.currentTarget.setPointerCapture(e.pointerId)` + `e.buttons === 0` 判断拖拽
+- 子层覆盖物加 `pointerEvents: 'none'` 防止拦截
 - `position: fixed` popup 防止被 `overflow:auto` 侧边栏裁切
 
 ### 左侧配置面板（SlotPanel.tsx）
@@ -218,6 +225,7 @@ git checkout main && git merge dev && git push origin main && git checkout dev
 | N4 文字标签 | n4 | ✅ 8种变体，240×156 透明底 PNG |
 | N2 品牌Logo | n2 | ✅ 有底色/描边/素材库 |
 | 一拖四 | yituosi | 🔲 占位，尺寸待规范 |
+| 楼层 | floor | 🔲 高达组件 C展示组件类，规格待定 |
 | 其余 | — | 🔲 GenericPage 占位 |
 
 ---
