@@ -33,8 +33,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     localStorage.setItem('theme', darkMode ? 'dark' : 'light')
-    document.body.classList.toggle('dark-mode', darkMode)
-  }, [darkMode])
+    // 组件页面所有面板都用 text-white/* 写死白色文字，必须强制深色模式；
+    // 非组件页面按用户偏好切换。
+    const forceDark = page === 'comp'
+    document.body.classList.toggle('dark-mode', forceDark || darkMode)
+  }, [darkMode, page])
 
   useEffect(() => {
     document.body.classList.toggle('has-preview', hasPreview)

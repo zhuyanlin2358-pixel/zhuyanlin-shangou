@@ -67,13 +67,16 @@ export default function TopBar() {
             我的资产
           </button>
         )}
-        <button
-          onClick={toggleDarkMode}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-sm"
-          style={{ color: 'var(--text-2)' }}
-        >
-          {darkMode ? <Sun size={15} /> : <Moon size={15} />}
-        </button>
+        {/* 组件页强制深色，隐藏切换按钮 */}
+        {!isComp && (
+          <button
+            onClick={toggleDarkMode}
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-sm"
+            style={{ color: 'var(--text-2)' }}
+          >
+            {darkMode ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
+        )}
       </div>
     </header>
   )
