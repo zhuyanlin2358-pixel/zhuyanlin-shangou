@@ -1,30 +1,33 @@
+/* font-display: swap — 立即用系统字体占位渲染，Web 字体加载完后换上去 */
 @font-face {
   font-family: 'MeituanDigitalType';
   src: url('@/assets/fonts/MeituanDigitalType-Bold.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
+  font-display: swap;
 }
 
 /* 方正兰亭黑系列 — 权重：黑 < 准黑 < 中黑 < 大黑 */
 @font-face {
   font-family: 'FZLanTingHei-M';
   src: url('@/assets/fonts/FZLTHJW.TTF') format('truetype');
-  /* M-GBK = 黑（基础 Regular） */
   font-weight: 400;
   font-style: normal;
+  font-display: swap;
 }
 @font-face {
   font-family: 'FZLanTingHei-DB';
   src: url('@/assets/fonts/FZLTZHJW.TTF') format('truetype');
-  /* DB-GBK = 中黑（视觉匹配 Figma，大黑 FZLTDHJW 太粗） */
   font-weight: 400;
   font-style: normal;
+  font-display: swap;
 }
 @font-face {
   font-family: 'FZLanTingHei';
   src: url('@/assets/fonts/FZLTHJW.TTF') format('truetype');
   font-weight: 400;
   font-style: normal;
+  font-display: swap;
 }
 
 @tailwind base;

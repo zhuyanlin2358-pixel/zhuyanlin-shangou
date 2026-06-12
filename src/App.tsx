@@ -1,5 +1,10 @@
 import { useEffect, lazy, Suspense } from 'react'
 import { AppProvider, useApp } from '@/contexts/AppContext'
+import { warmupFonts } from '@/utils/exportUtils'
+
+// 应用启动后立即在后台开始加载字体（不阻塞 UI），
+// 等用户点进组件页开始渲染时字体大概率已缓存，无需等待
+warmupFonts()
 import { N4Provider } from '@/contexts/N4Context'
 import { N2Provider } from '@/contexts/N2Context'
 import { SlotProvider } from '@/contexts/SlotContext'

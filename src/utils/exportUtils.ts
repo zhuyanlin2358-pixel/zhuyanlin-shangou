@@ -49,15 +49,41 @@ function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   )
 }
 
-/** 预加载自定义字体，确保 Canvas 绘制时可用 */
-export async function preloadFonts(): Promise<void> {
-  if (typeof document === 'undefined' || !document.fonts) return
-  await Promise.allSettled([
+/**
+ * 预加载自定义字体，确保 Canvas 绘制时可用。
+ *
+ * 优化策略：
+ * 1. Singleton：全局只跑一次，后续调用直接复用 Promise，不重复请求
+ * 2. Timeout：最多等 3 秒，超时后降级为系统字体（PingFang SC / Microsoft YaHei）继续渲染
+ *    避免网速慢时 Canvas 一直卡在"渲染中"
+ */
+let _fontsPromise: Promise<void> | null = null
+
+export function preloadFonts(): Promise<void> {
+  if (_fontsPromise) return _fontsPromise
+
+  if (typeof document === 'undefined' || !document.fonts) {
+    _fontsPromise = Promise.resolve()
+    return _fontsPromise
+  }
+
+  const load = Promise.allSettled([
     document.fonts.load('400 16px "FZLanTingHei-M"'),
     document.fonts.load('400 16px "FZLanTingHei-DB"'),
     document.fonts.load('400 16px "FZLanTingHei"'),
     document.fonts.load('700 16px "MeituanDigitalType"'),
-  ])
+  ]).then(() => {})
+
+  // 3 秒超时：网速慢时不阻塞渲染，降级为系统字体
+  const timeout = new Promise<void>(resolve => setTimeout(resolve, 3000))
+
+  _fontsPromise = Promise.race([load, timeout])
+  return _fontsPromise
+}
+
+/** 在 App 启动时提前触发字体加载（不阻塞，后台进行） */
+export function warmupFonts(): void {
+  preloadFonts()
 }
 
 // ── Canvas 直接绘制工具 ──────────────────────────────────────────────────────
