@@ -3,7 +3,7 @@
  * 注意：所有子组件必须定义在模块顶层，不得在 FloorPanel 函数体内嵌套，避免 re-mount 导致失焦。
  */
 import {
-  PF, PanelInput, ColorField, DisclosureGroup,
+  PF, ColorField, DisclosureGroup,
 } from '@/components/ui/PanelField'
 import {
   type FloorConfig, type FloorVariant, type FloorDecoStyle,
@@ -80,17 +80,9 @@ export default function FloorPanel() {
         </div>
       </DisclosureGroup>
 
-      {/* ③ 文案设置 */}
-      <DisclosureGroup title="文案设置" defaultOpen>
-        <div className="px-4 pb-3 space-y-3">
-          <PF label="楼层文案">
-            <PanelInput
-              value={config.text}
-              onChange={e => set('text', e.target.value)}
-              placeholder="请填写文案"
-              maxLength={20}
-            />
-          </PF>
+      {/* ③ 文字颜色 */}
+      <DisclosureGroup title="文字颜色" defaultOpen>
+        <div className="px-4 pb-3">
           <ColorField
             label="文字颜色"
             value={config.textColor}

@@ -237,6 +237,12 @@ export interface Submission {
 // ── 楼层条组件 ────────────────────────────────────────────────────────────────
 export type FloorVariant = 'dachao' | 'valentine' | 'newyear' | 'custom'
 
+/** 单条楼层：独立文案，共享全局样式 */
+export interface FloorItem {
+  id: string    // 唯一标识（时间戳 + 随机后缀）
+  text: string  // 该楼层的文案
+}
+
 export type FloorDecoStyle = 'arrow' | 'heart' | 'coin'
 
 export interface FloorConfig {
