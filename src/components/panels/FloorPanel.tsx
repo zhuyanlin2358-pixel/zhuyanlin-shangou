@@ -6,22 +6,28 @@ import {
   PF, PanelInput, ColorField, DisclosureGroup,
 } from '@/components/ui/PanelField'
 import {
-  type FloorConfig, type FloorVariant,
+  type FloorConfig, type FloorVariant, type FloorDecoStyle,
 } from '@/types'
 import { useFloor } from '@/contexts/FloorContext'
 
-// ── 款式选项（模块顶层常量）────────────────────────────────────────────────
+// ── 款式选项 ─────────────────────────────────────────────────────────────────
 const VARIANT_OPTIONS: { value: FloorVariant; label: string; sub: string }[] = [
-  { value: 'dachao',    label: '大促款',   sub: '金橙渐变 · 深红文字 · 装饰图形' },
-  { value: 'valentine', label: '情人节款', sub: '粉色底 · 玫红文字' },
-  { value: 'newyear',   label: '年货节款', sub: '红色底 · 白色文字' },
+  { value: 'dachao',    label: '大促款',   sub: '橙色底 · 深红文字 · 箭头装饰' },
+  { value: 'valentine', label: '情人节款', sub: '粉色底 · 玫红文字 · 爱心装饰' },
+  { value: 'newyear',   label: '年货节款', sub: '红色底 · 白色文字 · 钱币装饰' },
   { value: 'custom',    label: '自定义',   sub: '自由配色，不受限于预设' },
 ]
 
-// ── 组件 ─────────────────────────────────────────────────────────────────────
+// ── 装饰样式选项 ──────────────────────────────────────────────────────────────
+const DECO_STYLE_OPTIONS: { value: FloorDecoStyle; label: string }[] = [
+  { value: 'arrow', label: '箭头形（大促）' },
+  { value: 'heart', label: '爱心（情人节）' },
+  { value: 'coin',  label: '钱币（年货节）' },
+]
+
+// ── 主面板 ───────────────────────────────────────────────────────────────────
 export default function FloorPanel() {
   const { config, setConfig, applyVariant } = useFloor()
-
   const set = <K extends keyof FloorConfig>(key: K, val: FloorConfig[K]) =>
     setConfig({ ...config, [key]: val })
 
@@ -60,15 +66,13 @@ export default function FloorPanel() {
             </button>
           </div>
 
-          {/* 底色设置（透明时折叠） */}
+          {/* 底色（透明时隐藏） */}
           {!config.bgTransparent && (
-            <>
-              <ColorField label="起色" value={config.bgFrom} onChange={v => set('bgFrom', v)} />
-              <ColorField label="终色" value={config.bgTo}   onChange={v => set('bgTo', v)} />
-              <p className="text-[10px] text-white/30 leading-snug">
-                起色 = 终色时为纯色底；不同时为横向渐变
-              </p>
-            </>
+            <ColorField
+              label="背景色"
+              value={config.bgColor}
+              onChange={v => set('bgColor', v)}
+            />
           )}
         </div>
       </DisclosureGroup>
@@ -84,13 +88,18 @@ export default function FloorPanel() {
               maxLength={20}
             />
           </PF>
-          <ColorField label="文字颜色" value={config.textColor} onChange={v => set('textColor', v)} />
+          <ColorField
+            label="文字颜色"
+            value={config.textColor}
+            onChange={v => set('textColor', v)}
+          />
         </div>
       </DisclosureGroup>
 
       {/* ④ 装饰图形 */}
       <DisclosureGroup title="装饰图形" badge={config.showDeco ? '开' : '关'}>
         <div className="px-4 pb-3 space-y-3">
+          {/* 开关 */}
           <div className="flex items-center justify-between">
             <span className="text-xs text-white/55">显示两侧装饰</span>
             <button
@@ -104,13 +113,36 @@ export default function FloorPanel() {
               />
             </button>
           </div>
+
           {config.showDeco && (
             <>
-              <ColorField label="色①（闪电形）" value={config.decoColor1} onChange={v => set('decoColor1', v)} />
-              <ColorField label="色②（双燕形）" value={config.decoColor2} onChange={v => set('decoColor2', v)} />
-              <p className="text-[10px] text-white/30 leading-snug">
-                原版：闪电 #FFCA60（金黄），双燕 #FF7399（粉色）
-              </p>
+              {/* 装饰样式 */}
+              <PF label="装饰样式">
+                <div className="flex gap-1.5 flex-wrap">
+                  {DECO_STYLE_OPTIONS.map(opt => (
+                    <DecoStyleBtn
+                      key={opt.value}
+                      opt={opt}
+                      active={config.decoStyle === opt.value}
+                      onSelect={() => set('decoStyle', opt.value)}
+                    />
+                  ))}
+                </div>
+              </PF>
+
+              {/* 装饰颜色 */}
+              <ColorField
+                label={config.decoStyle === 'arrow' ? '色①（闪电形）' : '装饰颜色'}
+                value={config.decoColor1}
+                onChange={v => set('decoColor1', v)}
+              />
+              {config.decoStyle === 'arrow' && (
+                <ColorField
+                  label="色②（双燕形）"
+                  value={config.decoColor2}
+                  onChange={v => set('decoColor2', v)}
+                />
+              )}
             </>
           )}
         </div>
@@ -150,6 +182,29 @@ function VariantOption({
         <div className="text-xs font-medium text-white/80">{opt.label}</div>
         <div className="text-[10px] text-white/35 mt-0.5">{opt.sub}</div>
       </div>
+    </button>
+  )
+}
+
+// ── 装饰样式按钮（模块顶层）────────────────────────────────────────────────
+function DecoStyleBtn({
+  opt, active, onSelect,
+}: {
+  opt: { value: FloorDecoStyle; label: string }
+  active: boolean
+  onSelect: () => void
+}) {
+  return (
+    <button
+      onClick={onSelect}
+      className="px-2.5 py-1 text-[10.5px] rounded-md transition-all"
+      style={{
+        border: `1px solid ${active ? '#FF5050' : 'rgba(255,255,255,0.12)'}`,
+        background: active ? 'rgba(255,80,80,0.10)' : 'rgba(255,255,255,0.03)',
+        color: active ? '#FF8080' : 'rgba(255,255,255,0.5)',
+      }}
+    >
+      {opt.label}
     </button>
   )
 }

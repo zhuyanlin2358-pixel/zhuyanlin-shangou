@@ -1,7 +1,7 @@
 import html2canvas from 'html2canvas'
 import JSZip from 'jszip'
 import { getSlotStyle, type SlotPrizeStyle } from './slotStyles'
-import type { FloorConfig } from '@/types'
+import type { FloorConfig, FloorDecoStyle } from '@/types'
 
 export async function captureElement(
   el: HTMLElement,
@@ -552,17 +552,50 @@ export async function drawSlotBgCanvas(
 
 // ── 楼层条 ───────────────────────────────────────────────────────────────────
 
-/**
- * 绘制装饰图形基础形状（以 gx/gy 为左上角原点，正方向朝右）
- * 供左侧直接调用，供右侧 mirror 翻转后调用，保证形状完全一致。
- * 装饰组总宽 31px：Vector2（13×16，x:0, y:6）+ Vector1（18×30，x:13, y:7）
- */
-function floorDecoShape(
+// ── 形状基元 ─────────────────────────────────────────────────────────────────
+
+/** 心形（bezier 曲线，以 cx/cy 为质心，r 为"半径"） */
+function floorHeart(
+  ctx: CanvasRenderingContext2D,
+  cx: number, cy: number, r: number, color: string,
+) {
+  const topY = cy - r * 0.35
+  ctx.beginPath()
+  ctx.fillStyle = color
+  ctx.moveTo(cx, cy + r)                       // 底部尖角
+  // 右侧弧
+  ctx.bezierCurveTo(cx + r * 1.4, cy + r * 0.4,  cx + r * 1.5, topY, cx + r * 0.9, topY - r * 0.4)
+  ctx.bezierCurveTo(cx + r * 0.3, topY - r * 0.7, cx,           topY - r * 0.25, cx, topY + r * 0.1)
+  // 左侧弧（镜像）
+  ctx.bezierCurveTo(cx, topY - r * 0.25, cx - r * 0.3, topY - r * 0.7, cx - r * 0.9, topY - r * 0.4)
+  ctx.bezierCurveTo(cx - r * 1.5, topY, cx - r * 1.4, cy + r * 0.4, cx, cy + r)
+  ctx.fill()
+}
+
+/** 古铜钱（外圆 + 内方孔，evenodd 挖空） */
+function floorCoin(
+  ctx: CanvasRenderingContext2D,
+  cx: number, cy: number, r: number, color: string,
+) {
+  ctx.fillStyle = color
+  ctx.beginPath()
+  ctx.arc(cx, cy, r, 0, Math.PI * 2)           // 外圆（顺时针）
+  const sq = r * 0.42
+  ctx.rect(cx - sq, cy - sq, sq * 2, sq * 2)   // 内方（顺时针，evenodd 挖空）
+  ctx.fill('evenodd' as CanvasFillRule)
+}
+
+// ── 装饰集群（左侧基准，右侧用 mirror 翻转）────────────────────────────────
+// gx = 装饰组左边缘，gy = 楼层条内容区顶（= 8）
+// 参照 Figma：装饰组宽 38px，高 31px，垂直居中于 44px 内容区 → cy = gy + 22
+
+/** 箭头装饰：Figma 精确 SVG 路径（Vector2 闪电 13×16 + Vector1 双燕 18×30） */
+function floorDecoArrow(
   ctx: CanvasRenderingContext2D,
   gx: number, gy: number,
   c1: string, c2: string,
 ) {
-  // Vector2：闪电折线形（Figma 精确路径），13×16，位于装饰组内 (0, 6)
+  // Vector2：闪电折线形，13×16，位于 (0, 6)
   const x2 = gx, y2 = gy + 6
   ctx.beginPath()
   ctx.moveTo(x2 + 5.57, y2 + 0)
@@ -576,7 +609,7 @@ function floorDecoShape(
   ctx.fillStyle = c1
   ctx.fill()
 
-  // Vector1：双燕形（Figma 精确路径），18×30，位于装饰组内 (13, 7)
+  // Vector1：双燕形，18×30，位于 (13, 7)
   const x1 = gx + 13, y1 = gy + 7
   ctx.beginPath()
   ctx.moveTo(x1 + 11.4,  y1 + 0)
@@ -592,41 +625,74 @@ function floorDecoShape(
 }
 
 /**
- * 左侧装饰：gx = 装饰组左边缘
+ * 爱心装饰：参照 Figma 情人节款 Group 8 布局
+ * 一大一小两颗心，小心在左上，大心在右侧居中
  */
-function floorDecoLeft(
+function floorDecoHeart(
   ctx: CanvasRenderingContext2D,
   gx: number, gy: number,
-  c1: string, c2: string,
+  c1: string, _c2: string,
 ) {
-  floorDecoShape(ctx, gx, gy, c1, c2)
+  const cy = gy + 22  // 内容区垂直中心
+  floorHeart(ctx, gx + 5,  gy + 8, 4,  c1)  // 小心：左上
+  floorHeart(ctx, gx + 23, cy,     13, c1)  // 大心：右侧居中
 }
 
 /**
- * 右侧装饰：grx = 装饰组右边缘（= 左边缘 + 31）
- * 使用 Canvas transform 水平翻转，保证与左侧形状完全一致（不手算镜像坐标）。
+ * 钱币装饰：参照情人节布局尺寸，改为古铜钱形状
+ * 一大一小两枚钱，小钱在左上，大钱在右侧居中
  */
-function floorDecoRight(
+function floorDecoCoin(
   ctx: CanvasRenderingContext2D,
+  gx: number, gy: number,
+  c1: string, _c2: string,
+) {
+  const cy = gy + 22
+  floorCoin(ctx, gx + 5,  gy + 8, 4,  c1)  // 小钱：左上
+  floorCoin(ctx, gx + 23, cy,     12, c1)  // 大钱：右侧居中
+}
+
+// ── 装饰调度 ─────────────────────────────────────────────────────────────────
+
+/** 装饰组总宽（px） */
+const DECO_GROUP_W = 38
+
+function drawDecoCluster(
+  ctx: CanvasRenderingContext2D,
+  style: FloorDecoStyle,
+  gx: number, gy: number,
+  c1: string, c2: string,
+) {
+  switch (style) {
+    case 'arrow': return floorDecoArrow(ctx, gx, gy, c1, c2)
+    case 'heart': return floorDecoHeart(ctx, gx, gy, c1, c2)
+    case 'coin':  return floorDecoCoin(ctx,  gx, gy, c1, c2)
+  }
+}
+
+/**
+ * 右侧装饰：grx = 装饰组右边缘
+ * 用 ctx.scale(-1,1) 水平翻转，保证与左侧形状像素级一致
+ */
+function drawDecoRight(
+  ctx: CanvasRenderingContext2D,
+  style: FloorDecoStyle,
   grx: number, gy: number,
   c1: string, c2: string,
 ) {
   ctx.save()
-  // 翻转：以 grx 为轴，scale(-1,1) 后绘制左侧路径即得镜像
   ctx.translate(grx, 0)
   ctx.scale(-1, 1)
-  floorDecoShape(ctx, 0, gy, c1, c2)
+  drawDecoCluster(ctx, style, 0, gy, c1, c2)
   ctx.restore()
 }
-
-/** 装饰组宽度（px） */
-const DECO_GROUP_W = 31
 
 /**
  * 绘制楼层条 750×60 → @2x 超采样后输出 750×60
  *
- * 装饰图形动态定位：测量实际文字宽度，始终贴近文字两侧 GAP=16px。
- * 背景：bgTransparent=true 时跳过填充，导出纯透明底 PNG。
+ * • bgTransparent: 跳过背景填充，导出透明底 PNG
+ * • 装饰动态定位：按实际文字宽度计算，始终贴紧文字两侧 GAP=16px
+ * • decoStyle: arrow（大促）/ heart（情人节）/ coin（年货节）
  */
 export async function drawFloorCanvas(cfg: FloorConfig): Promise<HTMLCanvasElement> {
   await preloadFonts()
@@ -636,20 +702,13 @@ export async function drawFloorCanvas(cfg: FloorConfig): Promise<HTMLCanvasEleme
   const ctx = canvas.getContext('2d')!
   ctx.scale(2, 2)
 
-  // 背景（透明 / 纯色 / 渐变）
+  // 背景（纯色，无渐变）
   if (!cfg.bgTransparent) {
-    if (cfg.bgFrom !== cfg.bgTo) {
-      const g = ctx.createLinearGradient(0, 0, W, 0)
-      g.addColorStop(0, cfg.bgFrom)
-      g.addColorStop(1, cfg.bgTo)
-      ctx.fillStyle = g
-    } else {
-      ctx.fillStyle = cfg.bgFrom
-    }
+    ctx.fillStyle = cfg.bgColor
     ctx.fillRect(0, 0, W, H)
   }
 
-  // 主文案（先设置字体，再 measureText，保证测量精确）
+  // 设置字体（先设置，再测量，保证 measureText 精确）
   ctx.font = `400 34px ${FB}`
   ctx.fillStyle = cfg.textColor
   ctx.textAlign = 'center'
@@ -657,14 +716,15 @@ export async function drawFloorCanvas(cfg: FloorConfig): Promise<HTMLCanvasEleme
 
   // 动态定位装饰图形
   if (cfg.showDeco) {
-    const GAP = 16                           // 装饰与文字边缘间距（来自 Figma 原稿）
-    const textW   = ctx.measureText(cfg.text).width
-    const textL   = W / 2 - textW / 2       // 文字左边缘
-    const textR   = W / 2 + textW / 2       // 文字右边缘
-    const leftGX  = Math.max(4, textL - GAP - DECO_GROUP_W)  // 左侧装饰左边缘
-    const rightGRX = Math.min(W - 4, textR + GAP + DECO_GROUP_W) // 右侧装饰右边缘
-    floorDecoLeft(ctx,  leftGX,   8, cfg.decoColor1, cfg.decoColor2)
-    floorDecoRight(ctx, rightGRX, 8, cfg.decoColor1, cfg.decoColor2)
+    const GAP    = 16                                                    // 装饰与文字间距（Figma 原稿值）
+    const textW  = ctx.measureText(cfg.text).width
+    const textL  = W / 2 - textW / 2
+    const textR  = W / 2 + textW / 2
+    const leftGX  = Math.max(4, textL - GAP - DECO_GROUP_W)
+    const rightGRX = Math.min(W - 4, textR + GAP + DECO_GROUP_W)
+    const style = cfg.decoStyle ?? 'arrow'
+    drawDecoCluster(ctx, style, leftGX,   8, cfg.decoColor1, cfg.decoColor2)
+    drawDecoRight  (ctx, style, rightGRX, 8, cfg.decoColor1, cfg.decoColor2)
   }
 
   ctx.beginPath()

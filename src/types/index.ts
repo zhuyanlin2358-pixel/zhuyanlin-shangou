@@ -237,49 +237,47 @@ export interface Submission {
 // ── 楼层条组件 ────────────────────────────────────────────────────────────────
 export type FloorVariant = 'dachao' | 'valentine' | 'newyear' | 'custom'
 
+export type FloorDecoStyle = 'arrow' | 'heart' | 'coin'
+
 export interface FloorConfig {
   variant: FloorVariant
-  bgFrom: string        // 背景渐变起色（纯色时与 bgTo 相同）
-  bgTo: string          // 背景渐变终色
+  bgColor: string        // 背景色（纯色，无渐变）
   bgTransparent: boolean // true = 无底色（透明背景，导出 PNG 无填充）
-  text: string          // 主文案
-  textColor: string     // 文字颜色
-  showDeco: boolean     // 是否显示装饰图形（闪电+双燕形）
-  decoColor1: string    // 装饰图形1颜色（小/闪电形，默认金黄）
-  decoColor2: string    // 装饰图形2颜色（大/双燕形，默认粉色）
+  text: string           // 主文案
+  textColor: string      // 文字颜色
+  showDeco: boolean      // 是否显示装饰图形
+  decoStyle: FloorDecoStyle // 装饰形状：arrow 箭头 / heart 爱心 / coin 钱币
+  decoColor1: string     // 装饰主色（箭头=闪电色；心=心形色；币=外圆色）
+  decoColor2: string     // 装饰副色（仅箭头款：双燕形颜色）
 }
 
 export const FLOOR_PRESETS: Record<FloorVariant, Omit<FloorConfig, 'variant'>> = {
   dachao: {
-    bgFrom: '#FFC200', bgTo: '#FF7800', bgTransparent: false,
+    bgColor: '#FF9000', bgTransparent: false,
     text: '领618好店券 下单更优惠',
     textColor: '#950E0F',
-    showDeco: true,
-    decoColor1: '#FFCA60',
-    decoColor2: '#FF7399',
+    showDeco: true, decoStyle: 'arrow',
+    decoColor1: '#FFCA60', decoColor2: '#FF7399',
   },
   valentine: {
-    bgFrom: '#FFCDDB', bgTo: '#FFCDDB', bgTransparent: false,
+    bgColor: '#FFCDDB', bgTransparent: false,
     text: '领214好店券 下单更优惠',
     textColor: '#FF5274',
-    showDeco: false,
-    decoColor1: '#FFCA60',
-    decoColor2: '#FF7399',
+    showDeco: true, decoStyle: 'heart',
+    decoColor1: '#FF6B8A', decoColor2: '#FF6B8A',
   },
   newyear: {
-    bgFrom: '#ED0004', bgTo: '#ED0004', bgTransparent: false,
+    bgColor: '#ED0004', bgTransparent: false,
     text: '年货好礼 幸福加马',
     textColor: '#FFFFFF',
-    showDeco: false,
-    decoColor1: '#FFCA60',
-    decoColor2: '#FF7399',
+    showDeco: true, decoStyle: 'coin',
+    decoColor1: '#FFCA00', decoColor2: '#FFCA00',
   },
   custom: {
-    bgFrom: '#FF7800', bgTo: '#FF7800', bgTransparent: false,
+    bgColor: '#FF7800', bgTransparent: false,
     text: '请填写楼层文案',
     textColor: '#FFFFFF',
-    showDeco: false,
-    decoColor1: '#FFCA60',
-    decoColor2: '#FF7399',
+    showDeco: false, decoStyle: 'arrow',
+    decoColor1: '#FFCA60', decoColor2: '#FF7399',
   },
 }
