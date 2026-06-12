@@ -727,6 +727,9 @@ export async function drawFloorCanvas(cfg: FloorConfig): Promise<HTMLCanvasEleme
     drawDecoRight  (ctx, style, rightGRX, 8, cfg.decoColor1, cfg.decoColor2)
   }
 
+  // ⚠️ 装饰图形绘制会修改 ctx.fillStyle（各 deco 函数最后一次 ctx.fillStyle = decoColor），
+  // 必须在 fillText 前重新设定文字颜色，否则文字用的是装饰图形的颜色。
+  ctx.fillStyle = cfg.textColor
   ctx.beginPath()
   ctx.fillText(cfg.text, W / 2, H / 2)
 
