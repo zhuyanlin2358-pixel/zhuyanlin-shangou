@@ -239,18 +239,19 @@ export type FloorVariant = 'dachao' | 'valentine' | 'newyear' | 'custom'
 
 export interface FloorConfig {
   variant: FloorVariant
-  bgFrom: string       // 背景渐变起色（纯色时与 bgTo 相同）
-  bgTo: string         // 背景渐变终色
-  text: string         // 主文案
-  textColor: string    // 文字颜色
-  showDeco: boolean    // 是否显示装饰图形（闪电+双燕形）
-  decoColor1: string   // 装饰图形1颜色（小/闪电形，默认金黄）
-  decoColor2: string   // 装饰图形2颜色（大/双燕形，默认粉色）
+  bgFrom: string        // 背景渐变起色（纯色时与 bgTo 相同）
+  bgTo: string          // 背景渐变终色
+  bgTransparent: boolean // true = 无底色（透明背景，导出 PNG 无填充）
+  text: string          // 主文案
+  textColor: string     // 文字颜色
+  showDeco: boolean     // 是否显示装饰图形（闪电+双燕形）
+  decoColor1: string    // 装饰图形1颜色（小/闪电形，默认金黄）
+  decoColor2: string    // 装饰图形2颜色（大/双燕形，默认粉色）
 }
 
 export const FLOOR_PRESETS: Record<FloorVariant, Omit<FloorConfig, 'variant'>> = {
   dachao: {
-    bgFrom: '#FFC200', bgTo: '#FF7800',
+    bgFrom: '#FFC200', bgTo: '#FF7800', bgTransparent: false,
     text: '领618好店券 下单更优惠',
     textColor: '#950E0F',
     showDeco: true,
@@ -258,7 +259,7 @@ export const FLOOR_PRESETS: Record<FloorVariant, Omit<FloorConfig, 'variant'>> =
     decoColor2: '#FF7399',
   },
   valentine: {
-    bgFrom: '#FFCDDB', bgTo: '#FFCDDB',
+    bgFrom: '#FFCDDB', bgTo: '#FFCDDB', bgTransparent: false,
     text: '领214好店券 下单更优惠',
     textColor: '#FF5274',
     showDeco: false,
@@ -266,7 +267,7 @@ export const FLOOR_PRESETS: Record<FloorVariant, Omit<FloorConfig, 'variant'>> =
     decoColor2: '#FF7399',
   },
   newyear: {
-    bgFrom: '#ED0004', bgTo: '#ED0004',
+    bgFrom: '#ED0004', bgTo: '#ED0004', bgTransparent: false,
     text: '年货好礼 幸福加马',
     textColor: '#FFFFFF',
     showDeco: false,
@@ -274,7 +275,7 @@ export const FLOOR_PRESETS: Record<FloorVariant, Omit<FloorConfig, 'variant'>> =
     decoColor2: '#FF7399',
   },
   custom: {
-    bgFrom: '#FF7800', bgTo: '#FF7800',
+    bgFrom: '#FF7800', bgTo: '#FF7800', bgTransparent: false,
     text: '请填写楼层文案',
     textColor: '#FFFFFF',
     showDeco: false,

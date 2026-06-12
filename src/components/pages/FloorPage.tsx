@@ -80,18 +80,28 @@ export default function FloorPage() {
           </span>
         </div>
 
-        {/* 预览图（全宽等比 */}
-        <div className="w-full overflow-hidden rounded-lg" style={{ maxWidth: 750 }}>
+        {/* 预览图（全宽等比；透明背景时叠加棋盘格）*/}
+        <div className="relative w-full overflow-hidden rounded-lg" style={{ maxWidth: 750 }}>
+          {/* 棋盘格底层（透明时可见，有底色时被图片遮住） */}
+          {config.bgTransparent && (
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: 'repeating-conic-gradient(#d0d0d0 0% 25%, #f5f5f5 0% 50%)',
+                backgroundSize: '12px 12px',
+              }}
+            />
+          )}
           {previewUrl ? (
             <img
               src={previewUrl}
               alt="楼层条预览"
-              className="w-full block slot-card-preview"
+              className="relative w-full block slot-card-preview"
               draggable={false}
             />
           ) : (
             <div
-              className="w-full flex items-center justify-center text-xs"
+              className="relative w-full flex items-center justify-center text-xs"
               style={{ height: 60, background: 'var(--bg)', color: 'var(--text-3)' }}
             >
               渲染中…

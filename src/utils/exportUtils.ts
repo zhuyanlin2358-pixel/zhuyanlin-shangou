@@ -553,17 +553,16 @@ export async function drawSlotBgCanvas(
 // ── 楼层条 ───────────────────────────────────────────────────────────────────
 
 /**
- * 绘制左侧装饰图形（Figma 精确路径）
- * gx/gy: 装饰组原点（绝对坐标，Figma group 在 canvas 内的 offset）
- * c1: 小形状颜色（闪电形，Figma Vector2/3，13×16）
- * c2: 大形状颜色（双燕形，Figma Vector1/4，18×30）
+ * 绘制装饰图形基础形状（以 gx/gy 为左上角原点，正方向朝右）
+ * 供左侧直接调用，供右侧 mirror 翻转后调用，保证形状完全一致。
+ * 装饰组总宽 31px：Vector2（13×16，x:0, y:6）+ Vector1（18×30，x:13, y:7）
  */
-function floorDecoLeft(
+function floorDecoShape(
   ctx: CanvasRenderingContext2D,
   gx: number, gy: number,
   c1: string, c2: string,
 ) {
-  // Vector2：闪电折线形（13×16），位于 group 内 (0, 6)
+  // Vector2：闪电折线形（Figma 精确路径），13×16，位于装饰组内 (0, 6)
   const x2 = gx, y2 = gy + 6
   ctx.beginPath()
   ctx.moveTo(x2 + 5.57, y2 + 0)
@@ -577,7 +576,7 @@ function floorDecoLeft(
   ctx.fillStyle = c1
   ctx.fill()
 
-  // Vector1：双燕/双箭头形（18×30），位于 group 内 (13, 7)
+  // Vector1：双燕形（Figma 精确路径），18×30，位于装饰组内 (13, 7)
   const x1 = gx + 13, y1 = gy + 7
   ctx.beginPath()
   ctx.moveTo(x1 + 11.4,  y1 + 0)
@@ -593,46 +592,41 @@ function floorDecoLeft(
 }
 
 /**
- * 绘制右侧装饰图形（左侧水平镜像）
- * grx: 装饰组右边缘绝对 x（= group左端x + group宽）
+ * 左侧装饰：gx = 装饰组左边缘
+ */
+function floorDecoLeft(
+  ctx: CanvasRenderingContext2D,
+  gx: number, gy: number,
+  c1: string, c2: string,
+) {
+  floorDecoShape(ctx, gx, gy, c1, c2)
+}
+
+/**
+ * 右侧装饰：grx = 装饰组右边缘（= 左边缘 + 31）
+ * 使用 Canvas transform 水平翻转，保证与左侧形状完全一致（不手算镜像坐标）。
  */
 function floorDecoRight(
   ctx: CanvasRenderingContext2D,
   grx: number, gy: number,
   c1: string, c2: string,
 ) {
-  // Vector3（镜像 Vector2）：从 grx-13 开始，13×16
-  const x3 = grx - 13, y3 = gy + 6
-  ctx.beginPath()
-  ctx.moveTo(x3 + 7.43,  y3 + 0)
-  ctx.lineTo(x3 + 13,    y3 + 2.46)
-  ctx.lineTo(x3 + 7.64,  y3 + 8.62)
-  ctx.lineTo(x3 + 10.52, y3 + 10.46)
-  ctx.lineTo(x3 + 0,     y3 + 16)
-  ctx.lineTo(x3 + 4.95,  y3 + 9.85)
-  ctx.lineTo(x3 + 1.86,  y3 + 8.62)
-  ctx.closePath()
-  ctx.fillStyle = c1
-  ctx.fill()
-
-  // Vector4（镜像 Vector1）：从 grx-31 开始，18×30
-  const x4 = grx - 31, y4 = gy + 7
-  ctx.beginPath()
-  ctx.moveTo(x4 + 6.6,   y4 + 0)
-  ctx.lineTo(x4 + 18,    y4 + 0)
-  ctx.lineTo(x4 + 10.8,  y4 + 15.88)
-  ctx.lineTo(x4 + 16.2,  y4 + 15.88)
-  ctx.lineTo(x4 + 0,     y4 + 30)
-  ctx.lineTo(x4 + 6.6,   y4 + 15.88)
-  ctx.lineTo(x4 + 0,     y4 + 15.88)
-  ctx.closePath()
-  ctx.fillStyle = c2
-  ctx.fill()
+  ctx.save()
+  // 翻转：以 grx 为轴，scale(-1,1) 后绘制左侧路径即得镜像
+  ctx.translate(grx, 0)
+  ctx.scale(-1, 1)
+  floorDecoShape(ctx, 0, gy, c1, c2)
+  ctx.restore()
 }
+
+/** 装饰组宽度（px） */
+const DECO_GROUP_W = 31
 
 /**
  * 绘制楼层条 750×60 → @2x 超采样后输出 750×60
- * Figma 规格：FZLanTingHei-DB 34px 居中，两侧装饰图形仅大促款使用
+ *
+ * 装饰图形动态定位：测量实际文字宽度，始终贴近文字两侧 GAP=16px。
+ * 背景：bgTransparent=true 时跳过填充，导出纯透明底 PNG。
  */
 export async function drawFloorCanvas(cfg: FloorConfig): Promise<HTMLCanvasElement> {
   await preloadFonts()
@@ -642,30 +636,38 @@ export async function drawFloorCanvas(cfg: FloorConfig): Promise<HTMLCanvasEleme
   const ctx = canvas.getContext('2d')!
   ctx.scale(2, 2)
 
-  // 背景（渐变或纯色）
-  if (cfg.bgFrom !== cfg.bgTo) {
-    const g = ctx.createLinearGradient(0, 0, W, 0)
-    g.addColorStop(0, cfg.bgFrom)
-    g.addColorStop(1, cfg.bgTo)
-    ctx.fillStyle = g
-  } else {
-    ctx.fillStyle = cfg.bgFrom
-  }
-  ctx.fillRect(0, 0, W, H)
-
-  // 装饰图形（大促款专用）
-  // Figma: group 位于 (137, 8)，宽 475，高 44
-  if (cfg.showDeco) {
-    floorDecoLeft(ctx,  137,       8, cfg.decoColor1, cfg.decoColor2)
-    floorDecoRight(ctx, 137 + 475, 8, cfg.decoColor1, cfg.decoColor2)
+  // 背景（透明 / 纯色 / 渐变）
+  if (!cfg.bgTransparent) {
+    if (cfg.bgFrom !== cfg.bgTo) {
+      const g = ctx.createLinearGradient(0, 0, W, 0)
+      g.addColorStop(0, cfg.bgFrom)
+      g.addColorStop(1, cfg.bgTo)
+      ctx.fillStyle = g
+    } else {
+      ctx.fillStyle = cfg.bgFrom
+    }
+    ctx.fillRect(0, 0, W, H)
   }
 
-  // 主文案（FZLanTingHei-DB，34px，居中，行高 44px，垂直居中于 60px）
-  ctx.beginPath()
+  // 主文案（先设置字体，再 measureText，保证测量精确）
   ctx.font = `400 34px ${FB}`
   ctx.fillStyle = cfg.textColor
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
+
+  // 动态定位装饰图形
+  if (cfg.showDeco) {
+    const GAP = 16                           // 装饰与文字边缘间距（来自 Figma 原稿）
+    const textW   = ctx.measureText(cfg.text).width
+    const textL   = W / 2 - textW / 2       // 文字左边缘
+    const textR   = W / 2 + textW / 2       // 文字右边缘
+    const leftGX  = Math.max(4, textL - GAP - DECO_GROUP_W)  // 左侧装饰左边缘
+    const rightGRX = Math.min(W - 4, textR + GAP + DECO_GROUP_W) // 右侧装饰右边缘
+    floorDecoLeft(ctx,  leftGX,   8, cfg.decoColor1, cfg.decoColor2)
+    floorDecoRight(ctx, rightGRX, 8, cfg.decoColor1, cfg.decoColor2)
+  }
+
+  ctx.beginPath()
   ctx.fillText(cfg.text, W / 2, H / 2)
 
   return downsample(canvas)

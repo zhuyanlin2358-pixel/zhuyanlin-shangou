@@ -45,11 +45,31 @@ export default function FloorPanel() {
       {/* ② 背景配色 */}
       <DisclosureGroup title="背景配色" defaultOpen>
         <div className="px-4 pb-3 space-y-3">
-          <ColorField label="起色" value={config.bgFrom} onChange={v => set('bgFrom', v)} />
-          <ColorField label="终色" value={config.bgTo}   onChange={v => set('bgTo', v)} />
-          <p className="text-[10px] text-white/30 leading-snug">
-            起色 = 终色时为纯色底；不同时为横向渐变
-          </p>
+          {/* 透明背景开关 */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-white/55">透明背景（无底色）</span>
+            <button
+              onClick={() => set('bgTransparent', !config.bgTransparent)}
+              className="relative w-9 h-5 rounded-full transition-colors"
+              style={{ background: config.bgTransparent ? '#FF5050' : 'rgba(255,255,255,0.1)' }}
+            >
+              <span
+                className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all"
+                style={{ left: config.bgTransparent ? '18px' : '2px' }}
+              />
+            </button>
+          </div>
+
+          {/* 底色设置（透明时折叠） */}
+          {!config.bgTransparent && (
+            <>
+              <ColorField label="起色" value={config.bgFrom} onChange={v => set('bgFrom', v)} />
+              <ColorField label="终色" value={config.bgTo}   onChange={v => set('bgTo', v)} />
+              <p className="text-[10px] text-white/30 leading-snug">
+                起色 = 终色时为纯色底；不同时为横向渐变
+              </p>
+            </>
+          )}
         </div>
       </DisclosureGroup>
 
