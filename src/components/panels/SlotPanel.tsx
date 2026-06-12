@@ -189,6 +189,22 @@ function EmptySection() {
   )
 }
 
+/* ── 手风琴 section（必须在组件外定义，否则每次 re-render 创建新函数引用导致 unmount/remount，输入框失焦）── */
+function Section({
+  id, badge, children, openSection, toggle,
+}: { id: string; badge?: string; children: React.ReactNode; openSection: string; toggle: (s: string) => void }) {
+  return (
+    <div>
+      <AccordionHeader title={id} badge={badge} open={openSection === id} onClick={() => toggle(id)} />
+      {openSection === id && (
+        <div className="px-4 py-3 space-y-3 border-b border-white/[0.07]">
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
 /* ── 手风琴 section 头 ── */
 function AccordionHeader({
   title, badge, open, onClick,
@@ -242,17 +258,6 @@ export default function SlotPanel() {
     reader.readAsDataURL(file)
   }
 
-  const Section = ({ id, badge, children }: { id: string; badge?: string; children: React.ReactNode }) => (
-    <div>
-      <AccordionHeader title={id} badge={badge} open={openSection === id} onClick={() => toggle(id)} />
-      {openSection === id && (
-        <div className="px-4 py-3 space-y-3 border-b border-white/[0.07]">
-          {children}
-        </div>
-      )}
-    </div>
-  )
-
   return (
     <div>
       {/* 组件标题 */}
@@ -285,7 +290,7 @@ export default function SlotPanel() {
         </div>
       </div>
 
-      <Section id="配色预设" badge="素材 1–5">
+      <Section id="配色预设" badge="素材 1–5" openSection={openSection} toggle={toggle}>
         {bgTone === 'dark' && (
           <PF label="推荐 · 深色系">
             <PresetGrid keys={DARK_PRESETS} active={activePreset} onSelect={applyPreset} />
@@ -303,7 +308,7 @@ export default function SlotPanel() {
         )}
       </Section>
 
-      <Section id="会场背景色" badge="预览面板">
+      <Section id="会场背景色" badge="预览面板" openSection={openSection} toggle={toggle}>
         <PF label="浅色系">
           <SwatchRow colors={BG_SWATCHES_LIGHT} active={config.bgColor} onSelect={c => setConfig({ bgColor: c })} />
         </PF>
@@ -316,18 +321,18 @@ export default function SlotPanel() {
         <ColorField label="自定义" value={config.bgColor} onChange={c => setConfig({ bgColor: c })} />
       </Section>
 
-      <Section id="文案设置" badge="素材 2">
+      <Section id="文案设置" badge="素材 2" openSection={openSection} toggle={toggle}>
         <PF label="主标题文案">
           <PanelInput value={config.titleText} onChange={e => setConfig({ titleText: e.target.value })} placeholder="天天抽免单" />
         </PF>
         <ColorField label="标题文字色" value={config.titleColor} onChange={c => setConfig({ titleColor: c })} />
       </Section>
 
-      <Section id="空态页设置" badge="素材 3">
+      <Section id="空态页设置" badge="素材 3" openSection={openSection} toggle={toggle}>
         <EmptySection />
       </Section>
 
-      <Section id="奖品图设置" badge="素材 6">
+      <Section id="奖品图设置" badge="素材 6" openSection={openSection} toggle={toggle}>
         <div className="space-y-4">
           {config.prizes.map((prize, idx) => (
             <PrizeBlock
@@ -344,7 +349,7 @@ export default function SlotPanel() {
         <span className="text-sm font-semibold text-white/90 tracking-tight">老虎机弹窗</span>
       </div>
 
-      <Section id="弹窗按钮配色" badge="素材 7">
+      <Section id="弹窗按钮配色" badge="素材 7" openSection={openSection} toggle={toggle}>
         <div className="text-[11px] text-white/35 leading-relaxed mb-1">
           跟随老虎机激活按钮配色
         </div>
@@ -355,7 +360,7 @@ export default function SlotPanel() {
         <ColorField label="渐变结束色" value={config.btnActiveTo} onChange={c => setConfig({ btnActiveTo: c })} />
       </Section>
 
-      <Section id="弹窗结果页配色" badge="素材 8">
+      <Section id="弹窗结果页配色" badge="素材 8" openSection={openSection} toggle={toggle}>
         <div className="text-[11px] text-white/35 leading-relaxed mb-1">
           跟随老虎机主题背景色
         </div>
