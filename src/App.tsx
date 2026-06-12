@@ -3,6 +3,7 @@ import { AppProvider, useApp } from '@/contexts/AppContext'
 import { N4Provider } from '@/contexts/N4Context'
 import { N2Provider } from '@/contexts/N2Context'
 import { SlotProvider } from '@/contexts/SlotContext'
+import { FloorProvider } from '@/contexts/FloorContext'
 import Sidebar from '@/components/layout/Sidebar'
 import TopBar from '@/components/layout/TopBar'
 import PreviewPanel from '@/components/layout/PreviewPanel'
@@ -12,6 +13,7 @@ import HomePage from '@/components/pages/HomePage'
 const SlotPage    = lazy(() => import('@/components/pages/SlotPage'))
 const N4Page      = lazy(() => import('@/components/pages/N4Page'))
 const N2Page      = lazy(() => import('@/components/pages/N2Page'))
+const FloorPage   = lazy(() => import('@/components/pages/FloorPage'))
 const YituosiPage = lazy(() => import('@/components/pages/YituosiPage'))
 const GenericPage = lazy(() => import('@/components/pages/GenericPage'))
 const AssetsPage  = lazy(() => import('@/components/pages/AssetsPage'))
@@ -59,6 +61,7 @@ function MainContent() {
           case 'slot':    return <SlotPage />
           case 'n4':      return <N4Page />
           case 'n2':      return <N2Page />
+          case 'floor':   return <FloorPage />
           case 'yituosi': return <YituosiPage />
           default:        return <GenericPage />
         }
@@ -112,7 +115,9 @@ export default function App() {
       <SlotProvider>
         <N4Provider>
           <N2Provider>
-            <MainContent />
+            <FloorProvider>
+              <MainContent />
+            </FloorProvider>
           </N2Provider>
         </N4Provider>
       </SlotProvider>

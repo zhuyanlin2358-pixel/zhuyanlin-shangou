@@ -112,7 +112,7 @@ export const COMPONENT_REGISTRY: ComponentGroup[] = [
           { id: 'super-tile',       name: '超级瓷片',           status: 'coming' },
           { id: 'compound',         name: '复合供给',           status: 'coming' },
           { id: 'video-carousel',   name: '视频轮播',           status: 'coming' },
-          { id: 'floor',            name: '楼层',               status: 'coming' },
+          { id: 'floor',            name: '楼层条',             desc: '切图素材导出', status: 'done' },
         ],
       },
     ],
@@ -139,7 +139,7 @@ export function findComponent(id: ComponentId): ComponentDef | undefined {
   return getAllComponents().find(c => c.id === id)
 }
 
-export const DONE_COMP_IDS: ComponentId[] = ['yituosi', 'n4', 'n2', 'slot']
+export const DONE_COMP_IDS: ComponentId[] = ['yituosi', 'n4', 'n2', 'slot', 'floor']
 
 export interface Logo {
   id: string
@@ -232,4 +232,53 @@ export interface Submission {
   status: ReviewStatus
   statusNote?: string   // 审核意见
   webhookSent: boolean  // 是否已发大象通知
+}
+
+// ── 楼层条组件 ────────────────────────────────────────────────────────────────
+export type FloorVariant = 'dachao' | 'valentine' | 'newyear' | 'custom'
+
+export interface FloorConfig {
+  variant: FloorVariant
+  bgFrom: string       // 背景渐变起色（纯色时与 bgTo 相同）
+  bgTo: string         // 背景渐变终色
+  text: string         // 主文案
+  textColor: string    // 文字颜色
+  showDeco: boolean    // 是否显示装饰图形（闪电+双燕形）
+  decoColor1: string   // 装饰图形1颜色（小/闪电形，默认金黄）
+  decoColor2: string   // 装饰图形2颜色（大/双燕形，默认粉色）
+}
+
+export const FLOOR_PRESETS: Record<FloorVariant, Omit<FloorConfig, 'variant'>> = {
+  dachao: {
+    bgFrom: '#FFC200', bgTo: '#FF7800',
+    text: '领618好店券 下单更优惠',
+    textColor: '#950E0F',
+    showDeco: true,
+    decoColor1: '#FFCA60',
+    decoColor2: '#FF7399',
+  },
+  valentine: {
+    bgFrom: '#FFCDDB', bgTo: '#FFCDDB',
+    text: '领214好店券 下单更优惠',
+    textColor: '#FF5274',
+    showDeco: false,
+    decoColor1: '#FFCA60',
+    decoColor2: '#FF7399',
+  },
+  newyear: {
+    bgFrom: '#ED0004', bgTo: '#ED0004',
+    text: '年货好礼 幸福加马',
+    textColor: '#FFFFFF',
+    showDeco: false,
+    decoColor1: '#FFCA60',
+    decoColor2: '#FF7399',
+  },
+  custom: {
+    bgFrom: '#FF7800', bgTo: '#FF7800',
+    text: '请填写楼层文案',
+    textColor: '#FFFFFF',
+    showDeco: false,
+    decoColor1: '#FFCA60',
+    decoColor2: '#FF7399',
+  },
 }

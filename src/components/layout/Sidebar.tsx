@@ -6,6 +6,7 @@ import N4ConfigPanel from '@/components/panels/N4ConfigPanel'
 import N2ConfigPanel from '@/components/panels/N2ConfigPanel'
 import GenericPanel from '@/components/panels/GenericPanel'
 import YituosiPanel from '@/components/panels/YituosiPanel'
+import FloorPanel from '@/components/panels/FloorPanel'
 
 export default function Sidebar() {
   const { page, currentComp, goHome, goAssets, goReview, darkMode, toggleDarkMode } = useApp()
@@ -13,11 +14,12 @@ export default function Sidebar() {
 
   const panel = (() => {
     switch (currentComp) {
-      case 'slot': return <SlotPanel />
-      case 'n4':   return <N4ConfigPanel />
-      case 'n2':   return <N2ConfigPanel />
+      case 'slot':  return <SlotPanel />
+      case 'n4':    return <N4ConfigPanel />
+      case 'n2':    return <N2ConfigPanel />
+      case 'floor': return <FloorPanel />
       case 'yituosi': return <YituosiPanel />
-      default:     return <GenericPanel />
+      default:      return <GenericPanel />
     }
   })()
 

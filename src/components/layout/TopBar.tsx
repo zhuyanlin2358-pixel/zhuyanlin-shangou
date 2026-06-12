@@ -32,7 +32,7 @@ export default function TopBar() {
           <span className="text-sm font-semibold" style={{ color: 'var(--text-1)' }}>闪购会场</span>
           <span style={{ color: 'var(--border)' }}>·</span>
           <nav className="flex items-center gap-1">
-            {(['slot','n4','n2','yituosi'] as ComponentId[]).map(id => {
+            {(['slot','n4','n2','floor','yituosi'] as ComponentId[]).map(id => {
               const c = findComponent(id)
               if (!c || c.status !== 'done') return null
               return (
