@@ -27,9 +27,10 @@ const DECO_STYLE_OPTIONS: { value: FloorDecoStyle; label: string }[] = [
 
 // ── 主面板 ───────────────────────────────────────────────────────────────────
 export default function FloorPanel() {
-  const { config, setConfig, applyVariant } = useFloor()
+  const { config, patchConfig, applyVariant } = useFloor()
+  // 用函数式更新，防止快速拖拽色轮时 stale closure 导致颜色更新被吃掉
   const set = <K extends keyof FloorConfig>(key: K, val: FloorConfig[K]) =>
-    setConfig({ ...config, [key]: val })
+    patchConfig({ [key]: val } as Partial<FloorConfig>)
 
   return (
     <div className="py-1">
