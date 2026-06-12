@@ -11,7 +11,7 @@ export type ComponentId =
   | 'slot' | 'slot-order' | 'lottery-sign' | 'red-rain'
   | 'coupon-multi' | 'coupon' | 'coupon-old'
   | 'ad-wall' | 'tab-img' | 'goods-scroll-old' | 'goods-scroll' | 'smart-zone'
-  | 'carousel' | 'bottom-nav' | 'top-tab' | 'super-tile' | 'compound' | 'video-carousel'
+  | 'carousel' | 'bottom-nav' | 'top-tab' | 'super-tile' | 'compound' | 'video-carousel' | 'floor'
   | 'group-promo'
 
 export interface ComponentDef {
@@ -112,6 +112,7 @@ export const COMPONENT_REGISTRY: ComponentGroup[] = [
           { id: 'super-tile',       name: '超级瓷片',           status: 'coming' },
           { id: 'compound',         name: '复合供给',           status: 'coming' },
           { id: 'video-carousel',   name: '视频轮播',           status: 'coming' },
+          { id: 'floor',            name: '楼层',               status: 'coming' },
         ],
       },
     ],
