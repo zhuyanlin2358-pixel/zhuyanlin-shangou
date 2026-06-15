@@ -1,7 +1,7 @@
 import html2canvas from 'html2canvas'
 import JSZip from 'jszip'
 import { getSlotStyle, type SlotPrizeStyle } from './slotStyles'
-import type { FloorConfig, FloorDecoStyle, HTabConfig } from '@/types'
+import type { FloorConfig, FloorDecoStyle, HTabConfig, HTabColorKey } from '@/types'
 import { H_TAB_COLORS } from '@/types'
 
 export async function captureElement(
@@ -833,6 +833,121 @@ export async function drawHTabCanvas(cfg: HTabConfig): Promise<HTMLCanvasElement
     ctx.beginPath()
     ctx.fillText(label, x + PW / 2, PY + PH / 2, PW - 12)
   })
+
+  return downsample(canvas)
+}
+
+/**
+ * 绘制单个 Tab 图片（Figma 精确尺寸 + 选中带箭头）
+ *
+ * 尺寸（来自 Figma）：
+ *   N=2 → 336×88，N=3 → 226×88，N=4 → 180×88
+ *
+ * 选中：pastel 渐变 + 底部居中向下箭头指示器 + 顶部内嵌高光
+ * 未选中：饱和实色，无箭头
+ */
+export async function drawHTabSingleTabCanvas(
+  label: string,
+  isSelected: boolean,
+  N: number,
+  colorKey: HTabColorKey,
+): Promise<HTMLCanvasElement> {
+  await preloadFonts()
+
+  // ── Figma 精确尺寸 ─────────────────────────────────────────────────────────
+  const W    = N === 2 ? 336 : N === 3 ? 226 : 180  // 单 Tab 总宽
+  const pillW = N === 2 ? 320 : N === 3 ? 220 : 175  // 胶囊宽（pad = (W-pillW)/2）
+  const padX  = (W - pillW) / 2
+  const H     = 88
+  const pillH = 59      // 胶囊高（Figma 精确值）
+  const pillY = 8       // 顶部内边距（Figma 精确值）
+  const R     = 12      // 圆角半径
+
+  // 箭头参数（来自 Figma layout_S9B2ZD: 39×39 at x:140 in 320px group）
+  const arrowHW  = 19.5   // 箭头半宽（= 39/2）
+  const arrowLen = 14      // 箭头向下延伸长度（73-59=14 in group coords）
+
+  const canvas = document.createElement('canvas')
+  canvas.width  = W * 2
+  canvas.height = H * 2
+  const ctx = canvas.getContext('2d')!
+  ctx.scale(2, 2)
+
+  const color = H_TAB_COLORS[colorKey]
+  const cx    = padX + pillW / 2    // 水平中心（含 padX）
+  const pbY   = pillY + pillH       // 胶囊底部 y
+
+  if (isSelected) {
+    // ── 选中：胶囊 + 箭头的统一路径 ─────────────────────────────────────────
+    // 127° 渐变（Figma 精确角度）
+    const dx = 0.7986, dy = 0.6018
+    const halfLen = (pillW * dx + pillH * dy) / 2
+    const gcx = padX + pillW / 2, gcy = pillY + pillH / 2
+    const g = ctx.createLinearGradient(
+      gcx - halfLen * dx, gcy - halfLen * dy,
+      gcx + halfLen * dx, gcy + halfLen * dy,
+    )
+    const [s0, s1, s2] = color.activeBg
+    g.addColorStop(0, s0); g.addColorStop(0.45, s1); g.addColorStop(1, s2)
+
+    // 胶囊 + 箭头合并路径（bottom 中间出三角而不是直边）
+    ctx.beginPath()
+    ctx.moveTo(padX + R, pillY)
+    ctx.lineTo(padX + pillW - R, pillY)
+    ctx.arcTo(padX + pillW, pillY, padX + pillW, pillY + R, R)
+    ctx.lineTo(padX + pillW, pbY - R)
+    ctx.arcTo(padX + pillW, pbY, padX + pillW - R, pbY, R)
+    ctx.lineTo(cx + arrowHW, pbY)        // 右侧到箭头右底
+    ctx.lineTo(cx, pbY + arrowLen)        // 箭头尖端
+    ctx.lineTo(cx - arrowHW, pbY)        // 箭头左底
+    ctx.lineTo(padX + R, pbY)
+    ctx.arcTo(padX, pbY, padX, pbY - R, R)
+    ctx.lineTo(padX, pillY + R)
+    ctx.arcTo(padX, pillY, padX + R, pillY, R)
+    ctx.closePath()
+    ctx.fillStyle = g
+    ctx.fill()
+
+    // Figma inset 高光（inset 0px 4px 4px rgba(255,255,255,0.25)）
+    const hl = ctx.createLinearGradient(padX, pillY, padX, pillY + 12)
+    hl.addColorStop(0, 'rgba(255,255,255,0.25)')
+    hl.addColorStop(1, 'rgba(255,255,255,0)')
+    ctx.fillStyle = hl
+    ctx.beginPath()
+    ctx.moveTo(padX + R, pillY)
+    ctx.lineTo(padX + pillW - R, pillY)
+    ctx.arcTo(padX + pillW, pillY, padX + pillW, pillY + R, R)
+    ctx.lineTo(padX + pillW, pbY - R)
+    ctx.arcTo(padX + pillW, pbY, padX + pillW - R, pbY, R)
+    ctx.lineTo(cx + arrowHW, pbY)
+    ctx.lineTo(cx, pbY + arrowLen)
+    ctx.lineTo(cx - arrowHW, pbY)
+    ctx.lineTo(padX + R, pbY)
+    ctx.arcTo(padX, pbY, padX, pbY - R, R)
+    ctx.lineTo(padX, pillY + R)
+    ctx.arcTo(padX, pillY, padX + R, pillY, R)
+    ctx.closePath()
+    ctx.fill()
+
+    // 文字（垂直居中于胶囊区域）
+    ctx.font = `400 30px ${FB}`
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+    ctx.fillStyle = color.activeText
+    ctx.beginPath()
+    ctx.fillText(label, cx, pillY + pillH / 2, pillW - 12)
+
+  } else {
+    // ── 未选中：纯色胶囊，无箭头 ───────────────────────────────────────────
+    ctx.fillStyle = color.inactiveBg
+    roundedRect(ctx, padX, pillY, pillW, pillH, R)
+    ctx.fill()
+
+    ctx.font = `400 30px ${FB}`
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+    ctx.fillStyle = color.inactiveText
+    ctx.beginPath()
+    ctx.fillText(label, cx, pillY + pillH / 2, pillW - 12)
+  }
 
   return downsample(canvas)
 }
