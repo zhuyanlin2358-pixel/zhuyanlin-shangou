@@ -29,17 +29,20 @@ export default function HTabPage() {
         const W = N === 2 ? 336 : N === 3 ? 226 : 180
         const prefix = items.length > 1 ? `${String(i + 1).padStart(2, '0')}_` : ''
 
+        // 子文件夹按 Tab 数量分类，防止不同尺寸素材混在一起
+        const folder = `${N}tab_${W}x88/`
+
         for (let k = 0; k < N; k++) {
           const label = item.tabs[k]
           const suffix = `${prefix}${colorName}_${k + 1}${label}`
 
           // 选中版：渐变背景 + 箭头指示器
           const selCanvas = await drawHTabSingleTabCanvas(label, true,  N, config.colorKey)
-          files.push({ canvas: selCanvas, name: `横滑Tab_${suffix}_选中_${W}x88.png` })
+          files.push({ canvas: selCanvas, name: `${folder}横滑Tab_${suffix}_选中.png` })
 
           // 未选中版：饱和色实色
           const unselCanvas = await drawHTabSingleTabCanvas(label, false, N, config.colorKey)
-          files.push({ canvas: unselCanvas, name: `横滑Tab_${suffix}_未选中_${W}x88.png` })
+          files.push({ canvas: unselCanvas, name: `${folder}横滑Tab_${suffix}_未选中.png` })
         }
       }
 
