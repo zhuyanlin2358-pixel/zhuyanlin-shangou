@@ -13,28 +13,38 @@ export default function HTabPage() {
   const [exporting, setExporting] = useState(false)
 
   // 导出全部条目
+  // 每个 Tab 条有 N 个标签 → 导出 N 张图（每张对应其中一个标签被选中的状态）
   const handleExportAll = useCallback(async () => {
     setExporting(true)
-    showToast(`正在渲染 ${items.length} 条横滑 Tab…`)
+    const totalPngs = items.reduce((sum, it) => sum + it.tabs.length, 0)
+    showToast(`正在渲染 ${totalPngs} 张横滑 Tab…`)
     try {
-      const canvases = await Promise.all(
-        items.map(item =>
-          drawHTabCanvas({ colorKey: config.colorKey, tabs: item.tabs, activeIndex: item.activeIndex })
-        )
-      )
       const colorName = H_TAB_COLORS[config.colorKey].name
-      if (items.length === 1) {
-        downloadCanvas(canvases[0], `横滑Tab_${colorName}_750x88.png`)
+
+      // 为每条 item 的每个 tab 位置生成一张 canvas
+      const files: { canvas: HTMLCanvasElement; name: string }[] = []
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        const prefix = items.length > 1 ? `${String(i + 1).padStart(2, '0')}_` : ''
+        for (let k = 0; k < item.tabs.length; k++) {
+          const canvas = await drawHTabCanvas({
+            colorKey: config.colorKey,
+            tabs: item.tabs,
+            activeIndex: k,  // 每张图选中不同的 tab
+          })
+          files.push({
+            canvas,
+            name: `横滑Tab_${prefix}${colorName}_选中${k + 1}_750x88.png`,
+          })
+        }
+      }
+
+      if (files.length === 1) {
+        downloadCanvas(files[0].canvas, files[0].name)
         showToast('✅ 已导出 PNG')
       } else {
-        await downloadZip(
-          canvases.map((c, i) => ({
-            canvas: c,
-            name: `横滑Tab_${String(i + 1).padStart(2, '0')}_${colorName}_750x88.png`,
-          })),
-          `横滑Tab_${items.length}条_${colorName}_750x88`
-        )
-        showToast(`✅ 已导出 ${items.length} 条 ZIP`)
+        await downloadZip(files, `横滑Tab_${colorName}_全状态_750x88`)
+        showToast(`✅ 已导出 ${files.length} 张 ZIP`)
       }
     } catch (e: unknown) {
       showToast(`❌ 导出失败：${e instanceof Error ? e.message : '未知错误'}`)
@@ -76,7 +86,10 @@ export default function HTabPage() {
           style={{ background: 'linear-gradient(90deg,#FF3060,#FF6030)' }}
         >
           <Download size={12} />
-          {exporting ? '导出中…' : items.length > 1 ? `导出 ${items.length} 条 ZIP` : '导出 PNG'}
+          {exporting ? '导出中…' : (() => {
+            const total = items.reduce((s, it) => s + it.tabs.length, 0)
+            return total === 1 ? '导出 PNG' : `导出 ${total} 张 ZIP`
+          })()}
         </button>
       </div>
 
