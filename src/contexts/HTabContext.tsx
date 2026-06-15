@@ -1,51 +1,86 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
 import { type HTabConfig, type HTabColorKey } from '@/types'
 
+function makeId() {
+  return `ht_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`
+}
+
+/** 单条横滑 Tab：独立文案 + 选中状态，共享全局配色 */
+export interface HTabItem {
+  id: string
+  tabs: string[]
+  activeIndex: number
+}
+
 interface HTabCtx {
+  // ── 全局配色 ──────────────────────────────────────────────────────────────
   config: HTabConfig
   setColor: (k: HTabColorKey) => void
-  setActiveIndex: (i: number) => void
-  setTab: (i: number, text: string) => void
-  setTabCount: (n: number) => void
+  // ── 条目列表 ──────────────────────────────────────────────────────────────
+  items: HTabItem[]
+  addItem: () => void
+  removeItem: (id: string) => void
+  updateItem: (id: string, patch: Partial<HTabItem>) => void
+  moveItem: (id: string, dir: 'up' | 'down') => void
 }
 
 const Ctx = createContext<HTabCtx | null>(null)
 
-const DEFAULT: HTabConfig = {
+const DEFAULT_TABS = ['甜点饮品', '能量西餐', '品质生鲜']
+
+const DEFAULT_CONFIG: HTabConfig = {
   colorKey: 'yellow',
-  tabs: ['甜点饮品', '能量西餐', '品质生鲜'],
+  tabs: DEFAULT_TABS,
+  activeIndex: 0,
+}
+
+const DEFAULT_ITEM: HTabItem = {
+  id: makeId(),
+  tabs: [...DEFAULT_TABS],
   activeIndex: 0,
 }
 
 export function HTabProvider({ children }: { children: ReactNode }) {
-  const [config, setConfig] = useState<HTabConfig>(DEFAULT)
+  const [config, setConfig] = useState<HTabConfig>(DEFAULT_CONFIG)
+  const [items, setItems] = useState<HTabItem[]>([{ ...DEFAULT_ITEM }])
 
   const setColor = useCallback((k: HTabColorKey) => {
     setConfig(p => ({ ...p, colorKey: k }))
   }, [])
 
-  const setActiveIndex = useCallback((i: number) => {
-    setConfig(p => ({ ...p, activeIndex: i }))
+  const addItem = useCallback(() => {
+    setItems(prev => [
+      ...prev,
+      {
+        id: makeId(),
+        tabs: [...DEFAULT_TABS],
+        activeIndex: 0,
+      },
+    ])
   }, [])
 
-  const setTab = useCallback((i: number, text: string) => {
-    setConfig(p => {
-      const tabs = [...p.tabs]
-      tabs[i] = text
-      return { ...p, tabs }
-    })
+  const removeItem = useCallback((id: string) => {
+    setItems(prev => prev.length > 1 ? prev.filter(it => it.id !== id) : prev)
   }, [])
 
-  const setTabCount = useCallback((n: number) => {
-    setConfig(p => {
-      const tabs = Array.from({ length: n }, (_, i) => p.tabs[i] ?? `标签 ${i + 1}`)
-      const activeIndex = Math.min(p.activeIndex, n - 1)
-      return { ...p, tabs, activeIndex }
+  const updateItem = useCallback((id: string, patch: Partial<HTabItem>) => {
+    setItems(prev => prev.map(it => it.id === id ? { ...it, ...patch } : it))
+  }, [])
+
+  const moveItem = useCallback((id: string, dir: 'up' | 'down') => {
+    setItems(prev => {
+      const idx = prev.findIndex(it => it.id === id)
+      if (idx < 0) return prev
+      const next = [...prev]
+      const newIdx = dir === 'up' ? idx - 1 : idx + 1
+      if (newIdx < 0 || newIdx >= next.length) return prev
+      ;[next[idx], next[newIdx]] = [next[newIdx], next[idx]]
+      return next
     })
   }, [])
 
   return (
-    <Ctx.Provider value={{ config, setColor, setActiveIndex, setTab, setTabCount }}>
+    <Ctx.Provider value={{ config, setColor, items, addItem, removeItem, updateItem, moveItem }}>
       {children}
     </Ctx.Provider>
   )
