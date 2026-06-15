@@ -73,8 +73,8 @@ export const SLOT_PRESETS: Record<string, SlotPreset & { label: string; tone: 'l
   // ── 深色（1款）────────────────────────────────────────────────────────────
   zi: {
     label: '紫色', tone: 'dark',
-    from: '#27126D', to: '#552CC8',       // 深紫按钮（Figma 确认，之前误用了禁用色）
-    disFrom: '#FF3227', disTo: '#FF7632',
+    from: '#27126D', to: '#552CC8',       // 深紫按钮（Figma 确认）
+    disFrom: '#4A2D9C', disTo: '#7B5BD0', // 禁用按钮同紫色系（比活动按钮略浅，视觉区分）
     slotFrom: '#3819A2', slotTo: '#6E4BC3',
     rect7From: '#5A2EE3', rect7To: '#231355',
     linksColor: '#FFFFFF', titleColor: '#FFFFFF', isDark: true,

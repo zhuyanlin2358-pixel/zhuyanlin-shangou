@@ -10,7 +10,7 @@ export type ComponentId =
   | 'brand-diy' | 'lottery-card' | 'feed-banner' | 'lp-common' | 'inner-sidebar'
   | 'slot' | 'slot-order' | 'lottery-sign' | 'red-rain'
   | 'coupon-multi' | 'coupon' | 'coupon-old'
-  | 'ad-wall' | 'tab-img' | 'goods-scroll-old' | 'goods-scroll' | 'smart-zone'
+  | 'ad-wall' | 'tab-img' | 'h-tab' | 'smart-zone'
   | 'carousel' | 'bottom-nav' | 'top-tab' | 'super-tile' | 'compound' | 'video-carousel' | 'floor'
   | 'group-promo'
 
@@ -101,18 +101,17 @@ export const COMPONENT_REGISTRY: ComponentGroup[] = [
       {
         label: 'C 展示组件类',
         items: [
-          { id: 'ad-wall',          name: '品牌活动广告墙',     status: 'coming' },
-          { id: 'tab-img',          name: 'TAB 图片版',         status: 'coming' },
-          { id: 'goods-scroll-old', name: '横滑商品组件（旧）', status: 'coming' },
-          { id: 'goods-scroll',     name: '横滑商品组件（新）', status: 'coming' },
-          { id: 'smart-zone',       name: '智能分会场物料',     status: 'coming' },
-          { id: 'carousel',         name: '轮播图',             status: 'coming' },
-          { id: 'bottom-nav',       name: '底部导航',           status: 'coming' },
-          { id: 'top-tab',          name: '顶部 TAB 配图',      status: 'coming' },
-          { id: 'super-tile',       name: '超级瓷片',           status: 'coming' },
-          { id: 'compound',         name: '复合供给',           status: 'coming' },
-          { id: 'video-carousel',   name: '视频轮播',           status: 'coming' },
-          { id: 'floor',            name: '楼层条',             desc: '切图素材导出', status: 'done' },
+          { id: 'h-tab',          name: '横滑 Tab',           desc: '7色配色切图', status: 'done' },
+          { id: 'floor',          name: '楼层条',             desc: '切图素材导出', status: 'done' },
+          { id: 'ad-wall',        name: '品牌活动广告墙',     status: 'coming' },
+          { id: 'tab-img',        name: 'TAB 图片版',         status: 'coming' },
+          { id: 'smart-zone',     name: '智能分会场物料',     status: 'coming' },
+          { id: 'carousel',       name: '轮播图',             status: 'coming' },
+          { id: 'bottom-nav',     name: '底部导航',           status: 'coming' },
+          { id: 'top-tab',        name: '顶部 TAB 配图',      status: 'coming' },
+          { id: 'super-tile',     name: '超级瓷片',           status: 'coming' },
+          { id: 'compound',       name: '复合供给',           status: 'coming' },
+          { id: 'video-carousel', name: '视频轮播',           status: 'coming' },
         ],
       },
     ],
@@ -139,7 +138,7 @@ export function findComponent(id: ComponentId): ComponentDef | undefined {
   return getAllComponents().find(c => c.id === id)
 }
 
-export const DONE_COMP_IDS: ComponentId[] = ['yituosi', 'n4', 'n2', 'slot', 'floor']
+export const DONE_COMP_IDS: ComponentId[] = ['yituosi', 'n4', 'n2', 'slot', 'floor', 'h-tab']
 
 export interface Logo {
   id: string
@@ -232,6 +231,32 @@ export interface Submission {
   status: ReviewStatus
   statusNote?: string   // 审核意见
   webhookSent: boolean  // 是否已发大象通知
+}
+
+// ── 横滑 Tab 组件 ─────────────────────────────────────────────────────────────
+export type HTabColorKey = 'yellow' | 'orange' | 'red' | 'green' | 'pink' | 'blue' | 'purple'
+
+export interface HTabColorDef {
+  name: string
+  bg: string          // 主色（选中+未选中 bg 一致，依靠透明度区分）
+  activeText: string  // 选中文字色
+  inactiveText: string // 未选中文字色
+}
+
+export const H_TAB_COLORS: Record<HTabColorKey, HTabColorDef> = {
+  yellow: { name: '黄色', bg: '#F8CB4A', activeText: '#8E0000', inactiveText: '#8E000060' },
+  orange: { name: '橙色', bg: '#FF721F', activeText: '#FFFFFF',  inactiveText: '#FFDAC9' },
+  red:    { name: '红色', bg: '#FF3B3F', activeText: '#FFFFFF',  inactiveText: '#FFD0D0' },
+  green:  { name: '绿色', bg: '#279E0E', activeText: '#FFFFFF',  inactiveText: '#E2F7CD' },
+  pink:   { name: '粉色', bg: '#FF1379', activeText: '#FFFFFF',  inactiveText: '#FFD0E8' },
+  blue:   { name: '蓝色', bg: '#2D78F4', activeText: '#FFFFFF',  inactiveText: '#D0DFFF' },
+  purple: { name: '紫色', bg: '#7D2AE2', activeText: '#FFFFFF',  inactiveText: '#E7D0FF' },
+}
+
+export interface HTabConfig {
+  colorKey: HTabColorKey
+  tabs: string[]        // Tab 标签文案
+  activeIndex: number   // 当前选中 Tab 序号
 }
 
 // ── 楼层条组件 ────────────────────────────────────────────────────────────────

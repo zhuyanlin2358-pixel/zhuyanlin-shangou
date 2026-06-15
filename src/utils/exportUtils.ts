@@ -1,7 +1,8 @@
 import html2canvas from 'html2canvas'
 import JSZip from 'jszip'
 import { getSlotStyle, type SlotPrizeStyle } from './slotStyles'
-import type { FloorConfig, FloorDecoStyle } from '@/types'
+import type { FloorConfig, FloorDecoStyle, HTabConfig } from '@/types'
+import { H_TAB_COLORS } from '@/types'
 
 export async function captureElement(
   el: HTMLElement,
@@ -755,6 +756,54 @@ export async function drawFloorCanvas(cfg: FloorConfig): Promise<HTMLCanvasEleme
   ctx.fillStyle = cfg.textColor
   ctx.beginPath()
   ctx.fillText(cfg.text, W / 2, H / 2)
+
+  return downsample(canvas)
+}
+
+// ── 横滑 Tab ──────────────────────────────────────────────────────────────────
+
+/**
+ * 绘制横滑 Tab 条 → 750×88（@2x 超采样，导出透明底）
+ * Figma 规格：圆角胶囊 r=12，FZLanTingHei-DB 30px 居中
+ * 选中 Tab：满色 + 强对比文字；未选中：同色 35% 不透明度 + 淡文字
+ */
+export async function drawHTabCanvas(cfg: HTabConfig): Promise<HTMLCanvasElement> {
+  await preloadFonts()
+  const W = 750, H = 88
+  const canvas = document.createElement('canvas')
+  canvas.width = W * 2; canvas.height = H * 2
+  const ctx = canvas.getContext('2d')!
+  ctx.scale(2, 2)
+
+  const color = H_TAB_COLORS[cfg.colorKey]
+  const N = cfg.tabs.length
+  const PAD = 8       // 左右外边距
+  const GAP = 10      // 标签间距
+  const PH  = 60      // 胶囊高度（Figma ~59px）
+  const R   = 12      // 圆角半径（Figma 12px）
+  const PW  = (W - PAD * 2 - GAP * (N - 1)) / N  // 每个胶囊宽度
+  const PY  = (H - PH) / 2  // 胶囊垂直居中
+
+  ctx.font = `400 30px ${FB}`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+
+  cfg.tabs.forEach((label, i) => {
+    const x = PAD + i * (PW + GAP)
+    const isActive = i === cfg.activeIndex
+
+    // 胶囊背景
+    ctx.globalAlpha = isActive ? 1 : 0.35
+    ctx.fillStyle = color.bg
+    roundedRect(ctx, x, PY, PW, PH, R)
+    ctx.fill()
+    ctx.globalAlpha = 1
+
+    // 文字
+    ctx.fillStyle = isActive ? color.activeText : color.inactiveText
+    ctx.beginPath()
+    ctx.fillText(label, x + PW / 2, PY + PH / 2, PW - 12)
+  })
 
   return downsample(canvas)
 }
