@@ -764,9 +764,11 @@ export async function drawFloorCanvas(cfg: FloorConfig): Promise<HTMLCanvasEleme
 
 /**
  * 绘制横滑 Tab 条 → 750×88（@2x 超采样，导出透明底）
- * Figma 规格：圆角胶囊 r=12，FZLanTingHei-DB 30px 居中
- * 选中/未选中：背景色相同（Figma 原版全不透明），仅文字颜色区分状态
- * 黄色使用 Figma 精确渐变（#F6CE4F → #F8CB4A）
+ *
+ * Figma 原版精确还原：
+ * • 未选中：饱和实色背景 + 同系浅色/同系深色文字
+ * • 选中：淡色渐变背景（127°, 3 stops）+ 彩色文字
+ *         + inset 顶部高光 rgba(255,255,255,0.25)（Figma boxShadow 模拟）
  */
 export async function drawHTabCanvas(cfg: HTabConfig): Promise<HTMLCanvasElement> {
   await preloadFonts()
@@ -777,13 +779,13 @@ export async function drawHTabCanvas(cfg: HTabConfig): Promise<HTMLCanvasElement
   ctx.scale(2, 2)
 
   const color = H_TAB_COLORS[cfg.colorKey]
-  const N = cfg.tabs.length
-  const PAD = 8       // 左右外边距
-  const GAP = 10      // 标签间距
-  const PH  = 60      // 胶囊高度（Figma ~59px）
-  const R   = 12      // 圆角半径（Figma 12px）
-  const PW  = (W - PAD * 2 - GAP * (N - 1)) / N  // 每个胶囊宽度
-  const PY  = (H - PH) / 2  // 胶囊垂直居中
+  const N   = cfg.tabs.length
+  const PAD = 8     // 左右外边距
+  const GAP = 10    // 标签间距
+  const PH  = 60    // 胶囊高度（Figma ~59px）
+  const R   = 12    // 圆角半径
+  const PW  = (W - PAD * 2 - GAP * (N - 1)) / N
+  const PY  = (H - PH) / 2
 
   ctx.font = `400 30px ${FB}`
   ctx.textAlign = 'center'
@@ -793,20 +795,40 @@ export async function drawHTabCanvas(cfg: HTabConfig): Promise<HTMLCanvasElement
     const x = PAD + i * (PW + GAP)
     const isActive = i === cfg.activeIndex
 
-    // 胶囊背景（全不透明，与 Figma 一致）
-    // 黄色：Figma 有 90° 渐变 fill_C78151: #F6CE4F→#F8CB4A
-    if (cfg.colorKey === 'yellow' && color.bgEnd) {
-      const g = ctx.createLinearGradient(x, 0, x + PW, 0)
-      g.addColorStop(0, color.bgEnd)  // Figma: start 1% = #F6CE4F
-      g.addColorStop(1, color.bg)     // Figma: end 100% = #F8CB4A
+    if (isActive) {
+      // ── 选中：127° 淡色渐变背景（Figma 精确值）──────────────────────────
+      // 127° CSS = 向量方向 (sin127°, -cos127°) = (0.7986, 0.6018) in (right, down)
+      const dx = 0.7986, dy = 0.6018
+      const halfLen = (PW * dx + PH * dy) / 2
+      const cx = x + PW / 2, cy = PY + PH / 2
+      const g = ctx.createLinearGradient(
+        cx - halfLen * dx, cy - halfLen * dy,
+        cx + halfLen * dx, cy + halfLen * dy,
+      )
+      const [s0, s1, s2] = color.activeBg
+      g.addColorStop(0,    s0)
+      g.addColorStop(0.45, s1)
+      g.addColorStop(1,    s2)
       ctx.fillStyle = g
-    } else {
-      ctx.fillStyle = color.bg
-    }
-    roundedRect(ctx, x, PY, PW, PH, R)
-    ctx.fill()
+      roundedRect(ctx, x, PY, PW, PH, R)
+      ctx.fill()
 
-    // 文字颜色区分选中/未选中
+      // Figma inset 顶部高光：inset 0px 4px 4px rgba(255,255,255,0.25)
+      const hl = ctx.createLinearGradient(x, PY, x, PY + 12)
+      hl.addColorStop(0, 'rgba(255,255,255,0.25)')
+      hl.addColorStop(1, 'rgba(255,255,255,0)')
+      ctx.fillStyle = hl
+      roundedRect(ctx, x, PY, PW, PH, R)
+      ctx.fill()
+
+    } else {
+      // ── 未选中：饱和实色背景 ─────────────────────────────────────────────
+      ctx.fillStyle = color.inactiveBg
+      roundedRect(ctx, x, PY, PW, PH, R)
+      ctx.fill()
+    }
+
+    // 文字
     ctx.fillStyle = isActive ? color.activeText : color.inactiveText
     ctx.beginPath()
     ctx.fillText(label, x + PW / 2, PY + PH / 2, PW - 12)

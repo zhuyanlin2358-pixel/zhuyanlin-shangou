@@ -238,29 +238,67 @@ export type HTabColorKey = 'yellow' | 'orange' | 'red' | 'green' | 'pink' | 'blu
 
 export interface HTabColorDef {
   name: string
-  bg: string          // 主色（选中+未选中 bg 相同，全不透明，Figma 原版）
-  bgEnd?: string      // 渐变终色（仅黄色有，Figma fill_C78151）
-  activeText: string  // 选中文字色
-  inactiveText: string // 未选中文字色（比选中更淡，Figma 原版）
+  // ── 未选中（Figma 原版：饱和实色背景 + 浅色/同系文字）────────────────────
+  inactiveBg: string
+  inactiveText: string
+  // ── 选中（Figma 原版：淡色渐变背景 127° + 深色/彩色文字）────────────────
+  activeBg: readonly [string, string, string]  // 3个渐变色 [0%, ~45%, 100%]
+  activeText: string
 }
 
-// Figma 精确配色（选中/未选中背景相同，文字色区分状态）
+// ── Figma 精确配色（均来自 Figma API 实测值）────────────────────────────────
+// 选中：pastel 渐变背景（127°, 3 stops），让选中状态更突出
+// 未选中：饱和色实色背景 + 同系浅色文字
 export const H_TAB_COLORS: Record<HTabColorKey, HTabColorDef> = {
-  // 黄色：Figma fill_8SZ8ME=#F8CB4A（背景），fill_F0Q7R3=#8E0000（文字）
-  // 渐变：fill_C78151 linear-gradient(90° #F6CE4F→#F8CB4A)
-  yellow: { name: '黄色', bg: '#F8CB4A', bgEnd: '#F6CE4F', activeText: '#8E0000', inactiveText: 'rgba(142,0,0,0.4)' },
-  // 橙色：fill_J0F4FR=#FF721F，选中文字白色，未选中文字淡橙
-  orange: { name: '橙色', bg: '#FF721F', activeText: '#FFFFFF', inactiveText: '#FFDAC9' },
-  // 红色：fill_PE525V=#FF3B3F，文字 fill_B9F0UU=#FFD0D0（未选中淡粉）
-  red:    { name: '红色', bg: '#FF3B3F', activeText: '#FFFFFF', inactiveText: '#FFD0D0' },
-  // 绿色：fill_T5DQN0=#279E0E，文字 fill_BE6PU6=#E2F7CD
-  green:  { name: '绿色', bg: '#279E0E', activeText: '#FFFFFF', inactiveText: '#E2F7CD' },
-  // 粉色：fill_P6K65Z=#FF1379，选中白字，未选中淡粉
-  pink:   { name: '粉色', bg: '#FF1379', activeText: '#FFFFFF', inactiveText: 'rgba(255,255,255,0.55)' },
-  // 蓝色：fill_9QZZZ1=#2D78F4，文字 fill_UVR1NV=#D0DFFF
-  blue:   { name: '蓝色', bg: '#2D78F4', activeText: '#FFFFFF', inactiveText: '#D0DFFF' },
-  // 紫色：fill_ATCRV2=#7D2AE2，文字 fill_F1QZXC=#E7D0FF
-  purple: { name: '紫色', bg: '#7D2AE2', activeText: '#FFFFFF', inactiveText: '#E7D0FF' },
+  yellow: {
+    name: '黄色',
+    inactiveBg:   '#F8CB4A',
+    inactiveText: '#8E0000',
+    activeBg: ['#FFFDC9', '#FFFBA8', '#FFF979'],
+    activeText: '#8E0000',
+  },
+  orange: {
+    name: '橙色',
+    inactiveBg:   '#FF721F',
+    inactiveText: '#FFDAC9',
+    activeBg: ['#FFFDC9', '#FFFBA8', '#FFF979'],   // Figma 与黄色共用同款高亮渐变
+    activeText: '#FF2600',
+  },
+  red: {
+    name: '红色',
+    inactiveBg:   '#FF3B3F',
+    inactiveText: '#FFD0D0',
+    activeBg: ['#FFF1F0', '#FFE5E8', '#F6D4DD'],
+    activeText: '#FF3B3F',
+  },
+  green: {
+    name: '绿色',
+    inactiveBg:   '#279E0E',
+    inactiveText: '#E2F7CD',
+    activeBg: ['#FAFFF0', '#D4FFDE', '#DDFF8F'],
+    activeText: '#279E0E',
+  },
+  pink: {
+    name: '粉色',
+    inactiveBg:   '#FF1379',
+    inactiveText: '#FFD0D0',
+    activeBg: ['#FFF0FD', '#FFE5F6', '#F4D4F6'],
+    activeText: '#FF2A83',
+  },
+  blue: {
+    name: '蓝色',
+    inactiveBg:   '#2D78F4',
+    inactiveText: '#D0DFFF',
+    activeBg: ['#E0FFFE', '#C9F6FF', '#C9EFFF'],
+    activeText: '#436FFF',
+  },
+  purple: {
+    name: '紫色',
+    inactiveBg:   '#7D2AE2',
+    inactiveText: '#E7D0FF',
+    activeBg: ['#F9F0FF', '#FBE5FF', '#D8BBFF'],
+    activeText: '#7D2AE2',
+  },
 }
 
 export interface HTabConfig {

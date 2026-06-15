@@ -182,9 +182,9 @@ function HTabListItem({
                 onClick={() => setTabCount(n)}
                 className="w-7 h-6 text-[10px] rounded transition-all"
                 style={{
-                  border: `1px solid ${item.tabs.length === n ? color.bg : 'rgba(255,255,255,0.1)'}`,
-                  background: item.tabs.length === n ? color.bg + '22' : 'transparent',
-                  color: item.tabs.length === n ? color.bg : 'rgba(255,255,255,0.4)',
+                  border: `1px solid ${item.tabs.length === n ? color.inactiveBg : 'rgba(255,255,255,0.1)'}`,
+                  background: item.tabs.length === n ? color.inactiveBg + '22' : 'transparent',
+                  color: item.tabs.length === n ? color.inactiveBg : 'rgba(255,255,255,0.4)',
                 }}
               >
                 {n}
@@ -222,7 +222,7 @@ function HTabListItem({
               index={i}
               value={tab}
               active={item.activeIndex === i}
-              bgColor={color.bg}
+              bgColor={color.inactiveBg}
               onChangeText={text => setTabText(i, text)}
               onSetActive={() => updateItem(item.id, { activeIndex: i })}
             />

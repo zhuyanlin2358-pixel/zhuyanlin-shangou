@@ -28,7 +28,7 @@ export default function HTabPanel() {
               >
                 <span
                   className="w-5 h-5 rounded-full shrink-0"
-                  style={{ background: def.bg, boxShadow: '0 0 0 1.5px rgba(255,255,255,0.2)' }}
+                  style={{ background: def.inactiveBg, boxShadow: '0 0 0 1.5px rgba(255,255,255,0.2)' }}
                 />
                 <span className="text-xs text-white/80">{def.name}</span>
                 {active && <span className="ml-auto text-[10px] text-red-400">当前</span>}
