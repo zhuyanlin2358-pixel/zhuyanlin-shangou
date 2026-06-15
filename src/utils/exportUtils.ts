@@ -796,8 +796,7 @@ export async function drawHTabCanvas(cfg: HTabConfig): Promise<HTMLCanvasElement
     const isActive = i === cfg.activeIndex
 
     if (isActive) {
-      // ── 选中：127° 淡色渐变背景（Figma 精确值）──────────────────────────
-      // 127° CSS = 向量方向 (sin127°, -cos127°) = (0.7986, 0.6018) in (right, down)
+      // ── 选中：127° 渐变 + 底部箭头指示器（预览和导出保持一致）────────────
       const dx = 0.7986, dy = 0.6018
       const halfLen = (PW * dx + PH * dy) / 2
       const cx = x + PW / 2, cy = PY + PH / 2
@@ -806,20 +805,37 @@ export async function drawHTabCanvas(cfg: HTabConfig): Promise<HTMLCanvasElement
         cx + halfLen * dx, cy + halfLen * dy,
       )
       const [s0, s1, s2] = color.activeBg
-      g.addColorStop(0,    s0)
-      g.addColorStop(0.45, s1)
-      g.addColorStop(1,    s2)
-      ctx.fillStyle = g
-      roundedRect(ctx, x, PY, PW, PH, R)
-      ctx.fill()
+      g.addColorStop(0, s0); g.addColorStop(0.45, s1); g.addColorStop(1, s2)
 
-      // Figma inset 顶部高光：inset 0px 4px 4px rgba(255,255,255,0.25)
+      // 胶囊 + 箭头统一路径（复用单 Tab 逻辑）
+      const arrowHW  = 14   // 预览条中箭头稍窄，视觉更协调
+      const arrowLen = 10   // 预览条中箭头短一些（避免超出 canvas 底部）
+      const pbY = PY + PH
+
+      const drawArrowPath = () => {
+        ctx.beginPath()
+        ctx.moveTo(x + R, PY)
+        ctx.lineTo(x + PW - R, PY)
+        ctx.arcTo(x + PW, PY, x + PW, PY + R, R)
+        ctx.lineTo(x + PW, pbY - R)
+        ctx.arcTo(x + PW, pbY, x + PW - R, pbY, R)
+        ctx.lineTo(cx + arrowHW, pbY)
+        ctx.lineTo(cx, pbY + arrowLen)
+        ctx.lineTo(cx - arrowHW, pbY)
+        ctx.lineTo(x + R, pbY)
+        ctx.arcTo(x, pbY, x, pbY - R, R)
+        ctx.lineTo(x, PY + R)
+        ctx.arcTo(x, PY, x + R, PY, R)
+        ctx.closePath()
+      }
+
+      ctx.fillStyle = g;  drawArrowPath(); ctx.fill()
+
+      // 顶部高光
       const hl = ctx.createLinearGradient(x, PY, x, PY + 12)
       hl.addColorStop(0, 'rgba(255,255,255,0.25)')
       hl.addColorStop(1, 'rgba(255,255,255,0)')
-      ctx.fillStyle = hl
-      roundedRect(ctx, x, PY, PW, PH, R)
-      ctx.fill()
+      ctx.fillStyle = hl; drawArrowPath(); ctx.fill()
 
     } else {
       // ── 未选中：饱和实色背景 ─────────────────────────────────────────────
