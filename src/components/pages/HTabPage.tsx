@@ -5,7 +5,7 @@ import { useHTab, type HTabItem } from '@/contexts/HTabContext'
 import { drawHTabCanvas, downloadCanvas, downloadZip } from '@/utils/exportUtils'
 import { H_TAB_COLORS, type HTabConfig } from '@/types'
 
-const TAB_COUNTS = [2, 3, 4, 5, 6]
+const TAB_COUNTS = [2, 3, 4]
 
 export default function HTabPage() {
   const { showToast, registerExportAll } = useApp()

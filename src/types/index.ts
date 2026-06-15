@@ -238,19 +238,29 @@ export type HTabColorKey = 'yellow' | 'orange' | 'red' | 'green' | 'pink' | 'blu
 
 export interface HTabColorDef {
   name: string
-  bg: string          // 主色（选中+未选中 bg 一致，依靠透明度区分）
+  bg: string          // 主色（选中+未选中 bg 相同，全不透明，Figma 原版）
+  bgEnd?: string      // 渐变终色（仅黄色有，Figma fill_C78151）
   activeText: string  // 选中文字色
-  inactiveText: string // 未选中文字色
+  inactiveText: string // 未选中文字色（比选中更淡，Figma 原版）
 }
 
+// Figma 精确配色（选中/未选中背景相同，文字色区分状态）
 export const H_TAB_COLORS: Record<HTabColorKey, HTabColorDef> = {
-  yellow: { name: '黄色', bg: '#F8CB4A', activeText: '#8E0000', inactiveText: '#8E000060' },
-  orange: { name: '橙色', bg: '#FF721F', activeText: '#FFFFFF',  inactiveText: '#FFDAC9' },
-  red:    { name: '红色', bg: '#FF3B3F', activeText: '#FFFFFF',  inactiveText: '#FFD0D0' },
-  green:  { name: '绿色', bg: '#279E0E', activeText: '#FFFFFF',  inactiveText: '#E2F7CD' },
-  pink:   { name: '粉色', bg: '#FF1379', activeText: '#FFFFFF',  inactiveText: '#FFD0E8' },
-  blue:   { name: '蓝色', bg: '#2D78F4', activeText: '#FFFFFF',  inactiveText: '#D0DFFF' },
-  purple: { name: '紫色', bg: '#7D2AE2', activeText: '#FFFFFF',  inactiveText: '#E7D0FF' },
+  // 黄色：Figma fill_8SZ8ME=#F8CB4A（背景），fill_F0Q7R3=#8E0000（文字）
+  // 渐变：fill_C78151 linear-gradient(90° #F6CE4F→#F8CB4A)
+  yellow: { name: '黄色', bg: '#F8CB4A', bgEnd: '#F6CE4F', activeText: '#8E0000', inactiveText: 'rgba(142,0,0,0.4)' },
+  // 橙色：fill_J0F4FR=#FF721F，选中文字白色，未选中文字淡橙
+  orange: { name: '橙色', bg: '#FF721F', activeText: '#FFFFFF', inactiveText: '#FFDAC9' },
+  // 红色：fill_PE525V=#FF3B3F，文字 fill_B9F0UU=#FFD0D0（未选中淡粉）
+  red:    { name: '红色', bg: '#FF3B3F', activeText: '#FFFFFF', inactiveText: '#FFD0D0' },
+  // 绿色：fill_T5DQN0=#279E0E，文字 fill_BE6PU6=#E2F7CD
+  green:  { name: '绿色', bg: '#279E0E', activeText: '#FFFFFF', inactiveText: '#E2F7CD' },
+  // 粉色：fill_P6K65Z=#FF1379，选中白字，未选中淡粉
+  pink:   { name: '粉色', bg: '#FF1379', activeText: '#FFFFFF', inactiveText: 'rgba(255,255,255,0.55)' },
+  // 蓝色：fill_9QZZZ1=#2D78F4，文字 fill_UVR1NV=#D0DFFF
+  blue:   { name: '蓝色', bg: '#2D78F4', activeText: '#FFFFFF', inactiveText: '#D0DFFF' },
+  // 紫色：fill_ATCRV2=#7D2AE2，文字 fill_F1QZXC=#E7D0FF
+  purple: { name: '紫色', bg: '#7D2AE2', activeText: '#FFFFFF', inactiveText: '#E7D0FF' },
 }
 
 export interface HTabConfig {

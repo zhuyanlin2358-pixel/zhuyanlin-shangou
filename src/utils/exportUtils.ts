@@ -765,7 +765,8 @@ export async function drawFloorCanvas(cfg: FloorConfig): Promise<HTMLCanvasEleme
 /**
  * 绘制横滑 Tab 条 → 750×88（@2x 超采样，导出透明底）
  * Figma 规格：圆角胶囊 r=12，FZLanTingHei-DB 30px 居中
- * 选中 Tab：满色 + 强对比文字；未选中：同色 35% 不透明度 + 淡文字
+ * 选中/未选中：背景色相同（Figma 原版全不透明），仅文字颜色区分状态
+ * 黄色使用 Figma 精确渐变（#F6CE4F → #F8CB4A）
  */
 export async function drawHTabCanvas(cfg: HTabConfig): Promise<HTMLCanvasElement> {
   await preloadFonts()
@@ -792,14 +793,20 @@ export async function drawHTabCanvas(cfg: HTabConfig): Promise<HTMLCanvasElement
     const x = PAD + i * (PW + GAP)
     const isActive = i === cfg.activeIndex
 
-    // 胶囊背景
-    ctx.globalAlpha = isActive ? 1 : 0.35
-    ctx.fillStyle = color.bg
+    // 胶囊背景（全不透明，与 Figma 一致）
+    // 黄色：Figma 有 90° 渐变 fill_C78151: #F6CE4F→#F8CB4A
+    if (cfg.colorKey === 'yellow' && color.bgEnd) {
+      const g = ctx.createLinearGradient(x, 0, x + PW, 0)
+      g.addColorStop(0, color.bgEnd)  // Figma: start 1% = #F6CE4F
+      g.addColorStop(1, color.bg)     // Figma: end 100% = #F8CB4A
+      ctx.fillStyle = g
+    } else {
+      ctx.fillStyle = color.bg
+    }
     roundedRect(ctx, x, PY, PW, PH, R)
     ctx.fill()
-    ctx.globalAlpha = 1
 
-    // 文字
+    // 文字颜色区分选中/未选中
     ctx.fillStyle = isActive ? color.activeText : color.inactiveText
     ctx.beginPath()
     ctx.fillText(label, x + PW / 2, PY + PH / 2, PW - 12)
