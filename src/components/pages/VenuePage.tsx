@@ -18,35 +18,6 @@ import HTabPanel  from '@/components/panels/HTabPanel'
 // 高达工作区里显示哪些组件（P4 已完成）
 const VENUE_COMPS: ComponentId[] = ['slot', 'floor', 'h-tab']
 
-// ── 组件图标 ─────────────────────────────────────────────────────────────────
-const icons: Record<string, (c: string) => React.ReactNode> = {
-  home: c => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={2}>
-      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-      <polyline points="9 22 9 12 15 12 15 22"/>
-    </svg>
-  ),
-  slot: c => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={2}>
-      <rect x="2" y="7" width="20" height="14" rx="2"/>
-      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-    </svg>
-  ),
-  floor: c => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={2}>
-      <line x1="2" y1="8" x2="22" y2="8"/>
-      <line x1="2" y1="14" x2="22" y2="14"/>
-      <line x1="2" y1="20" x2="22" y2="20"/>
-    </svg>
-  ),
-  'h-tab': c => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={2}>
-      <rect x="2" y="8" width="8" height="8" rx="2"/>
-      <rect x="13" y="8" width="9" height="8" rx="2"/>
-    </svg>
-  ),
-}
-
 // 懒加载各组件页
 const SlotPage  = lazy(() => import('./SlotPage'))
 const FloorPage = lazy(() => import('./FloorPage'))
@@ -85,65 +56,45 @@ export default function VenuePage() {
   return (
     <div className="flex h-screen" style={{ background: 'var(--bg)' }}>
 
-      {/* ── ① 薄导航（64px）──────────────────────────────────────────────── */}
+      {/* ── ① 文字导航（140px，纯文字无图标）────────────────────────────── */}
       <aside
-        className="flex flex-col items-center py-3 gap-1 shrink-0 border-r h-screen"
-        style={{ width: 64, background: '#0C111B', borderColor: 'rgba(255,255,255,0.07)' }}
+        className="flex flex-col shrink-0 border-r h-screen"
+        style={{ width: 140, background: '#0C111B', borderColor: 'rgba(255,255,255,0.07)' }}
       >
         {/* 返回首页 */}
         <button
           onClick={goHome}
-          className="w-10 h-10 flex items-center justify-center rounded-xl mb-1 hover:opacity-70 transition-opacity"
-          title="返回首页"
-          style={{ color: 'rgba(255,255,255,0.35)' }}
+          className="flex items-center gap-2 px-4 h-11 border-b hover:opacity-70 transition-opacity shrink-0 text-xs"
+          style={{ borderColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.35)' }}
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
             <path d="M19 12H5M12 5l-7 7 7 7"/>
           </svg>
+          返回首页
         </button>
 
-        {/* 会场总览（组件列表+导出）*/}
-        <button
-          onClick={goVenue}
-          title="会场总览"
-          className="w-12 h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl transition-all"
-          style={{
-            background: !currentComp ? 'rgba(255,80,80,0.12)' : 'transparent',
-            border: `1px solid ${!currentComp ? 'rgba(255,80,80,0.3)' : 'transparent'}`,
-          }}
-        >
-          {icons.home(!currentComp ? '#FF5050' : 'rgba(255,255,255,0.4)')}
-          <span className="text-[8.5px]" style={{ color: !currentComp ? '#FF8080' : 'rgba(255,255,255,0.3)' }}>会场</span>
-        </button>
+        <nav className="flex-1 py-2">
+          {/* 会场总览 */}
+          <TextNavBtn active={!currentComp} onClick={goVenue}>会场</TextNavBtn>
 
-        <div className="w-6 border-t mb-1" style={{ borderColor: 'rgba(255,255,255,0.07)' }} />
+          <div className="mx-4 my-2 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }} />
 
-        {/* 组件导航 */}
-        {VENUE_COMPS.map(id => {
-          const comp  = findComponent(id)
-          const isDone = DONE_COMP_IDS.includes(id)
-          const active = currentComp === id
-          const c      = active ? '#FF5050' : isDone ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.2)'
-          return (
-            <button
-              key={id}
-              onClick={() => isDone && enterComp(id)}
-              disabled={!isDone}
-              title={comp?.name ?? id}
-              className="w-12 h-12 flex flex-col items-center justify-center gap-0.5 rounded-xl transition-all"
-              style={{
-                background: active ? 'rgba(255,80,80,0.12)' : 'transparent',
-                border: `1px solid ${active ? 'rgba(255,80,80,0.3)' : 'transparent'}`,
-                cursor: isDone ? 'pointer' : 'not-allowed',
-              }}
-            >
-              {icons[id]?.(c)}
-              <span className="text-[8.5px] leading-none" style={{ color: c }}>
-                {(comp?.name ?? id).slice(0, 3)}
-              </span>
-            </button>
-          )
-        })}
+          {/* 组件列表 */}
+          {VENUE_COMPS.map(id => {
+            const comp   = findComponent(id)
+            const isDone = DONE_COMP_IDS.includes(id)
+            return (
+              <TextNavBtn
+                key={id}
+                active={currentComp === id}
+                disabled={!isDone}
+                onClick={() => isDone && enterComp(id)}
+              >
+                {comp?.name ?? id}
+              </TextNavBtn>
+            )
+          })}
+        </nav>
       </aside>
 
       {/* ── ② 组件配置面板（260px，与旧 Sidebar 一致）── */}
@@ -193,6 +144,30 @@ export default function VenuePage() {
       {/* ── ④ 右侧手机预览（持久）────────────────────────────────────────── */}
       <VenuePhonePreview />
     </div>
+  )
+}
+
+// 文字导航按钮（模块顶层，防止 re-mount）
+function TextNavBtn({
+  active, disabled, onClick, children,
+}: {
+  active: boolean; disabled?: boolean; onClick: () => void; children: React.ReactNode
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="w-full px-4 py-2 text-left text-xs transition-all"
+      style={{
+        color:      active ? '#FF8080' : disabled ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.55)',
+        background: active ? 'rgba(255,80,80,0.1)' : 'transparent',
+        borderLeft: active ? '2px solid #FF5050' : '2px solid transparent',
+        cursor:     disabled ? 'not-allowed' : 'pointer',
+        fontWeight: active ? 500 : 400,
+      }}
+    >
+      {children}
+    </button>
   )
 }
 

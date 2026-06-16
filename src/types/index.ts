@@ -84,7 +84,7 @@ export const COMPONENT_REGISTRY: ComponentGroup[] = [
       {
         label: 'A 互动玩法类',
         items: [
-          { id: 'slot',         name: '无门槛老虎机',   desc: '抽奖组件全套切图', status: 'done' },
+          { id: 'slot',         name: '老虎机',         desc: '抽奖组件全套切图', status: 'done' },
           { id: 'slot-order',   name: '下单抽奖老虎机', status: 'coming' },
           { id: 'lottery-sign', name: '抽签玩法换肤',   status: 'coming' },
           { id: 'red-rain',     name: '2D 红包雨',      status: 'coming' },
