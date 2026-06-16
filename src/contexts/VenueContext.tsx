@@ -30,9 +30,10 @@ const Ctx = createContext<VenueCtx | null>(null)
 
 export function VenueProvider({ children }: { children: ReactNode }) {
   const [items,      setItems]      = useState<VenueItem[]>([])
-  const [headerUrl,  setHeaderUrl]  = useState('')
+  // 默认头图：鲜花示意图（750×424），背景色粉色
+  const [headerUrl,  setHeaderUrl]  = useState(`${import.meta.env.BASE_URL}demo-header.png`)
   const [headerSize, setHeaderSize] = useState<VenueHeaderSize>('424')
-  const [bgColor,    setBgColor]    = useState('#FFFFFF')
+  const [bgColor,    setBgColor]    = useState('#FFD9E5')
 
   const addItem = useCallback((item: Omit<VenueItem, 'id' | 'spacingAbove'>) => {
     setItems(prev => [...prev, { ...item, id: makeId(), spacingAbove: 0 }])
