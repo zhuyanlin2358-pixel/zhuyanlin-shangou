@@ -1,131 +1,200 @@
 /**
- * 高达会场手机预览面板（持久，始终显示在右侧）
- * 头图置顶，组件依次叠放，不压头图，用背景色填充间距
+ * 高达会场右侧面板（持久，始终显示）
+ * 上方：手机预览（头图置顶，组件叠放，背景色）
+ * 下方：头图上传 + 3档尺寸 + 背景色选择（随时可调）
  */
+import { useRef } from 'react'
+import { ImageIcon, X } from 'lucide-react'
 import { useVenue } from '@/contexts/VenueContext'
+import { ColorField } from '@/components/ui/PanelField'
+import type { VenueHeaderSize } from '@/types'
+
+const HEADER_SIZES: { key: VenueHeaderSize; label: string; h: number; sub: string }[] = [
+  { key: '274', label: '极矮', h: 274, sub: '750×274' },
+  { key: '424', label: '标准', h: 424, sub: '750×424' },
+  { key: '624', label: '大图', h: 624, sub: '750×624' },
+]
 
 export default function VenuePhonePreview() {
-  const { items, headerUrl, headerSize, bgColor } = useVenue()
+  const {
+    items, headerUrl, setHeaderUrl,
+    headerSize, setHeaderSize, bgColor, setBgColor,
+  } = useVenue()
 
-  // 手机内容宽度 = 375px，比例：750 → 375（50%）
-  const SCALE = 375 / 750
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  // 手机内容宽度 = 375px，设计稿 750px，比例 0.5
+  const SCALE  = 0.5
   const headerH = Math.round(parseInt(headerSize) * SCALE)
+
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = ev => setHeaderUrl(ev.target?.result as string)
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
 
   return (
     <div
-      className="fixed top-0 right-0 h-screen flex flex-col border-l shrink-0"
+      className="fixed top-0 right-0 h-screen flex flex-col border-l"
       style={{ width: 380, background: '#0D1117', borderColor: 'rgba(255,255,255,0.07)' }}
     >
-      {/* 标题栏 */}
+      {/* ── 标题栏 ── */}
       <div
-        className="h-12 flex items-center px-4 text-xs font-semibold border-b shrink-0"
-        style={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.07)' }}
+        className="h-12 flex items-center justify-between px-4 border-b shrink-0"
+        style={{ borderColor: 'rgba(255,255,255,0.07)' }}
       >
-        手机预览 · 375px
+        <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.6)' }}>
+          手机预览 · 375px
+        </span>
         {items.length > 0 && (
-          <span className="ml-2 text-[10px] font-normal" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
             {items.length} 个组件
           </span>
         )}
       </div>
 
-      {/* 手机外壳 */}
-      <div className="flex-1 overflow-hidden flex items-start justify-center pt-4 pb-4 px-2">
+      {/* ── 手机预览（可滚动）── */}
+      <div className="flex-1 overflow-hidden flex justify-center pt-3 px-2" style={{ minHeight: 0 }}>
         <div
-          className="relative rounded-2xl overflow-hidden shadow-2xl"
+          className="rounded-2xl overflow-hidden shadow-2xl w-full"
           style={{
-            width: 375,
-            maxHeight: '100%',
+            maxWidth: 375,
             background: bgColor,
-            border: '2px solid rgba(255,255,255,0.1)',
+            border: '1.5px solid rgba(255,255,255,0.1)',
+            display: 'flex',
+            flexDirection: 'column',
+            maxHeight: '100%',
           }}
         >
-          {/* 顶部状态栏模拟 */}
-          <div
-            className="flex items-center justify-between px-4 shrink-0"
-            style={{ height: 28, background: 'rgba(0,0,0,0.06)' }}
-          >
-            <span style={{ fontSize: 11, fontWeight: 600, color: '#333' }}>9:41</span>
-            <div className="flex gap-1 items-center">
-              {[4, 4, 4].map((_, i) => (
-                <div key={i} className="rounded-full" style={{ width: 4, height: i === 2 ? 6 : 4, background: '#333', opacity: 0.6 }} />
+          {/* 状态栏 */}
+          <div className="flex items-center justify-between px-4 shrink-0"
+            style={{ height: 26, background: 'rgba(0,0,0,0.06)' }}>
+            <span style={{ fontSize: 10, fontWeight: 600, color: '#555' }}>9:41</span>
+            <div className="flex gap-1">
+              {[1,2,3].map(i => (
+                <div key={i} className="rounded-full"
+                  style={{ width: 3.5, height: i === 3 ? 5 : 3.5, background: '#555', opacity: 0.6 }} />
               ))}
             </div>
           </div>
-
-          {/* 导航栏模拟 */}
-          <div
-            className="flex items-center justify-between px-4 shrink-0"
-            style={{ height: 44, background: '#fff', borderBottom: '1px solid #f0f0f0' }}
-          >
-            <span style={{ fontSize: 14, fontWeight: 600, color: '#1a1a1a' }}>闪购会场</span>
+          {/* 导航栏 */}
+          <div className="flex items-center px-3 shrink-0"
+            style={{ height: 40, background: '#fff', borderBottom: '1px solid #eee' }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1a1a' }}>闪购会场</span>
           </div>
 
           {/* 可滚动内容区 */}
-          <div
-            className="overflow-y-auto"
-            style={{ maxHeight: 'calc(100vh - 12rem)', background: bgColor }}
-          >
-            {/* 头图 */}
+          <div className="overflow-y-auto flex-1" style={{ background: bgColor }}>
+            {/* 头图区域 */}
             {headerUrl ? (
-              <img
-                src={headerUrl}
-                alt="头图"
-                style={{ width: 375, height: headerH, objectFit: 'cover', display: 'block' }}
-              />
+              <div className="relative">
+                <img src={headerUrl} alt="头图"
+                  style={{ width: 375, height: headerH, objectFit: 'cover', display: 'block' }} />
+                {/* 高度标签 */}
+                <span
+                  className="absolute bottom-1 right-1 text-[9px] px-1.5 py-0.5 rounded"
+                  style={{ background: 'rgba(0,0,0,0.5)', color: '#fff' }}
+                >
+                  750×{headerSize}
+                </span>
+              </div>
             ) : (
               <div
-                className="flex items-center justify-center text-xs"
-                style={{ width: 375, height: headerH || 80, background: '#f5f5f5', color: '#999' }}
+                className="flex flex-col items-center justify-center gap-1 cursor-pointer"
+                style={{ width: 375, height: headerH || 60, background: '#f5f5f5' }}
+                onClick={() => fileRef.current?.click()}
               >
-                {headerH > 0 ? '头图区域' : '未设置头图'}
+                <ImageIcon size={16} style={{ color: '#bbb' }} />
+                <span style={{ fontSize: 10, color: '#bbb' }}>点击上传头图</span>
               </div>
             )}
 
-            {/* 组件列表（头图下方，不压头图）*/}
+            {/* 组件列表 */}
             {items.length === 0 && !headerUrl && (
-              <div
-                className="flex items-center justify-center text-xs py-12"
-                style={{ color: '#999' }}
-              >
-                左侧加入组件后在此预览
+              <div className="flex items-center justify-center text-xs py-8" style={{ color: '#ccc' }}>
+                配置组件后点「加入会场」
               </div>
             )}
             {items.map(item => (
               <div key={item.id}>
-                {/* 间距区域（背景色填充）*/}
                 {item.spacingAbove > 0 && (
                   <div style={{ height: Math.round(item.spacingAbove * SCALE), background: bgColor }} />
                 )}
-                {/* 组件图片（750→375，50%缩放）*/}
-                <img
-                  src={item.previewUrl}
-                  alt={item.label}
-                  style={{
-                    width: 375,
-                    height: Math.round(item.origH * SCALE),
-                    display: 'block',
-                    objectFit: 'fill',
-                  }}
-                />
+                <img src={item.previewUrl} alt={item.label}
+                  style={{ width: 375, height: Math.round(item.origH * SCALE), display: 'block', objectFit: 'fill' }} />
               </div>
             ))}
-
-            {/* 底部留白 */}
-            <div style={{ height: 20, background: bgColor }} />
+            <div style={{ height: 16, background: bgColor }} />
           </div>
         </div>
       </div>
 
-      {/* 说明 */}
-      {items.length === 0 && (
-        <div
-          className="px-4 py-3 text-[10px] text-center border-t"
-          style={{ color: 'rgba(255,255,255,0.25)', borderColor: 'rgba(255,255,255,0.07)' }}
-        >
-          从左侧配置组件后点「加入会场」即可预览
+      {/* ── 设置区（头图 + 背景色，始终可见）── */}
+      <div
+        className="shrink-0 border-t px-4 py-3 space-y-3"
+        style={{ borderColor: 'rgba(255,255,255,0.07)' }}
+      >
+        {/* 头图上传 + 三档尺寸 */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>
+              头图
+            </span>
+            {/* 三档尺寸 */}
+            <div className="flex gap-1">
+              {HEADER_SIZES.map(s => (
+                <button key={s.key} onClick={() => setHeaderSize(s.key)}
+                  className="px-2 py-0.5 text-[10px] rounded transition-all"
+                  style={{
+                    border: `1px solid ${headerSize === s.key ? '#FF5050' : 'rgba(255,255,255,0.12)'}`,
+                    background: headerSize === s.key ? 'rgba(255,80,80,0.12)' : 'transparent',
+                    color: headerSize === s.key ? '#FF8080' : 'rgba(255,255,255,0.4)',
+                  }}
+                  title={s.sub}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 上传区 */}
+          <div
+            onClick={() => fileRef.current?.click()}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all hover:opacity-80"
+            style={{ border: '1.5px dashed rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.03)' }}
+          >
+            <ImageIcon size={14} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+            {headerUrl ? (
+              <>
+                <img src={headerUrl} alt="" className="rounded"
+                  style={{ width: 40, height: Math.round(40 * parseInt(headerSize) / 750), objectFit: 'cover' }} />
+                <span className="text-xs flex-1 truncate" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                  已上传 · 750×{headerSize}px
+                </span>
+                <button
+                  onClick={e => { e.stopPropagation(); setHeaderUrl('') }}
+                  className="shrink-0 hover:opacity-70"
+                  style={{ color: 'rgba(255,255,255,0.3)' }}
+                >
+                  <X size={13} />
+                </button>
+              </>
+            ) : (
+              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                点击上传头图（750×{headerSize}px）
+              </span>
+            )}
+          </div>
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
         </div>
-      )}
+
+        {/* 背景色 */}
+        <ColorField label="背景色" value={bgColor} onChange={setBgColor} />
+      </div>
     </div>
   )
 }
