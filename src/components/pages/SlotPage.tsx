@@ -458,7 +458,8 @@ const DIALOG_RESULTS = [
 /* ── 主页面 ── */
 export default function SlotPage() {
   const { config, activePreset, setEmptyTransform, setSlotBannerUrl } = useSlot()
-  const { showToast, registerExportAll } = useApp()
+  const { showToast, registerExportAll, page } = useApp()
+  const inVenue = page === 'venue'  // 会场模式：隐藏无用的「预览」按钮
 
   // 字体预加载（确保 Canvas 绘制时自定义字体可用）
   useEffect(() => { preloadFonts() }, [])
@@ -690,7 +691,7 @@ export default function SlotPage() {
           <SectionTitle num={1} label="老虎机未抽奖状态" sub="含标题 + 奖品图 + 按钮 · 750 × 242 px" badge="素材 1" />
           <ExportCard label="老虎机 — 未抽奖状态" sub="750 × 242 px · PNG"
             onExport={() => exportOne('s1', 'slot_1_未抽奖状态_750x242', async () => drawSlotBannerCanvas(config, await Promise.all(config.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform, config.slotStyle)))))}
-            onPreview={() => { buildBanner(); showToast('已同步到手机预览') }}>
+            onPreview={inVenue ? undefined : () => { buildBanner(); showToast('已同步到手机预览') }}>
             {previews.s1
               ? <img src={previews.s1} style={{ width: 495, height: 160, borderRadius: 13, display: 'block', flexShrink: 0 }} />
               : <div style={{ width: 495, height: 160, borderRadius: 13, background: `linear-gradient(120deg,${config.slotTintFrom},${config.slotTintTo})`, flexShrink: 0 }} />
@@ -721,7 +722,7 @@ export default function SlotPage() {
           <SectionTitle num={3} label="老虎机空态页" sub="854 × 284 px @2x" badge="素材 3" />
           <ExportCard label="老虎机空态页" sub="854 × 284 px · PNG"
             onExport={() => exportOne('s3', 'slot_3_空态页_854x284', () => drawEmptyStateCanvas(config.emptyImageUrl, config.emptyTransform as XfTransform, config.emptyText))}
-            onPreview={() => { buildEmptyPreview(); showToast('已在手机预览中显示空态效果') }}>
+            onPreview={inVenue ? undefined : () => { buildEmptyPreview(); showToast('已在手机预览中显示空态效果') }}>
             <div style={{ width: 427, height: 142, borderRadius: 12, background: '#fff', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
               <DraggableImageWrap w={239} h={96} transform={config.emptyTransform} imageUrl={config.emptyImageUrl}
                 onTransformChange={t => setEmptyTransform(t)} emptyHint="点击上传\n自定义插图" minScale={0} maxScale={2} cursor="grab" />
@@ -787,7 +788,7 @@ export default function SlotPage() {
               <PrizeEditorCard
                 key={i} idx={i} prize={p}
                 onExport={() => exportOne(`s6_${i}`, `slot_6_奖品${i+1}_124x124`, () => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform, config.slotStyle))}
-                onPreview={() => { buildBanner(); showToast('已同步到手机预览') }}
+                onPreview={inVenue ? undefined : () => { buildBanner(); showToast('已同步到手机预览') }}
               />
             ))}
           </div>

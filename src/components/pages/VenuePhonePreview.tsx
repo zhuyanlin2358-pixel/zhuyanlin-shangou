@@ -19,9 +19,12 @@ export default function VenuePhonePreview() {
   const {
     items, headerUrl, setHeaderUrl,
     headerSize, setHeaderSize, bgColor, setBgColor,
+    reorderItems,
   } = useVenue()
 
-  const fileRef = useRef<HTMLInputElement>(null)
+  const fileRef   = useRef<HTMLInputElement>(null)
+  const dragId    = useRef<string | null>(null)
+  const dragOverId = useRef<string | null>(null)
 
   // 手机内容宽度 = 375px，设计稿 750px，比例 0.5
   const SCALE  = 0.5
@@ -119,11 +122,28 @@ export default function VenuePhonePreview() {
               </div>
             )}
             {items.map(item => (
-              <div key={item.id}>
+              <div
+                key={item.id}
+                draggable
+                onDragStart={() => { dragId.current = item.id }}
+                onDragOver={e => {
+                  e.preventDefault()
+                  dragOverId.current = item.id
+                }}
+                onDrop={() => {
+                  if (dragId.current && dragId.current !== item.id) {
+                    reorderItems(dragId.current, item.id)
+                  }
+                  dragId.current = null
+                  dragOverId.current = null
+                }}
+                style={{ cursor: 'grab', userSelect: 'none' }}
+              >
                 {item.spacingAbove > 0 && (
                   <div style={{ height: Math.round(item.spacingAbove * SCALE), background: bgColor }} />
                 )}
                 <img src={item.previewUrl} alt={item.label}
+                  draggable={false}
                   style={{ width: 375, height: Math.round(item.origH * SCALE), display: 'block', objectFit: 'fill' }} />
               </div>
             ))}

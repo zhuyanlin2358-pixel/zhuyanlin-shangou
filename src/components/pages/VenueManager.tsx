@@ -247,11 +247,12 @@ function VenueItemRow({
       style={{ border: '1px solid var(--border)', background: 'var(--bg-subtle)' }}
     >
       {/* 预览缩略图 */}
-      <div className="overflow-hidden" style={{ height: 36, background: '#f0f0f0' }}>
+      {/* 完整比例预览 */}
+      <div className="overflow-hidden" style={{ background: '#f0f0f0', lineHeight: 0 }}>
         <img
           src={item.previewUrl}
           alt={item.label}
-          style={{ width: '100%', height: 36, objectFit: 'cover', display: 'block' }}
+          style={{ width: '100%', height: 'auto', display: 'block' }}
         />
       </div>
 

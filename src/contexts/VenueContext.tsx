@@ -11,6 +11,7 @@ interface VenueCtx {
   addItem: (item: Omit<VenueItem, 'id' | 'spacingAbove'>) => void
   removeItem: (id: string) => void
   moveItem: (id: string, dir: 'up' | 'down') => void
+  reorderItems: (fromId: string, toId: string) => void
   setSpacing: (id: string, v: number) => void
 
   // ── 头图 ──────────────────────────────────────────────────────────────────
@@ -41,6 +42,18 @@ export function VenueProvider({ children }: { children: ReactNode }) {
     setItems(prev => prev.filter(it => it.id !== id))
   }, [])
 
+  const reorderItems = useCallback((fromId: string, toId: string) => {
+    setItems(prev => {
+      const fromIdx = prev.findIndex(it => it.id === fromId)
+      const toIdx   = prev.findIndex(it => it.id === toId)
+      if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return prev
+      const next = [...prev]
+      const [moved] = next.splice(fromIdx, 1)
+      next.splice(toIdx, 0, moved)
+      return next
+    })
+  }, [])
+
   const moveItem = useCallback((id: string, dir: 'up' | 'down') => {
     setItems(prev => {
       const idx = prev.findIndex(it => it.id === id)
@@ -59,7 +72,7 @@ export function VenueProvider({ children }: { children: ReactNode }) {
 
   return (
     <Ctx.Provider value={{
-      items, addItem, removeItem, moveItem, setSpacing,
+      items, addItem, removeItem, moveItem, reorderItems, setSpacing,
       headerUrl, setHeaderUrl,
       headerSize, setHeaderSize,
       bgColor, setBgColor,
