@@ -1,5 +1,5 @@
 export type ComponentStatus = 'done' | 'coming'
-export type PageId = 'home' | 'comp' | 'assets' | 'review'
+export type PageId = 'home' | 'comp' | 'assets' | 'review' | 'venue'
 
 export type ComponentId =
   | 'yituosi' | 'n4' | 'n2' | 'yituoer' | 'diaotong' | 'xin-zujian'
@@ -359,4 +359,17 @@ export const FLOOR_PRESETS: Record<FloorVariant, Omit<FloorConfig, 'variant'>> =
     showDeco: false, decoStyle: 'arrow',
     decoColor1: '#FFCA60', decoColor2: '#FF7399',
   },
+}
+
+// ── 高达会场 ─────────────────────────────────────────────────────────────────
+export type VenueHeaderSize = '424' | '624' | '274'   // 头图高度规格（宽统一750）
+
+export interface VenueItem {
+  id: string
+  componentId: ComponentId   // 来自哪个组件
+  label: string              // 展示名（如"楼层条 - 大促款"）
+  previewUrl: string         // 组件当前预览图 data URL
+  origW: number              // 设计稿宽度（750）
+  origH: number              // 设计稿高度（用于计算手机预览比例）
+  spacingAbove: number       // 与上一个元素之间的间距 px（0-60）
 }

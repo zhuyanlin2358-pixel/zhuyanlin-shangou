@@ -7,6 +7,7 @@ import { downloadCanvas, downloadZip, drawSlotBannerCanvas, drawSlotBgCanvas, dr
 import type { PrizeInfo, XfTransform } from '@/utils/exportUtils'
 import type { PrizeConfig, PrizeType, ImgTransform } from '@/types'
 import { getSlotStyle } from '@/utils/slotStyles'
+import VenueAddButton from '@/components/ui/VenueAddButton'
 
 /* ── 通用可拖拽图片容器 ── */
 interface DraggableWrapProps {
@@ -695,6 +696,12 @@ export default function SlotPage() {
               : <div style={{ width: 495, height: 160, borderRadius: 13, background: `linear-gradient(120deg,${config.slotTintFrom},${config.slotTintTo})`, flexShrink: 0 }} />
             }
           </ExportCard>
+          {/* 加入会场（仅在会场页显示）*/}
+          {previews.s1 && (
+            <div style={{ marginTop: 8 }}>
+              <VenueAddButton componentId="slot" label="老虎机" previewUrl={previews.s1} origW={750} origH={242} />
+            </div>
+          )}
         </div>
 
         {/* ── 2 背景 ── */}

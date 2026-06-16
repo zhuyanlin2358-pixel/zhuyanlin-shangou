@@ -4,6 +4,7 @@ import { useApp } from '@/contexts/AppContext'
 import { useHTab, type HTabItem } from '@/contexts/HTabContext'
 import { drawHTabCanvas, drawHTabSingleTabCanvas, downloadCanvas, downloadZip } from '@/utils/exportUtils'
 import { H_TAB_COLORS, type HTabConfig } from '@/types'
+import VenueAddButton from '@/components/ui/VenueAddButton'
 
 const TAB_COUNTS = [2, 3, 4]
 
@@ -234,6 +235,14 @@ function HTabListItem({
             style={{ color: 'var(--text-3)' }}>
             <Trash2 size={12} />
           </button>
+          {/* 加入会场（仅在会场页显示）*/}
+          <VenueAddButton
+            componentId="h-tab"
+            label={`横滑Tab · ${H_TAB_COLORS[config.colorKey].name} · ${item.tabs.length}tab`}
+            previewUrl={previewUrl}
+            origW={750}
+            origH={88}
+          />
         </div>
 
         {/* Tab 标签文案 + 点击切换选中 */}
