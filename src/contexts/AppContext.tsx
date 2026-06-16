@@ -1,6 +1,9 @@
 import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react'
 import type { ComponentId, PageId } from '@/types'
 
+// P4「高达组件」完成品 → 进入统一三列工作区（venue）
+const VENUE_COMP_IDS: ComponentId[] = ['slot', 'floor', 'h-tab']
+
 interface AppContextValue {
   darkMode: boolean
   toggleDarkMode: () => void
@@ -36,7 +39,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('theme', darkMode ? 'dark' : 'light')
     // 组件页面所有面板都用 text-white/* 写死白色文字，必须强制深色模式；
     // 非组件页面按用户偏好切换。
-    const forceDark = page === 'comp'
+    const forceDark = page === 'comp' || page === 'venue'
     document.body.classList.toggle('dark-mode', forceDark || darkMode)
   }, [darkMode, page])
 
@@ -54,8 +57,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const enterComp = (id: ComponentId) => {
     setCurrentComp(id)
-    setPage('comp')
-    setHasPreview(id === 'slot')
+    if (VENUE_COMP_IDS.includes(id)) {
+      // P4 高达组件 → 统一三列工作区
+      setPage('venue')
+      setHasPreview(false)
+    } else {
+      setPage('comp')
+      setHasPreview(false)  // 只有老虎机有手机预览，但现在老虎机走venue
+    }
   }
 
   const goAssets = () => {

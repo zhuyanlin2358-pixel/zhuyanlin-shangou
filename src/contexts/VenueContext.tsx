@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
-import { type ComponentId, type VenueItem, type VenueHeaderSize } from '@/types'
+import { type VenueItem, type VenueHeaderSize } from '@/types'
 
 function makeId() {
   return `vi_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`
@@ -23,9 +23,6 @@ interface VenueCtx {
   bgColor: string
   setBgColor: (c: string) => void
 
-  // ── 内部导航（在哪个子页面）────────────────────────────────────────────────
-  activeSub: ComponentId | 'home'
-  setActiveSub: (s: ComponentId | 'home') => void
 }
 
 const Ctx = createContext<VenueCtx | null>(null)
@@ -35,7 +32,6 @@ export function VenueProvider({ children }: { children: ReactNode }) {
   const [headerUrl,  setHeaderUrl]  = useState('')
   const [headerSize, setHeaderSize] = useState<VenueHeaderSize>('424')
   const [bgColor,    setBgColor]    = useState('#FFFFFF')
-  const [activeSub,  setActiveSub]  = useState<ComponentId | 'home'>('home')
 
   const addItem = useCallback((item: Omit<VenueItem, 'id' | 'spacingAbove'>) => {
     setItems(prev => [...prev, { ...item, id: makeId(), spacingAbove: 0 }])
@@ -67,7 +63,6 @@ export function VenueProvider({ children }: { children: ReactNode }) {
       headerUrl, setHeaderUrl,
       headerSize, setHeaderSize,
       bgColor, setBgColor,
-      activeSub, setActiveSub,
     }}>
       {children}
     </Ctx.Provider>
