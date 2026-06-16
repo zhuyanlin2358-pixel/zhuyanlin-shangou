@@ -12,6 +12,8 @@ interface VenueCtx {
   removeItem: (id: string) => void
   moveItem: (id: string, dir: 'up' | 'down') => void
   reorderItems: (fromId: string, toId: string) => void
+  /** 按 label 匹配已有条目，更新其 previewUrl（用于「更新预览」） */
+  updatePreview: (label: string, previewUrl: string) => void
   setSpacing: (id: string, v: number) => void
 
   // ── 头图 ──────────────────────────────────────────────────────────────────
@@ -41,6 +43,12 @@ export function VenueProvider({ children }: { children: ReactNode }) {
 
   const removeItem = useCallback((id: string) => {
     setItems(prev => prev.filter(it => it.id !== id))
+  }, [])
+
+  const updatePreview = useCallback((label: string, previewUrl: string) => {
+    setItems(prev => prev.map(it =>
+      it.label === label ? { ...it, previewUrl } : it
+    ))
   }, [])
 
   const reorderItems = useCallback((fromId: string, toId: string) => {
@@ -73,7 +81,7 @@ export function VenueProvider({ children }: { children: ReactNode }) {
 
   return (
     <Ctx.Provider value={{
-      items, addItem, removeItem, moveItem, reorderItems, setSpacing,
+      items, addItem, removeItem, moveItem, reorderItems, updatePreview, setSpacing,
       headerUrl, setHeaderUrl,
       headerSize, setHeaderSize,
       bgColor, setBgColor,
