@@ -12,8 +12,10 @@ interface VenueCtx {
   removeItem: (id: string) => void
   moveItem: (id: string, dir: 'up' | 'down') => void
   reorderItems: (fromId: string, toId: string) => void
-  /** 按 label 匹配已有条目，更新其 previewUrl（用于「更新预览」） */
-  updatePreview: (label: string, previewUrl: string) => void
+  /** 更新预览图：有 sourceId 时按 sourceId 匹配，否则按 label（更稳定）*/
+  updatePreview: (key: { sourceId?: string; label?: string }, previewUrl: string) => void
+  /** 获取某 sourceId 对应的会场标签（如「Tab 1」），用于按钮显示 */
+  getSourceTag: (sourceId: string) => string | null
   setSpacing: (id: string, v: number) => void
 
   // ── 头图 ──────────────────────────────────────────────────────────────────
@@ -45,11 +47,21 @@ export function VenueProvider({ children }: { children: ReactNode }) {
     setItems(prev => prev.filter(it => it.id !== id))
   }, [])
 
-  const updatePreview = useCallback((label: string, previewUrl: string) => {
-    setItems(prev => prev.map(it =>
-      it.label === label ? { ...it, previewUrl } : it
-    ))
-  }, [])
+  const updatePreview = useCallback(
+    (key: { sourceId?: string; label?: string }, previewUrl: string) => {
+      setItems(prev => prev.map(it => {
+        const match = key.sourceId
+          ? it.sourceId === key.sourceId
+          : it.label === key.label
+        return match ? { ...it, previewUrl } : it
+      }))
+    }, [])
+
+  // getSourceTag: 通过 items state 直接返回（不用 useCallback，直接用 items）
+  const getSourceTag = (sourceId: string): string | null => {
+    const found = items.find(it => it.sourceId === sourceId)
+    return found?.label ?? null
+  }
 
   const reorderItems = useCallback((fromId: string, toId: string) => {
     setItems(prev => {
@@ -81,7 +93,7 @@ export function VenueProvider({ children }: { children: ReactNode }) {
 
   return (
     <Ctx.Provider value={{
-      items, addItem, removeItem, moveItem, reorderItems, updatePreview, setSpacing,
+      items, addItem, removeItem, moveItem, reorderItems, updatePreview, getSourceTag, setSpacing,
       headerUrl, setHeaderUrl,
       headerSize, setHeaderSize,
       bgColor, setBgColor,

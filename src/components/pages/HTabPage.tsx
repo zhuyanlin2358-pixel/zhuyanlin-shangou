@@ -242,6 +242,7 @@ function HTabListItem({
             previewUrl={previewUrl}
             origW={750}
             origH={88}
+            sourceId={item.id}
           />
         </div>
 
