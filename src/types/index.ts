@@ -94,7 +94,7 @@ export const COMPONENT_REGISTRY: ComponentGroup[] = [
         label: 'B 优惠券/红包类',
         items: [
           { id: 'coupon-multi', name: '多业务通用券',              status: 'coming' },
-          { id: 'coupon',       name: '红包/优惠券（新）',         status: 'coming' },
+          { id: 'coupon',       name: '一键领券红包',              desc: '7色配色切图', status: 'done' },
           { id: 'coupon-old',   name: '默认优惠券/红包皮肤（旧）', status: 'coming' },
         ],
       },
@@ -138,7 +138,7 @@ export function findComponent(id: ComponentId): ComponentDef | undefined {
   return getAllComponents().find(c => c.id === id)
 }
 
-export const DONE_COMP_IDS: ComponentId[] = ['yituosi', 'n4', 'n2', 'slot', 'floor', 'h-tab']
+export const DONE_COMP_IDS: ComponentId[] = ['yituosi', 'n4', 'n2', 'slot', 'floor', 'h-tab', 'coupon']
 
 export interface Logo {
   id: string
@@ -373,4 +373,31 @@ export interface VenueItem {
   origH: number              // 设计稿高度
   spacingAbove: number       // 与上一个元素的间距 px（0-60）
   sourceId?: string          // 来源实例 ID（如 HTabItem.id），稳定匹配，不受改色/改数量影响
+}
+
+// ── 一键领券红包组件 ──────────────────────────────────────────────────────────
+export type CouponColorKey = 'teal' | 'blue' | 'green' | 'gold1' | 'gold2' | 'pink' | 'red'
+
+export interface CouponColorDef {
+  name: string
+  cardBgFrom: string   // 券卡渐变起色（179°）
+  cardBgTo: string     // 券卡渐变终色
+  btnFrom: string      // 按钮渐变起色（90°）
+  btnTo: string        // 按钮渐变终色
+  textColor: string    // 标题文字色
+}
+
+export const COUPON_COLORS: Record<CouponColorKey, CouponColorDef> = {
+  teal:  { name: '青色', cardBgFrom: '#CFFAF6', cardBgTo: '#A7F4ED', btnFrom: '#3AC749', btnTo: '#10D321', textColor: '#099A59' },
+  blue:  { name: '蓝色', cardBgFrom: '#C8E2FB', cardBgTo: '#A7D2FF', btnFrom: '#3181E6', btnTo: '#57A6FF', textColor: '#3B657C' },
+  green: { name: '绿色', cardBgFrom: '#DBF7BD', cardBgTo: '#D7F5B1', btnFrom: '#3AC749', btnTo: '#10D321', textColor: '#00A611' },
+  gold1: { name: '金色', cardBgFrom: '#FBE7C0', cardBgTo: '#FADFB0', btnFrom: '#FF1F43', btnTo: '#FF008E', textColor: '#950E0F' },
+  gold2: { name: '金色深', cardBgFrom: '#FBE7C0', cardBgTo: '#FADFB0', btnFrom: '#FF1F43', btnTo: '#FF008E', textColor: '#950E0F' },
+  pink:  { name: '粉色', cardBgFrom: '#FDDCFF', cardBgTo: '#FFBCE0', btnFrom: '#FF3E58', btnTo: '#FF1838', textColor: '#950E0F' },
+  red:   { name: '红色', cardBgFrom: '#FFDCE5', cardBgTo: '#FFD4D4', btnFrom: '#36C945', btnTo: '#13D224', textColor: '#950E0F' },
+}
+
+export interface CouponConfig {
+  colorKey: CouponColorKey
+  titleText: string   // 主文案，如"领618好店券 下单更优惠"
 }

@@ -1,8 +1,8 @@
 import html2canvas from 'html2canvas'
 import JSZip from 'jszip'
 import { getSlotStyle, type SlotPrizeStyle } from './slotStyles'
-import type { FloorConfig, FloorDecoStyle, HTabConfig, HTabColorKey } from '@/types'
-import { H_TAB_COLORS } from '@/types'
+import type { FloorConfig, FloorDecoStyle, HTabConfig, HTabColorKey, CouponConfig } from '@/types'
+import { H_TAB_COLORS, COUPON_COLORS } from '@/types'
 
 export async function captureElement(
   el: HTMLElement,
@@ -966,6 +966,232 @@ export async function drawHTabSingleTabCanvas(
     ctx.fillStyle = color.inactiveText
     ctx.beginPath()
     ctx.fillText(label, cx, pillY + pillH / 2, pillW - 12)
+  }
+
+  return downsample(canvas)
+}
+
+// ── 一键领券红包 ──────────────────────────────────────────────────────────────
+
+/**
+ * 绘制腰封图 → 710×168（Figma 精确尺寸，@2x 超采样）
+ * 券卡渐变背景 + 标题文案居中
+ */
+export async function drawCouponWaistband(cfg: CouponConfig): Promise<HTMLCanvasElement> {
+  await preloadFonts()
+  const W = 710, H = 168, S = 2
+  const c = COUPON_COLORS[cfg.colorKey]
+  const canvas = document.createElement('canvas')
+  canvas.width = W * S; canvas.height = H * S
+  const ctx = canvas.getContext('2d')!
+  ctx.scale(S, S)
+
+  // 渐变背景（179° ≈ 从上到下）
+  const bg = ctx.createLinearGradient(0, 0, 0, H)
+  bg.addColorStop(0.01, c.cardBgFrom)
+  bg.addColorStop(1, c.cardBgTo)
+  ctx.fillStyle = bg
+  ctx.fillRect(0, 0, W, H)
+
+  // 标题文字（居中）
+  ctx.font = `400 32px ${FB}`
+  ctx.fillStyle = c.textColor
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.beginPath()
+  ctx.fillText(cfg.titleText, W / 2, H / 2, W - 60)
+
+  return downsample(canvas)
+}
+
+/**
+ * 绘制按钮图 → 480×80（Figma 精确尺寸，@2x 超采样）
+ * 90° 渐变胶囊 + "立即领取" 文案
+ */
+export async function drawCouponButton(cfg: CouponConfig): Promise<HTMLCanvasElement> {
+  await preloadFonts()
+  const W = 480, H = 80, S = 2
+  const c = COUPON_COLORS[cfg.colorKey]
+  const canvas = document.createElement('canvas')
+  canvas.width = W * S; canvas.height = H * S
+  const ctx = canvas.getContext('2d')!
+  ctx.scale(S, S)
+
+  const R = H / 2  // 完全圆角
+  const g = ctx.createLinearGradient(0, 0, W, 0)
+  g.addColorStop(0, c.btnFrom)
+  g.addColorStop(1, c.btnTo)
+
+  ctx.beginPath()
+  ctx.moveTo(R, 0)
+  ctx.lineTo(W - R, 0)
+  ctx.arcTo(W, 0, W, R, R)
+  ctx.lineTo(W, H - R)
+  ctx.arcTo(W, H, W - R, H, R)
+  ctx.lineTo(R, H)
+  ctx.arcTo(0, H, 0, H - R, R)
+  ctx.lineTo(0, R)
+  ctx.arcTo(0, 0, R, 0, R)
+  ctx.closePath()
+  ctx.fillStyle = g
+  ctx.fill()
+
+  ctx.font = `400 28px ${FB}`
+  ctx.fillStyle = '#FFFFFF'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.beginPath()
+  ctx.fillText('立即领取', W / 2, H / 2)
+
+  return downsample(canvas)
+}
+
+/**
+ * 绘制不带Tab背景图 → 702×352（Figma 精确尺寸）
+ * 还原：顶部文案 + 3个券卡区域 + 底部领取按钮
+ */
+export async function drawCouponNoTab(cfg: CouponConfig): Promise<HTMLCanvasElement> {
+  await preloadFonts()
+  const W = 702, H = 352, S = 2
+  const c = COUPON_COLORS[cfg.colorKey]
+  const canvas = document.createElement('canvas')
+  canvas.width = W * S; canvas.height = H * S
+  const ctx = canvas.getContext('2d')!
+  ctx.scale(S, S)
+
+  // ── 整体背景（浅色）──────────────────────────────────────────────────────
+  ctx.fillStyle = '#FFFFFF'
+  ctx.fillRect(0, 0, W, H)
+
+  // ── 标题文案（y:0-84）──────────────────────────────────────────────────
+  ctx.font = `400 32px ${FB}`
+  ctx.fillStyle = c.textColor
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.beginPath()
+  ctx.fillText(cfg.titleText, W / 2, 42, W - 80)
+
+  // ── 3个券卡区域（内部 670×256 at x:16,y:84）──────────────────────────
+  // 每张卡约 218px 宽（含间隙），高 100px
+  const cardY = 84, cardH = 100, cardGap = 8
+  const cardW = Math.floor((W - 32 - cardGap * 2) / 3)  // ≈218
+  for (let i = 0; i < 3; i++) {
+    const cx = 16 + i * (cardW + cardGap)
+    const bg = ctx.createLinearGradient(cx, cardY, cx, cardY + cardH)
+    bg.addColorStop(0.01, c.cardBgFrom)
+    bg.addColorStop(1, c.cardBgTo)
+    // 圆角卡片
+    roundedRect(ctx, cx, cardY, cardW, cardH, 12)
+    ctx.fillStyle = bg
+    ctx.fill()
+    // 内部虚线边框提示（占位产品图）
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)'
+    ctx.lineWidth = 1
+    ctx.setLineDash([4, 4])
+    roundedRect(ctx, cx + 8, cardY + 8, cardW - 16, cardH - 16, 8)
+    ctx.stroke()
+    ctx.setLineDash([])
+  }
+
+  // ── 底部券包区域（y:184-352，702×168）───────────────────────────────────
+  const packY = 184, packH = 168
+  const packBg = ctx.createLinearGradient(0, packY, 0, packY + packH)
+  packBg.addColorStop(0.01, c.cardBgFrom)
+  packBg.addColorStop(1, c.cardBgTo)
+  ctx.fillStyle = packBg
+  ctx.fillRect(0, packY, W, packH)
+
+  // 分隔线（渐变描边）
+  const sepG = ctx.createLinearGradient(0, packY, 0, packY + 1)
+  sepG.addColorStop(0, 'rgba(255,255,255,0)')
+  sepG.addColorStop(1, 'rgba(255,255,255,0.6)')
+  ctx.strokeStyle = sepG
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(0, packY + 2); ctx.lineTo(W, packY + 2)
+  ctx.stroke()
+
+  // ── 立即领取按钮（480×80，x:111, y:packY+62）────────────────────────────
+  const btnX = 111, btnY = packY + 62, btnW = 480, btnH = 80
+  const btnR = btnH / 2
+  const btnG = ctx.createLinearGradient(btnX, 0, btnX + btnW, 0)
+  btnG.addColorStop(0, c.btnFrom)
+  btnG.addColorStop(1, c.btnTo)
+  ctx.beginPath()
+  ctx.moveTo(btnX + btnR, btnY)
+  ctx.lineTo(btnX + btnW - btnR, btnY)
+  ctx.arcTo(btnX + btnW, btnY, btnX + btnW, btnY + btnR, btnR)
+  ctx.lineTo(btnX + btnW, btnY + btnH - btnR)
+  ctx.arcTo(btnX + btnW, btnY + btnH, btnX + btnW - btnR, btnY + btnH, btnR)
+  ctx.lineTo(btnX + btnR, btnY + btnH)
+  ctx.arcTo(btnX, btnY + btnH, btnX, btnY + btnH - btnR, btnR)
+  ctx.lineTo(btnX, btnY + btnR)
+  ctx.arcTo(btnX, btnY, btnX + btnR, btnY, btnR)
+  ctx.closePath()
+  ctx.fillStyle = btnG
+  ctx.fill()
+
+  ctx.font = `400 28px ${FB}`
+  ctx.fillStyle = '#FFFFFF'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.beginPath()
+  ctx.fillText('立即领取', btnX + btnW / 2, btnY + btnH / 2)
+
+  return downsample(canvas)
+}
+
+/**
+ * 绘制带Tab背景图 → 710×416（Figma 精确尺寸）
+ * 上方 702×352 券包 + 下方 710×64 横滑Tab区域
+ */
+export async function drawCouponWithTab(cfg: CouponConfig): Promise<HTMLCanvasElement> {
+  await preloadFonts()
+  const W = 710, H = 416, S = 2
+  const c = COUPON_COLORS[cfg.colorKey]
+  const canvas = document.createElement('canvas')
+  canvas.width = W * S; canvas.height = H * S
+  const ctx = canvas.getContext('2d')!
+  ctx.scale(S, S)
+
+  // 先画不带Tab的主体（702×352，居中4px边距）
+  const inner = await drawCouponNoTab(cfg)
+  ctx.drawImage(inner, 4, 0, 702, 352)
+
+  // Tab区域（y:352-416, 高64px，背景与卡片一致）
+  const tabY = 352, tabH = 64
+  const tabBg = ctx.createLinearGradient(0, tabY, 0, tabY + tabH)
+  tabBg.addColorStop(0, c.cardBgFrom)
+  tabBg.addColorStop(1, c.cardBgTo)
+  ctx.fillStyle = tabBg
+  ctx.fillRect(0, tabY, W, tabH)
+
+  // 简单Tab指示：3个tab pill + 当前选中态
+  const TAB_COUNT = 3, tabPW = Math.floor((W - 32 - 8 * 2) / TAB_COUNT)
+  const tabLabels = ['甜点饮品', '能量西餐', '品质生鲜']
+  for (let i = 0; i < TAB_COUNT; i++) {
+    const tx = 16 + i * (tabPW + 8)
+    const ty = tabY + 10, th = 44
+    const isSel = i === 0
+    // Tab背景
+    roundedRect(ctx, tx, ty, tabPW, th, 12)
+    if (isSel) {
+      // 选中：浅色渐变
+      const selBg = ctx.createLinearGradient(tx, ty, tx, ty + th)
+      selBg.addColorStop(0, 'rgba(255,255,255,0.9)')
+      selBg.addColorStop(1, 'rgba(255,255,255,0.7)')
+      ctx.fillStyle = selBg
+    } else {
+      ctx.fillStyle = 'rgba(255,255,255,0.35)'
+    }
+    ctx.fill()
+    // Tab文字
+    ctx.font = `400 18px ${FB}`
+    ctx.fillStyle = isSel ? c.textColor : 'rgba(255,255,255,0.85)'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.beginPath()
+    ctx.fillText(tabLabels[i] || `标签${i+1}`, tx + tabPW / 2, ty + th / 2, tabPW - 8)
   }
 
   return downsample(canvas)
