@@ -8,6 +8,7 @@ import GenericPanel from '@/components/panels/GenericPanel'
 import YituosiPanel from '@/components/panels/YituosiPanel'
 import FloorPanel from '@/components/panels/FloorPanel'
 import HTabPanel from '@/components/panels/HTabPanel'
+import CouponPanel from '@/components/panels/CouponPanel'
 
 export default function Sidebar() {
   const { page, currentComp, goHome, goAssets, goReview, goVenue, darkMode, toggleDarkMode } = useApp()
@@ -20,6 +21,7 @@ export default function Sidebar() {
       case 'n2':    return <N2ConfigPanel />
       case 'floor':  return <FloorPanel />
       case 'h-tab':  return <HTabPanel />
+      case 'coupon': return <CouponPanel />
       case 'yituosi': return <YituosiPanel />
       default:      return <GenericPanel />
     }

@@ -9,7 +9,8 @@ import { N4Provider } from '@/contexts/N4Context'
 import { N2Provider } from '@/contexts/N2Context'
 import { SlotProvider } from '@/contexts/SlotContext'
 import { FloorProvider } from '@/contexts/FloorContext'
-import { HTabProvider } from '@/contexts/HTabContext'
+import { HTabProvider } from "@/contexts/HTabContext"
+import { CouponProvider } from "@/contexts/CouponContext"
 import { VenueProvider } from '@/contexts/VenueContext'
 import Sidebar from '@/components/layout/Sidebar'
 import TopBar from '@/components/layout/TopBar'
@@ -22,6 +23,7 @@ const N4Page      = lazy(() => import('@/components/pages/N4Page'))
 const N2Page      = lazy(() => import('@/components/pages/N2Page'))
 const FloorPage   = lazy(() => import('@/components/pages/FloorPage'))
 const HTabPage    = lazy(() => import('@/components/pages/HTabPage'))
+const CouponPage  = lazy(() => import('@/components/pages/CouponPage'))
 const VenuePage   = lazy(() => import('@/components/pages/VenuePage'))
 const YituosiPage = lazy(() => import('@/components/pages/YituosiPage'))
 const GenericPage = lazy(() => import('@/components/pages/GenericPage'))
@@ -87,6 +89,7 @@ function MainContent() {
           case 'n2':      return <N2Page />
           case 'floor':   return <FloorPage />
           case 'h-tab':   return <HTabPage />
+          case 'coupon':  return <CouponPage />
           case 'yituosi': return <YituosiPage />
           default:        return <GenericPage />
         }
@@ -142,9 +145,11 @@ export default function App() {
           <N2Provider>
             <FloorProvider>
               <HTabProvider>
-                <VenueProvider>
-                  <MainContent />
-                </VenueProvider>
+                <CouponProvider>
+                  <VenueProvider>
+                    <MainContent />
+                  </VenueProvider>
+                </CouponProvider>
               </HTabProvider>
             </FloorProvider>
           </N2Provider>
