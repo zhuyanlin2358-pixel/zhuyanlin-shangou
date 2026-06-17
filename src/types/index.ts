@@ -1,5 +1,5 @@
 export type ComponentStatus = 'done' | 'coming'
-export type PageId = 'home' | 'comp' | 'assets' | 'review'
+export type PageId = 'home' | 'comp' | 'assets' | 'review' | 'venue'
 
 export type ComponentId =
   | 'yituosi' | 'n4' | 'n2' | 'yituoer' | 'diaotong' | 'xin-zujian'
@@ -84,7 +84,7 @@ export const COMPONENT_REGISTRY: ComponentGroup[] = [
       {
         label: 'A 互动玩法类',
         items: [
-          { id: 'slot',         name: '无门槛老虎机',   desc: '抽奖组件全套切图', status: 'done' },
+          { id: 'slot',         name: '老虎机',         desc: '抽奖组件全套切图', status: 'done' },
           { id: 'slot-order',   name: '下单抽奖老虎机', status: 'coming' },
           { id: 'lottery-sign', name: '抽签玩法换肤',   status: 'coming' },
           { id: 'red-rain',     name: '2D 红包雨',      status: 'coming' },
@@ -359,4 +359,18 @@ export const FLOOR_PRESETS: Record<FloorVariant, Omit<FloorConfig, 'variant'>> =
     showDeco: false, decoStyle: 'arrow',
     decoColor1: '#FFCA60', decoColor2: '#FF7399',
   },
+}
+
+// ── 高达会场 ─────────────────────────────────────────────────────────────────
+export type VenueHeaderSize = '424' | '624' | '274'   // 头图高度规格（宽统一750）
+
+export interface VenueItem {
+  id: string
+  componentId: ComponentId   // 来自哪个组件
+  label: string              // 展示名
+  previewUrl: string         // 组件当前预览图 data URL
+  origW: number              // 设计稿宽度（750）
+  origH: number              // 设计稿高度
+  spacingAbove: number       // 与上一个元素的间距 px（0-60）
+  sourceId?: string          // 来源实例 ID（如 HTabItem.id），稳定匹配，不受改色/改数量影响
 }

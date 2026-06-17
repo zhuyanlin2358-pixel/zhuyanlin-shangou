@@ -780,11 +780,14 @@ export async function drawHTabCanvas(cfg: HTabConfig): Promise<HTMLCanvasElement
 
   const color = H_TAB_COLORS[cfg.colorKey]
   const N   = cfg.tabs.length
-  const PAD = 8     // 左右外边距
-  const GAP = 10    // 标签间距
+  const GAP = 10    // 标签间距（Figma 原值）
   const PH  = 60    // 胶囊高度（Figma ~59px）
   const R   = 12    // 圆角半径
-  const PW  = (W - PAD * 2 - GAP * (N - 1)) / N
+  // Figma 精确 tab 宽度：2tab=336，3tab=226，4tab=180
+  // 居中对齐，PAD = (750 - N*PW - (N-1)*GAP) / 2
+  const FIGMA_PW: Record<number, number> = { 2: 336, 3: 226, 4: 180 }
+  const PW  = FIGMA_PW[N] ?? Math.floor((W - GAP * (N - 1)) / N)
+  const PAD = (W - N * PW - (N - 1) * GAP) / 2
   const PY  = (H - PH) / 2
 
   ctx.font = `400 30px ${FB}`

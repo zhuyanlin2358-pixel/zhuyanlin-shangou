@@ -10,6 +10,7 @@ import { N2Provider } from '@/contexts/N2Context'
 import { SlotProvider } from '@/contexts/SlotContext'
 import { FloorProvider } from '@/contexts/FloorContext'
 import { HTabProvider } from '@/contexts/HTabContext'
+import { VenueProvider } from '@/contexts/VenueContext'
 import Sidebar from '@/components/layout/Sidebar'
 import TopBar from '@/components/layout/TopBar'
 import PreviewPanel from '@/components/layout/PreviewPanel'
@@ -21,6 +22,7 @@ const N4Page      = lazy(() => import('@/components/pages/N4Page'))
 const N2Page      = lazy(() => import('@/components/pages/N2Page'))
 const FloorPage   = lazy(() => import('@/components/pages/FloorPage'))
 const HTabPage    = lazy(() => import('@/components/pages/HTabPage'))
+const VenuePage   = lazy(() => import('@/components/pages/VenuePage'))
 const YituosiPage = lazy(() => import('@/components/pages/YituosiPage'))
 const GenericPage = lazy(() => import('@/components/pages/GenericPage'))
 const AssetsPage  = lazy(() => import('@/components/pages/AssetsPage'))
@@ -57,6 +59,21 @@ function PageLoader() {
 function MainContent() {
   const { page, currentComp, toast, hasPreview } = useApp()
   useGlobalScrollVisible()
+
+  // 会场页：全屏独立布局，跳过 Sidebar + TopBar
+  if (page === 'venue') {
+    return (
+      <>
+        <Suspense fallback={<PageLoader />}><VenuePage /></Suspense>
+        {toast && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 text-sm px-4 py-2 rounded-full shadow-lg z-50"
+            style={{ background: '#1a1a1a', color: '#fff', whiteSpace: 'nowrap' }}>
+            {toast}
+          </div>
+        )}
+      </>
+    )
+  }
 
   const pageContent = (() => {
     if (page === 'home') return <div className="page-enter"><HomePage /></div>
@@ -125,7 +142,9 @@ export default function App() {
           <N2Provider>
             <FloorProvider>
               <HTabProvider>
-                <MainContent />
+                <VenueProvider>
+                  <MainContent />
+                </VenueProvider>
               </HTabProvider>
             </FloorProvider>
           </N2Provider>

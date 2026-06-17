@@ -4,6 +4,7 @@ import { useApp } from '@/contexts/AppContext'
 import { useFloor } from '@/contexts/FloorContext'
 import { drawFloorCanvas, downloadCanvas, downloadZip } from '@/utils/exportUtils'
 import { type FloorConfig, type FloorDecoStyle } from '@/types'
+import VenueAddButton from '@/components/ui/VenueAddButton'
 
 // ── 装饰图形库 ────────────────────────────────────────────────────────────────
 const DECO_LIBRARY: {
@@ -285,6 +286,15 @@ function FloorListItem({
         >
           <Trash2 size={12} />
         </button>
+
+        {/* 加入会场（仅在会场页显示）*/}
+        <VenueAddButton
+          componentId="floor"
+          label={`楼层条 · ${text}`}
+          previewUrl={previewUrl}
+          origW={750}
+          origH={60}
+        />
       </div>
     </div>
   )
