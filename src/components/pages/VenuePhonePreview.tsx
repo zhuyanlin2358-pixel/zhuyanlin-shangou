@@ -12,9 +12,6 @@ export default function VenuePhonePreview() {
   const SCALE   = 0.5
   const headerH = Math.round(parseInt(headerSize) * SCALE)
 
-  // ── 预览高度（可调）────────────────────────────────────────────────────────
-  const [phoneH, setPhoneH] = useState(560)
-
   // ── 拖拽排序 ──────────────────────────────────────────────────────────────
   const draggedId    = useRef<string | null>(null)
   const lastSwapTime = useRef(0)
@@ -101,31 +98,17 @@ export default function VenuePhonePreview() {
               {items.length} 组件 · 拖拽排序
             </span>
           )}
-          {/* 高度滑块 */}
-          <div className="flex items-center gap-1.5 ml-2">
-            <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.25)' }}>高</span>
-            <input
-              type="range" min={400} max={820} step={20}
-              value={phoneH}
-              onChange={e => setPhoneH(Number(e.target.value))}
-              style={{ width: 64, accentColor: '#FF5050', cursor: 'pointer' }}
-              title={`预览高度 ${phoneH}px`}
-            />
-          </div>
         </div>
       </div>
 
-      {/* ── 手机预览区（高度可调，超出可滚动）── */}
-      <div className="flex-1 overflow-y-auto flex justify-center pt-3 pb-3 px-2">
+      {/* ── 手机预览区（高度自适应，无上限；外层可滚动）── */}
+      <div className="flex-1 overflow-y-auto flex justify-center pt-3 pb-4 px-2">
         <div
           className="rounded-2xl overflow-hidden shadow-2xl w-full"
           style={{
             maxWidth: 375,
-            height: phoneH,
             background: bgColor,
             border: '1.5px solid rgba(255,255,255,0.1)',
-            display: 'flex',
-            flexDirection: 'column',
           }}
         >
           {/* 状态栏 */}
@@ -140,8 +123,8 @@ export default function VenuePhonePreview() {
             </div>
           </div>
 
-          {/* 可滚动内容 */}
-          <div className="overflow-y-auto flex-1" style={{ background: bgColor }}>
+          {/* 内容区（高度随内容撑开，无上限）*/}
+          <div style={{ background: bgColor }}>
             {/* 头图 */}
             {headerUrl ? (
               <img src={headerUrl} alt="头图"
