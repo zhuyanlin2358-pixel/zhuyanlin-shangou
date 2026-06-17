@@ -1,52 +1,80 @@
 /**
- * 高达会场右侧手机预览（持久，始终显示）
- * 使用 pointer 事件实现上下拖拽排序（比 HTML5 drag 在滚动容器里更可靠）
+ * 高达会场右侧手机预览
+ * 拖拽：pointer 事件 + setPointerCapture（无 id 传参，通过 draggedId ref + itemRefs 定位邻居）
+ * 高度：标题栏右侧滑块，400–820px 可调
  */
 import { useRef, useState } from 'react'
 import { useVenue } from '@/contexts/VenueContext'
 
 export default function VenuePhonePreview() {
-  const { items, headerUrl, headerSize, bgColor, reorderItems } = useVenue()
+  const { items, headerUrl, headerSize, bgColor, moveItem } = useVenue()
 
   const SCALE   = 0.5
   const headerH = Math.round(parseInt(headerSize) * SCALE)
 
-  // ── 拖拽状态 ──────────────────────────────────────────────────────────────
-  const draggedId  = useRef<string | null>(null)
-  const [dragOver, setDragOver] = useState<string | null>(null)  // 高亮目标
-  const itemRefs   = useRef<Record<string, HTMLDivElement | null>>({})
+  // ── 预览高度（可调）────────────────────────────────────────────────────────
+  const [phoneH, setPhoneH] = useState(560)
 
-  // pointer 按下：记录被拖的 id，绑定指针捕获
+  // ── 拖拽排序 ──────────────────────────────────────────────────────────────
+  const draggedId    = useRef<string | null>(null)
+  const lastSwapTime = useRef(0)
+  const itemRefs     = useRef<Record<string, HTMLDivElement | null>>({})
+
+  // latestItems 始终持有最新 items（规避 useCallback stale closure）
+  const latestItems = useRef(items)
+  latestItems.current = items
+
+  const [dragOver, setDragOver] = useState<string | null>(null)
+
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>, id: string) => {
     e.currentTarget.setPointerCapture(e.pointerId)
     draggedId.current = id
   }
 
-  // pointer 移动：逐帧检测指针 Y 是否越过相邻元素中线
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>, id: string) => {
+  // ⚠️ 不传 id：pointer 被捕获后所有 move 事件都走这里，靠 draggedId 定位邻居
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!draggedId.current || e.buttons === 0) {
       draggedId.current = null
       setDragOver(null)
       return
     }
-    if (draggedId.current === id) return
 
-    const rect = e.currentTarget.getBoundingClientRect()
-    const midY = rect.top + rect.height / 2
-    const srcIdx = items.findIndex(it => it.id === draggedId.current)
-    const tgtIdx = items.findIndex(it => it.id === id)
+    const now  = Date.now()
+    if (now - lastSwapTime.current < 160) return   // 防止同一帧多次 swap
 
-    // 向下拖：指针过中线下方才 swap
-    if (srcIdx < tgtIdx && e.clientY > midY) {
-      reorderItems(draggedId.current, id)
-      draggedId.current = id  // 更新 draggedId 为新位置
+    const cur  = latestItems.current
+    const srcIdx = cur.findIndex(it => it.id === draggedId.current)
+    if (srcIdx < 0) return
+
+    // 检查上方邻居
+    if (srcIdx > 0) {
+      const above = cur[srcIdx - 1]
+      const ref   = itemRefs.current[above.id]
+      if (ref) {
+        const r = ref.getBoundingClientRect()
+        if (e.clientY < r.top + r.height / 2) {
+          moveItem(draggedId.current, 'up')
+          lastSwapTime.current = now
+          setDragOver(above.id)
+          return
+        }
+      }
     }
-    // 向上拖：指针过中线上方才 swap
-    if (srcIdx > tgtIdx && e.clientY < midY) {
-      reorderItems(draggedId.current, id)
-      draggedId.current = id
+
+    // 检查下方邻居
+    if (srcIdx < cur.length - 1) {
+      const below = cur[srcIdx + 1]
+      const ref   = itemRefs.current[below.id]
+      if (ref) {
+        const r = ref.getBoundingClientRect()
+        if (e.clientY > r.top + r.height / 2) {
+          moveItem(draggedId.current, 'down')
+          lastSwapTime.current = now
+          setDragOver(below.id)
+          return
+        }
+      }
     }
-    setDragOver(id)
   }
 
   const handlePointerUp = () => {
@@ -59,7 +87,7 @@ export default function VenuePhonePreview() {
       className="fixed top-0 right-0 h-screen flex flex-col border-l"
       style={{ width: 380, background: '#0D1117', borderColor: 'rgba(255,255,255,0.07)' }}
     >
-      {/* 标题栏 */}
+      {/* ── 标题栏（含高度调节）── */}
       <div
         className="h-12 flex items-center justify-between px-4 border-b shrink-0"
         style={{ borderColor: 'rgba(255,255,255,0.07)' }}
@@ -67,24 +95,40 @@ export default function VenuePhonePreview() {
         <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.6)' }}>
           手机预览 · 375px
         </span>
-        {items.length > 0 && (
-          <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-            {items.length} 个组件 · 上下拖拽排序
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {items.length > 0 && (
+            <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+              {items.length} 组件 · 拖拽排序
+            </span>
+          )}
+          {/* 高度滑块 */}
+          <div className="flex items-center gap-1.5 ml-2">
+            <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.25)' }}>高</span>
+            <input
+              type="range" min={400} max={820} step={20}
+              value={phoneH}
+              onChange={e => setPhoneH(Number(e.target.value))}
+              style={{ width: 64, accentColor: '#FF5050', cursor: 'pointer' }}
+              title={`预览高度 ${phoneH}px`}
+            />
+          </div>
+        </div>
       </div>
 
-      {/* 手机预览 */}
+      {/* ── 手机预览区（高度可调，超出可滚动）── */}
       <div className="flex-1 overflow-y-auto flex justify-center pt-3 pb-3 px-2">
         <div
           className="rounded-2xl overflow-hidden shadow-2xl w-full"
           style={{
             maxWidth: 375,
+            height: phoneH,
             background: bgColor,
             border: '1.5px solid rgba(255,255,255,0.1)',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
-          {/* 状态栏（后续用户可提供真实截图替换）*/}
+          {/* 状态栏 */}
           <div className="flex items-center justify-between px-4 shrink-0"
             style={{ height: 26, background: bgColor }}>
             <span style={{ fontSize: 10, fontWeight: 600, color: '#333' }}>9:41</span>
@@ -96,22 +140,22 @@ export default function VenuePhonePreview() {
             </div>
           </div>
 
-          {/* 头图 */}
-          {headerUrl ? (
-            <img src={headerUrl} alt="头图"
-              style={{ width: 375, height: headerH, objectFit: 'cover', display: 'block' }} />
-          ) : (
-            <div className="flex items-center justify-center"
-              style={{ width: 375, height: headerH || 60, background: '#f5f5f5' }}>
-              <span style={{ fontSize: 10, color: '#bbb' }}>暂无头图（在「会场」里上传）</span>
-            </div>
-          )}
+          {/* 可滚动内容 */}
+          <div className="overflow-y-auto flex-1" style={{ background: bgColor }}>
+            {/* 头图 */}
+            {headerUrl ? (
+              <img src={headerUrl} alt="头图"
+                style={{ width: 375, height: headerH, objectFit: 'cover', display: 'block' }} />
+            ) : (
+              <div style={{ width: 375, height: Math.max(headerH, 40), background: '#f5f5f5',
+                display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <span style={{ fontSize: 10, color: '#bbb' }}>暂无头图</span>
+              </div>
+            )}
 
-          {/* 可拖拽排序组件列表 */}
-          <div style={{ background: bgColor }}>
+            {/* 组件列表 */}
             {items.length === 0 && (
-              <div className="flex items-center justify-center py-10"
-                style={{ color: '#bbb', fontSize: 10 }}>
+              <div style={{ padding: '24px 0', textAlign: 'center', fontSize: 10, color: '#bbb' }}>
                 配置组件后点「加入会场」↗
               </div>
             )}
@@ -120,15 +164,13 @@ export default function VenuePhonePreview() {
                 key={item.id}
                 ref={el => { itemRefs.current[item.id] = el }}
                 onPointerDown={e => handlePointerDown(e, item.id)}
-                onPointerMove={e => handlePointerMove(e, item.id)}
+                onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
                 style={{
                   cursor: draggedId.current === item.id ? 'grabbing' : 'grab',
-                  position: 'relative',
-                  touchAction: 'none',  // 防止移动端滚动干扰
-                  outline: dragOver === item.id ? '2px solid rgba(255,80,80,0.5)' : 'none',
-                  transition: 'outline 0.1s',
+                  touchAction: 'none',
                   userSelect: 'none',
+                  outline: dragOver === item.id ? '2px solid rgba(255,80,80,0.6)' : 'none',
                 }}
               >
                 {item.spacingAbove > 0 && (
@@ -141,7 +183,7 @@ export default function VenuePhonePreview() {
                 />
               </div>
             ))}
-            <div style={{ height: 16, background: bgColor }} />
+            <div style={{ height: 12, background: bgColor }} />
           </div>
         </div>
       </div>
