@@ -1,8 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react'
+import { VENUE_COMP_IDS } from '@/types'
 import type { ComponentId, PageId } from '@/types'
-
-// P4「高达组件」完成品 → 进入统一三列工作区（venue）
-const VENUE_COMP_IDS: ComponentId[] = ['slot', 'floor', 'h-tab']
 
 interface AppContextValue {
   darkMode: boolean

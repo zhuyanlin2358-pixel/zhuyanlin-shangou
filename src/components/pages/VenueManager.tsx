@@ -172,6 +172,43 @@ export default function VenueManager() {
           )}
         </div>
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleHeaderUpload} />
+
+        {/* 头图动效 */}
+        <div className="mt-3">
+          <div className="text-xs font-semibold mb-2" style={{ color: 'var(--text-2)' }}>
+            头图动效
+          </div>
+          <div
+            className="flex items-center gap-3 px-4 py-3 rounded-xl"
+            style={{ border: '1.5px dashed var(--border)', background: 'var(--bg-subtle)' }}
+          >
+            {/* 动效图标 */}
+            <div
+              className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(255,255,255,0.06)' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth={1.6} style={{ color: 'var(--text-3)' }}>
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 8v4l3 3"/>
+              </svg>
+            </div>
+            <div className="flex-1">
+              <div className="text-xs font-medium" style={{ color: 'var(--text-2)' }}>
+                待开发
+              </div>
+              <div className="text-[10px] mt-0.5 leading-snug" style={{ color: 'var(--text-3)' }}>
+                头图动效配置，包含入场动效、循环动效及自定义动销动画库
+              </div>
+            </div>
+            <span
+              className="text-[10px] px-2 py-0.5 rounded-full shrink-0"
+              style={{ background: 'rgba(255,200,0,0.1)', color: 'rgba(255,180,0,0.8)' }}
+            >
+              即将上线
+            </span>
+          </div>
+        </div>
       </section>
 
       {/* ── 背景色 ── */}
