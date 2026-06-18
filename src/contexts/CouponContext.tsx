@@ -5,6 +5,7 @@ interface CouponCtx {
   config: CouponConfig
   setColorKey: (k: CouponColorKey) => void
   setTitleText: (t: string) => void
+  setBtnText: (t: string) => void
 }
 
 const Ctx = createContext<CouponCtx | null>(null)
@@ -12,6 +13,7 @@ const Ctx = createContext<CouponCtx | null>(null)
 const DEFAULT_CONFIG: CouponConfig = {
   colorKey: 'green',
   titleText: '领618好店券 下单更优惠',
+  btnText: '一键领取',
 }
 
 export function CouponProvider({ children }: { children: ReactNode }) {
@@ -19,9 +21,10 @@ export function CouponProvider({ children }: { children: ReactNode }) {
 
   const setColorKey = (k: CouponColorKey) => setConfig(p => ({ ...p, colorKey: k }))
   const setTitleText = (t: string) => setConfig(p => ({ ...p, titleText: t }))
+  const setBtnText   = (t: string) => setConfig(p => ({ ...p, btnText: t }))
 
   return (
-    <Ctx.Provider value={{ config, setColorKey, setTitleText }}>
+    <Ctx.Provider value={{ config, setColorKey, setTitleText, setBtnText }}>
       {children}
     </Ctx.Provider>
   )
