@@ -398,10 +398,11 @@ export const COUPON_COLORS: Record<CouponColorKey, CouponColorDef> = {
   gold1: { name: '金色', cardBgFrom: '#FBE7C0', cardBgTo: '#FADFB0', btnFrom: '#FF1F43', btnTo: '#FF008E', textColor: '#950E0F' },
   gold2: { name: '金色深', cardBgFrom: '#FBE7C0', cardBgTo: '#FADFB0', btnFrom: '#FF1F43', btnTo: '#FF008E', textColor: '#950E0F' },
   pink:  { name: '粉色', cardBgFrom: '#FDDCFF', cardBgTo: '#FFBCE0', btnFrom: '#FF3E58', btnTo: '#FF1838', textColor: '#950E0F' },
-  red:   { name: '红色', cardBgFrom: '#FFDCE5', cardBgTo: '#FFD4D4', btnFrom: '#36C945', btnTo: '#13D224', textColor: '#950E0F' },
+  red:   { name: '红色', cardBgFrom: '#FFDCE5', cardBgTo: '#FFD4D4', btnFrom: '#FF3E58', btnTo: '#FF2958', textColor: '#950E0F' },
 }
 
 export interface CouponConfig {
   colorKey: CouponColorKey
   titleText: string   // 主文案，如"领618好店券 下单更优惠"
+  btnText: string     // 按钮文案，如"一键领取"
 }

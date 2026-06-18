@@ -1138,7 +1138,7 @@ export async function drawCouponButton(cfg: CouponConfig): Promise<HTMLCanvasEle
   ctx.fillStyle = '#FFFFFF'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillText('立即领取', W / 2, H / 2)
+  ctx.fillText(cfg.btnText || '一键领取', W / 2, H / 2)
 
   return downsample(canvas)
 }
@@ -1224,7 +1224,7 @@ export async function drawCouponPreview(cfg: CouponConfig): Promise<HTMLCanvasEl
   ctx.fillStyle = '#FFFFFF'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillText('立即领取', btnX + btnW / 2, btnY + btnH / 2)
+  ctx.fillText(cfg.btnText || '一键领取', btnX + btnW / 2, btnY + btnH / 2)
 
   return downsample(canvas)
 }

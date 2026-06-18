@@ -1,6 +1,6 @@
 # 闪购会场组件自助设计工具 — Claude Code 上下文文档
 
-> 最后更新：2026-06-17
+> 最后更新：2026-06-18
 
 ---
 
@@ -22,7 +22,7 @@
 | 层 | 技术 |
 |----|------|
 | 框架 | React 18 + TypeScript |
-| 构建 | Vite 5 |
+| 构建 | Vite 5（manualChunks 分包：react/gsap/ui/jszip） |
 | 样式 | Tailwind CSS v3 + CSS 自定义变量 |
 | 包管理 | pnpm |
 | 动效 | GSAP 3（仅入场动画，只在挂载时执行一次） |
@@ -40,27 +40,31 @@ src/
   index.css                   # 全局样式：CSS 变量 + 主题
   contexts/
     AppContext.tsx             # 全局状态：page, currentComp, toast
-                              # P4高达组件（slot/floor/h-tab）→ page='venue'
+                              # P4高达组件（VENUE_COMP_IDS）→ page='venue'
     SlotContext.tsx / N4Context / N2Context
     FloorContext.tsx           # 楼层条：patchConfig 函数式更新
     HTabContext.tsx            # 横滑Tab：items 多条目管理
+    CouponContext.tsx          # 一键领券红包：colorKey / titleText
     VenueContext.tsx           # 高达会场：items/header/bgColor/moveItem/reorderItems
   components/
     layout/
       TopBar.tsx / Sidebar.tsx / PreviewPanel.tsx
     pages/
       SlotPage / N4Page / N2Page / FloorPage / HTabPage
+      CouponPage.tsx           # 一键领券红包（ExportCard×4：完整预览/背景/腰封/按钮）
       VenuePage.tsx            # 4列工作区（薄导航+配置面板+主内容+手机预览）
       VenueManager.tsx         # 会场管理（头图/背景色/组件列表/导出拼图）
-      VenuePhonePreview.tsx    # 右侧手机预览（pointer拖拽排序，高度可调）
+      VenuePhonePreview.tsx    # 右侧手机预览（pointer拖拽排序）
     panels/
       SlotPanel / N4ConfigPanel / N2ConfigPanel / FloorPanel / HTabPanel
+      CouponPanel.tsx          # 配色选择 + 文案输入
     ui/
       PanelField.tsx           # ColorField, PanelInput, DisclosureGroup 等
       VenueAddButton.tsx       # 加入会场/更新预览 智能双模式按钮
   utils/
     exportUtils.ts             # 所有 Canvas 绘制（@2x 超采样）
     slotStyles.ts              # 老虎机风格注册表
+  types/index.ts               # VENUE_COMP_IDS 单一数据源
   scripts/
     sync-obsidian.sh           # 三端同步脚本（项目→Obsidian→GitHub）
 ```
@@ -77,17 +81,24 @@ src/
 
 ## 已完成组件
 
-| 组件 | id | 状态 |
-|------|----|------|
-| 老虎机 | slot | ✅ 8类切图、手机预览、风格切换 |
-| N4 文字标签 | n4 | ✅ 8种变体，240×156 透明底 PNG |
-| N2 品牌Logo | n2 | ✅ 有底色/描边/素材库 |
-| 楼层条 | floor | ✅ 750×60，3款预设，3种装饰，透明底，多条批量 |
-| 横滑 Tab | h-tab | ✅ 7色配色，2/3/4tab，选中箭头，按尺寸分文件夹 |
+| 组件 | id | 状态 | 导出素材 |
+|------|----|------|---------|
+| 老虎机 | slot | ✅ 已上线 | 8类切图（背景/按钮/滚轮/奖品等）|
+| N4 文字标签 | n4 | ✅ 已上线 | 8种变体，240×156 透明底 PNG |
+| N2 品牌Logo | n2 | ✅ 已上线 | 有底色/描边/素材库 |
+| 楼层条 | floor | ✅ 已上线 | 750×60，3款预设，3种装饰，透明底，多条批量 |
+| 横滑 Tab | h-tab | ✅ 已上线 | 7色×N张，按尺寸分子文件夹 |
+| 一键领券红包 | coupon | ✅ 已上线 | 3素材（券包背景702×352/腰封702×168/按钮480×80） |
+
+**VENUE_COMP_IDS** 单一数据源在 `src/types/index.ts`：
+```typescript
+export const VENUE_COMP_IDS: ComponentId[] = ['slot', 'floor', 'h-tab', 'coupon']
+```
+新增高达完成品只需往这里加，Sidebar / VenuePage / AppContext 自动同步。
 
 ---
 
-## 高达会场预览（feature/venue-preview 分支）
+## 高达会场（venue 页）
 
 ### 架构：4列工作区
 
@@ -96,14 +107,21 @@ src/
 ```
 
 - **点击 P4 高达组件** → `page='venue'` + `currentComp=id`（不走旧 comp 流程）
-- **配置面板** 随 currentComp 切换（SlotPanel / FloorPanel / HTabPanel）
-- **VenuePhonePreview** 始终显示，pointer 事件拖拽排序，高度滑块可调
+- **配置面板** 随 currentComp 切换（SlotPanel / FloorPanel / HTabPanel / CouponPanel）
+- **VenuePhonePreview** 始终显示，pointer 事件拖拽排序
+- **已加入组件**卡片：统一 120px 高缩略图（objectFit cover + top 裁切），所有组件高度一致
 
 ### VenueAddButton 双模式
 
 - **未在会场**：蓝色「加入会场」→ `addItem()`，HTab 自动打 Tab1/Tab2 序号
 - **已在会场**：灰色「更新预览 ↺」→ `updatePreview(sourceId)` 精准刷新
-- HTab 用 `sourceId = item.id` 稳定匹配，不受改色/改数量影响
+- HTab / Coupon 用 `sourceId = item.id` 稳定匹配，不受改色/改数量影响
+
+### 手机预览对齐规则
+
+- **全组件**：`padding: 0 8px`，`width: 100%`，`height: auto`
+- **券红包**：`padding: 0 20px`（设计稿702px vs 750px，多补12px让视觉等宽），`borderRadius: 10`
+- **组件间距**：`marginTop: 4px`（用背景色填充，拖拽不受影响）
 
 ### 拖拽排序实现（pointer 事件方案）
 
@@ -120,12 +138,56 @@ onPointerMove → 通过 itemRefs 检查邻居中线位置 → moveItem('up'/'do
 
 ---
 
+## 一键领券红包组件（coupon）
+
+### 导出素材
+
+| 素材 | 尺寸 | 函数 |
+|------|------|------|
+| 券包背景 | 702×352 | `drawCouponBg(cfg)` |
+| 券包腰封 | 702×168 | `drawCouponWaistband(cfg)` |
+| 组件按钮 | 480×80 | `drawCouponButton(cfg)` |
+| 完整预览（会场用）| 702×352 | `drawCouponPreview(cfg)` |
+
+### 配色系统（7色）
+
+`COUPON_COLORS` in `types/index.ts`：teal/blue/green/gold1/gold2/pink/red  
+每色包含：cardBgFrom/To（券卡渐变）、btnFrom/To（按钮渐变）、textColor（标题色）
+
+### Canvas 关键实现
+
+```typescript
+// 腰封弧形（Path2D + SVG 路径字符串）
+const WAIST_SVG_PATH = 'M0,15 Q351,0 702,15 L702,168 L0,168 Z'
+function drawWaistShape(ctx, from, to, gradY0, gradY1) { /* 填充渐变弧形 */ }
+
+// 胶囊按钮
+function capsulePath(ctx, x, y, w, h) { /* arcTo 画圆端 */ }
+
+// 标题区闪电装饰（4颗，Figma 精确坐标）
+const BOLT_SM_L = '...', BOLT_SM_R = '...'  // 小闪电（标题左右各1）
+const BOLT_LG_L = '...', BOLT_LG_R = '...'  // 大闪电（标题旁各1）
+```
+
+### 渲染流程（两遍渲染防白屏）
+
+```typescript
+// 立即用占位色渲染一遍（字体未加载时也能看到形状）
+render()
+// 字体加载完成后再渲染一遍（精确文字）
+preloadFonts().then(() => render())
+```
+
+---
+
 ## 楼层条组件（floor）
 
 - 750×60 px，FZLanTingHei-DB 34px，透明底（背景色仅预览用）
 - 装饰图形：Figma 精确 SVG 路径（闪电+双燕+爱心+古铜钱）
 - 动态定位：`ctx.measureText()` 测文字宽，贴紧 16px 间距
 - ⚠️ 装饰绘完后必须重置 `ctx.fillStyle = cfg.textColor`（否则文字用装饰色）
+
+---
 
 ## 横滑 Tab 组件（h-tab）
 
@@ -139,47 +201,71 @@ onPointerMove → 通过 itemRefs 检查邻居中线位置 → moveItem('up'/'do
 
 ## 关键 Canvas 规范
 
-1. **@2x 超采样**：内部 2x 渲染 → `downsample()` 缩回
+1. **@2x 超采样**：内部 2x 渲染 → `downsample()` 缩回 1x 输出
 2. **装饰绘制后必须重置 fillStyle**（楼层条 bug 教训）
 3. **patchConfig 函数式更新**：`prev => ({...prev, ...patch})` 防色轮拖拽 stale closure
 4. **子组件必须在模块顶层**：不能在父函数体内定义，否则 input 失焦
+5. **两遍渲染**：字体未就绪时先占位渲染，`preloadFonts()` 完成后精渲（CouponPage、SlotPage 均用此模式）
+6. **坐标系一致**：canvas 宽多少就画多少，不要用 translate 偏移再用不同宽度的路径（背景/腰封宽度不匹配 bug 教训）
 
 ---
 
 ## 字体
 
-| 文件 | family | 用途 |
-|------|--------|------|
-| FZLTHJW.TTF | FZLanTingHei-M | 老虎机正文/链接/按钮 |
-| FZLTZHJW.TTF | FZLanTingHei-DB | 楼层条/横滑Tab |
+| 文件 | family | 格式 | 用途 |
+|------|--------|------|------|
+| FZLTHJW.woff2 | FZLanTingHei-M | WOFF2（1.1MB） | 老虎机正文/链接/按钮 |
+| FZLTZHJW.woff2 | FZLanTingHei-DB | WOFF2（1.1MB） | 楼层条/横滑Tab/红包标题 |
 
-字体加载：singleton + 3s 超时降级（避免慢网卡死）。
+**性能优化**：TTF → WOFF2，4.4MB → 2.3MB（-47%）；`font-display: swap` 避免白屏阻塞。  
+字体加载：`preloadFonts()` singleton + 3s 超时降级。`_fontsLoaded` flag 二次进入即时返回。
+
+---
+
+## 构建优化（vite.config.ts）
+
+```typescript
+build: {
+  chunkSizeWarningLimit: 800,
+  rollupOptions: {
+    output: {
+      manualChunks: {
+        'vendor-react': ['react', 'react-dom'],
+        'vendor-gsap':  ['gsap'],
+        'vendor-ui':    ['@headlessui/react', 'lucide-react'],
+        'vendor-jszip': ['jszip'],
+      },
+    },
+  },
+},
+```
+
+业务代码改动不会让用户重新下载大型第三方库。
 
 ---
 
 ## 分支/发布流程
 
 ```bash
-# 日常开发（main 分支）
-git add -A && git commit -m "描述" && git push origin dev
-# 发布
-git checkout main && git merge dev && git push origin main && git checkout dev
-
-# 会场预览功能（独立分支）
-git checkout feature/venue-preview
+# 日常开发（feature/venue-preview 分支开发，main 发布）
+git add -A && git commit -m "描述"
 git push origin feature/venue-preview
-# 合并到 main（确认无误后）
-git checkout main && git merge feature/venue-preview && git push origin main
+
+# 发布到线上
+git checkout main && git merge feature/venue-preview && git push origin main && git checkout feature/venue-preview
 
 # 同步记忆到 Obsidian + GitHub
 bash scripts/sync-obsidian.sh
 ```
+
+> 当前所有功能已合并 main。feature/venue-preview 作为日常开发分支持续使用。
 
 ---
 
 ## 待做
 
 - **一拖四**：规范确认后开发
-- **N4/N2 加入会场**：需 captureElement → previewUrl
-- **会场预览合并主干**：feature/venue-preview 测试完后 merge main
+- **N4/N2 加入会场**：需 captureElement → previewUrl 方案
+- **头图动效库**：协作方提供动效代码后接入 VenueManager（占位已预留）
+- **券红包 Figma 还原**：白色券卡精确位置（3张半，Figma 坐标：col1 x:18，col2 x:222，col3 x:425，col4 partial x:628）
 - **Skill AI 出图**：等 zhuxiangyu04 API 方案

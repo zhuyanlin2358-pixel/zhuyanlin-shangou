@@ -5,7 +5,7 @@ import { PanelInput, DisclosureGroup } from '@/components/ui/PanelField'
 const COLOR_KEYS = Object.keys(COUPON_COLORS) as CouponColorKey[]
 
 export default function CouponPanel() {
-  const { config, setColorKey, setTitleText } = useCoupon()
+  const { config, setColorKey, setTitleText, setBtnText } = useCoupon()
 
   return (
     <div className="py-1">
@@ -51,16 +51,31 @@ export default function CouponPanel() {
 
       {/* 文案设置 */}
       <DisclosureGroup title="文案设置" defaultOpen>
-        <div className="px-4 pb-3">
-          <PanelInput
-            value={config.titleText}
-            onChange={e => setTitleText(e.target.value)}
-            placeholder="请填写主文案"
-            maxLength={24}
-          />
-          <p className="text-[10px] text-white/30 mt-1.5 leading-snug">
-            Figma 原版：领618好店券 下单更优惠
-          </p>
+        <div className="px-4 pb-3 space-y-3">
+          <div>
+            <p className="text-[10px] text-white/40 mb-1">主文案</p>
+            <PanelInput
+              value={config.titleText}
+              onChange={e => setTitleText(e.target.value)}
+              placeholder="请填写主文案"
+              maxLength={24}
+            />
+            <p className="text-[10px] text-white/30 mt-1 leading-snug">
+              默认：领618好店券 下单更优惠
+            </p>
+          </div>
+          <div>
+            <p className="text-[10px] text-white/40 mb-1">按钮文案</p>
+            <PanelInput
+              value={config.btnText}
+              onChange={e => setBtnText(e.target.value)}
+              placeholder="请填写按钮文案"
+              maxLength={10}
+            />
+            <p className="text-[10px] text-white/30 mt-1 leading-snug">
+              默认：一键领取
+            </p>
+          </div>
         </div>
       </DisclosureGroup>
 
