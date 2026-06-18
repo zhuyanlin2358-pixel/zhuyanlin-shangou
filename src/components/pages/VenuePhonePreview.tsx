@@ -154,6 +154,7 @@ export default function VenuePhonePreview() {
                   touchAction: 'none',
                   userSelect: 'none',
                   outline: dragOver === item.id ? '2px solid rgba(255,80,80,0.6)' : 'none',
+                  marginTop: 4,
                 }}
               >
                 {item.spacingAbove > 0 && (
