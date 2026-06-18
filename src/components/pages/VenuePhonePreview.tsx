@@ -123,8 +123,8 @@ export default function VenuePhonePreview() {
             </div>
           </div>
 
-          {/* 内容区（高度随内容撑开，无上限；px-2 = 两侧等距留白）*/}
-          <div style={{ background: bgColor, padding: '0 8px' }}>
+          {/* 内容区（高度随内容撑开，无上限）*/}
+          <div style={{ background: bgColor }}>
             {/* 头图 */}
             {headerUrl ? (
               <img src={headerUrl} alt="头图"
@@ -159,11 +159,14 @@ export default function VenuePhonePreview() {
                 {item.spacingAbove > 0 && (
                   <div style={{ height: Math.round(item.spacingAbove * SCALE), background: bgColor }} />
                 )}
-                <img
-                  src={item.previewUrl} alt={item.label}
-                  draggable={false}
-                  style={{ width: '100%', height: 'auto', display: 'block' }}
-                />
+                {/* 两侧留白与老虎机 / 横滑Tab 一致，头图不受影响 */}
+                <div style={{ padding: '0 8px', background: bgColor }}>
+                  <img
+                    src={item.previewUrl} alt={item.label}
+                    draggable={false}
+                    style={{ width: '100%', height: 'auto', display: 'block' }}
+                  />
+                </div>
               </div>
             ))}
             <div style={{ height: 12, background: bgColor }} />
