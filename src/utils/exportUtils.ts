@@ -1147,53 +1147,56 @@ export async function drawCouponButton(cfg: CouponConfig): Promise<HTMLCanvasEle
  * 工具内合成预览 702×352（不单独导出）
  * 层次：渐变底 → 标题+闪电 → 3张白卡券（Figma 精确布局）→ 腰封弧形 → 按钮
  */
+/**
+ * 工具内合成预览 750×352（不单独导出，仅用于手机预览 + 加入会场）
+ * 宽度统一为 750px（与老虎机 / 楼层条 / 横滑Tab 一致），0.5x 显示 = 375px 手机宽
+ * 702px 设计内容整体向右偏移 OFFSET=(750-702)/2=24px 居中，不拉伸不变形
+ */
 export async function drawCouponPreview(cfg: CouponConfig): Promise<HTMLCanvasElement> {
   await preloadFonts()
-  const W = 702, H = 352, S = 2
-  const WAIST_Y = 184   // Figma layout_KJQC3X y:184
-  const WAIST_H = 168
+  const W = 750, H = 352, S = 2            // 750px 与其他组件统一
+  const OFFSET = (750 - 702) / 2           // 24px：702px 设计在 750px 画布中的左边距
+  const WAIST_Y = 184, WAIST_H = 168
   const c = COUPON_COLORS[cfg.colorKey]
   const canvas = document.createElement('canvas')
   canvas.width = W * S; canvas.height = H * S
   const ctx = canvas.getContext('2d')!
   ctx.scale(S, S)
 
-  // ① 整体渐变背景
+  // ① 渐变背景（填满 750px）
   const bg = ctx.createLinearGradient(0, 0, 0, H)
   bg.addColorStop(0.01, c.cardBgFrom)
   bg.addColorStop(1,    c.cardBgTo)
   ctx.fillStyle = bg
   ctx.fillRect(0, 0, W, H)
 
-  // ② 标题 + 闪电装饰
+  // ② 702px 设计内容整体右移 OFFSET，保持原始坐标不变
+  ctx.save()
+  ctx.translate(OFFSET, 0)
+
+  // 标题 + 闪电装饰
   drawCouponHeader(ctx, cfg)
 
-  // ③ 券卡区（3列白卡，y:84-180 可见，腰封遮盖下方）
+  // 券卡区
   const CX0 = 18, CY0 = 84, CW = 192, CH = 94, CGAP = 12, CR = 14
   for (let i = 0; i < 3; i++) {
     const cx = CX0 + i * (CW + CGAP)
-
     roundedRect(ctx, cx, CY0, CW, CH, CR)
     ctx.fillStyle = 'rgba(255,255,255,0.92)'
     ctx.fill()
-
     ctx.textAlign = 'center'
 
     if (i === 0) {
-      // 第1列：仅标签，垂直居中
       ctx.font = `700 18px ${FB}`
       ctx.fillStyle = 'rgba(0,0,0,0.72)'
       ctx.textBaseline = 'middle'
       ctx.fillText('外卖餐饮券', cx + CW / 2, CY0 + CH / 2)
     } else {
-      // 第2-3列：顶部标签 / ¥? 居中 / 底部券名
       ctx.font = `700 14px ${FB}`
       ctx.fillStyle = 'rgba(0,0,0,0.52)'
       ctx.textBaseline = 'top'
       ctx.fillText('外卖餐饮券', cx + CW / 2, CY0 + 8)
-
-      // ¥ 和 ? 并排，整体水平居中
-      const amtCX = cx + CW / 2 - 4   // 向左偏移让¥+?视觉居中
+      const amtCX = cx + CW / 2 - 4
       ctx.fillStyle = '#FF0000'
       ctx.font = `400 17px ${FB}`
       ctx.textAlign = 'right'
@@ -1202,8 +1205,6 @@ export async function drawCouponPreview(cfg: CouponConfig): Promise<HTMLCanvasEl
       ctx.font = `700 32px ${FB}`
       ctx.textAlign = 'left'
       ctx.fillText('?', amtCX + 2, CY0 + 66)
-
-      // 底部券类名
       ctx.font = `400 12px ${FB}`
       ctx.fillStyle = '#222426'
       ctx.textAlign = 'center'
@@ -1212,21 +1213,23 @@ export async function drawCouponPreview(cfg: CouponConfig): Promise<HTMLCanvasEl
     }
   }
 
-  // ④ 腰封弧形覆层（Figma node 69:3697，顶边凹弧 y≈39 at center）
-  ctx.save()
+  // 腰封弧形（在 translate(OFFSET,0) 基础上再 translate(0,WAIST_Y)）
+  // 此时 local(0,0) = canvas(OFFSET, WAIST_Y)，渐变坐标用 local y 即可
   ctx.translate(0, WAIST_Y)
   drawWaistShape(ctx, c.cardBgFrom, c.cardBgTo, 0, WAIST_H)
+
   ctx.restore()
 
-  // ⑤ 按钮（Figma x:112, y:246=184+62, 480×80）
-  const btnX = 112, btnY = WAIST_Y + 44, btnW = 480, btnH = 80
+  // ⑤ 按钮（腰封内居中，translate 后重新计算 x 使其相对 750px 居中）
+  const btnW = 480, btnH = 80
+  const btnX = (W - btnW) / 2             // 750px 画布水平居中
+  const btnY = WAIST_Y + 44
   const btnG = ctx.createLinearGradient(btnX, 0, btnX + btnW, 0)
   btnG.addColorStop(0, c.btnFrom)
   btnG.addColorStop(1, c.btnTo)
   capsulePath(ctx, btnX, btnY, btnW, btnH)
   ctx.fillStyle = btnG
   ctx.fill()
-
   ctx.font = `400 28px ${FB}`
   ctx.fillStyle = '#FFFFFF'
   ctx.textAlign = 'center'
