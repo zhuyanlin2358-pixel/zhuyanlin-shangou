@@ -1,4 +1,4 @@
-import { ArrowLeft, Package, Sun, Moon, ClipboardCheck, LayoutTemplate } from 'lucide-react'
+import { ArrowLeft, Package, Sun, Moon, ClipboardCheck } from 'lucide-react'
 import { useApp } from '@/contexts/AppContext'
 import CompBrowser from './CompBrowser'
 import SlotPanel from '@/components/panels/SlotPanel'
@@ -11,7 +11,7 @@ import HTabPanel from '@/components/panels/HTabPanel'
 import CouponPanel from '@/components/panels/CouponPanel'
 
 export default function Sidebar() {
-  const { page, currentComp, goHome, goAssets, goReview, goVenue, darkMode, toggleDarkMode } = useApp()
+  const { page, currentComp, goHome, goAssets, goReview, darkMode, toggleDarkMode } = useApp()
   const isConfig = page === 'comp' && currentComp !== null
 
   const panel = (() => {
@@ -74,14 +74,6 @@ export default function Sidebar() {
           className="border-t shrink-0"
           style={{ borderColor: 'var(--sidebar-border)' }}
         >
-          <button
-            onClick={goVenue}
-            className="w-full flex items-center gap-2 px-4 py-3 text-xs transition-colors hover:opacity-80"
-            style={{ color: page === 'venue' ? 'var(--accent)' : 'var(--text-2)' }}
-          >
-            <LayoutTemplate size={14} style={{ flexShrink: 0 }} />
-            <span>高达会场</span>
-          </button>
           <button
             onClick={goAssets}
             className="w-full flex items-center gap-2 px-4 py-3 text-xs transition-colors hover:opacity-80 border-t"

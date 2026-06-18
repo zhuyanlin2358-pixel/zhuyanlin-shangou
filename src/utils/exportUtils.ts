@@ -59,11 +59,14 @@ function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
  *    避免网速慢时 Canvas 一直卡在"渲染中"
  */
 let _fontsPromise: Promise<void> | null = null
+let _fontsLoaded = false   // 字体已完全就绪标志
 
 export function preloadFonts(): Promise<void> {
+  if (_fontsLoaded) return Promise.resolve()  // 已缓存：0ms 返回
   if (_fontsPromise) return _fontsPromise
 
   if (typeof document === 'undefined' || !document.fonts) {
+    _fontsLoaded = true
     _fontsPromise = Promise.resolve()
     return _fontsPromise
   }
@@ -73,19 +76,22 @@ export function preloadFonts(): Promise<void> {
     document.fonts.load('400 16px "FZLanTingHei-DB"'),
     document.fonts.load('400 16px "FZLanTingHei"'),
     document.fonts.load('700 16px "MeituanDigitalType"'),
-  ]).then(() => {})
+  ]).then(() => { _fontsLoaded = true })
 
-  // 3 秒超时：网速慢时不阻塞渲染，降级为系统字体
-  const timeout = new Promise<void>(resolve => setTimeout(resolve, 3000))
+  // 3 秒超时后也标为"已就绪"（降级为系统字体继续渲染）
+  const timeout = new Promise<void>(resolve =>
+    setTimeout(() => { _fontsLoaded = true; resolve() }, 3000)
+  )
 
   _fontsPromise = Promise.race([load, timeout])
   return _fontsPromise
 }
 
-/** 在 App 启动时提前触发字体加载（不阻塞，后台进行） */
-export function warmupFonts(): void {
-  preloadFonts()
-}
+/** 字体是否已就绪（缓存命中 / 上次加载完毕） */
+export function isFontsReady(): boolean { return _fontsLoaded }
+
+/** App 启动时后台触发字体加载 */
+export function warmupFonts(): void { preloadFonts() }
 
 // ── Canvas 直接绘制工具 ──────────────────────────────────────────────────────
 
@@ -972,41 +978,145 @@ export async function drawHTabSingleTabCanvas(
 }
 
 // ── 一键领券红包 ──────────────────────────────────────────────────────────────
+//
+// SVG 路径来自 Figma 精确导出（node 69:3697 / 69:3667-3670）
+//
+// 腰封弧形：702×168，两侧贴顶（y≈3），中心最深 y≈39，底部圆角 r≈24
+const WAIST_SVG_PATH =
+  'M701.5 144C701.5 156.979 690.979 167.5 678 167.5H24' +
+  'C11.0214 167.5 0.500198 156.979 0.5 144' +
+  'V3.35352C0.822795 3.42796 1.2714 3.53081 1.84277 3.66016' +
+  'C3.13481 3.95265 5.05478 4.38119 7.56641 4.9248' +
+  'C12.5897 6.01205 19.9813 7.56076 29.457 9.40625' +
+  'C48.4085 13.0972 75.6972 17.9766 109.05 22.7305' +
+  'C175.754 32.238 266.721 41.2449 363.766 39.2412' +
+  'C460.8 37.2377 545.382 28.0502 605.706 19.3633' +
+  'C635.868 15.0198 659.967 10.8018 676.526 7.66895' +
+  'C684.806 6.10255 691.201 4.80688 695.526 3.90332' +
+  'C697.689 3.45157 699.334 3.09748 700.439 2.85645' +
+  'C700.879 2.76058 701.233 2.68226 701.5 2.62305V144Z'
+
+// 闪电装饰（Figma node 69:3667-3670），位置来自 Group 1（card x:121 y:25）
+const BOLT_SM_L = 'M4.5 0L0 2L4.32842 7L2 8.5L10.5 13L6.5 8L9 7L4.5 0Z'   // 11×13 小金
+const BOLT_SM_R = 'M6 0L10.5 2L6.17158 7L8.5 8.5L0 13L4 8L1.5 7L6 0Z'     // 11×13 小金
+const BOLT_LG_L = 'M9.5 0H0L6 13.5H1.5L15 25.5L9.5 13.5H15L9.5 0Z'         // 15×26 大粉
+const BOLT_LG_R = 'M5.5 0H15L9 13.5H13.5L0 25.5L5.5 13.5H0L5.5 0Z'         // 15×26 大粉
+
+/** 标题 + 两侧四个闪电装饰（坐标精确对应 Figma Group 1） */
+function drawCouponHeader(ctx: CanvasRenderingContext2D, cfg: CouponConfig) {
+  const c = COUPON_COLORS[cfg.colorKey]
+  // 文字：Group 在 x:121, 文字中心 x:342 (121+42+179), 顶部 y:25
+  ctx.font = `400 32px ${FB}`
+  ctx.fillStyle = c.textColor
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'top'
+  ctx.fillText(cfg.titleText, 342, 25, 358)
+  // 四个闪电 [path, color, cardX, cardY]
+  const decos: [string, string, number, number][] = [
+    [BOLT_SM_L, '#FFCA60', 121,   34  ],
+    [BOLT_LG_L, '#FF7399', 132,   34.5],
+    [BOLT_LG_R, '#FF7399', 537,   34.5],
+    [BOLT_SM_R, '#FFCA60', 552.5, 34  ],
+  ]
+  for (const [p, fill, x, y] of decos) {
+    ctx.save(); ctx.translate(x, y)
+    ctx.fillStyle = fill; ctx.fill(new Path2D(p))
+    ctx.restore()
+  }
+}
+
+/** 绘制腰封弧形（SVG 精确路径 + 渐变 + 白色覆层）。调用前请先 translate 到腰封起点 */
+function drawWaistShape(
+  ctx: CanvasRenderingContext2D,
+  cardBgFrom: string, cardBgTo: string,
+  gradY0: number, gradY1: number,        // 渐变在当前坐标系中的 y 范围
+) {
+  const path = new Path2D(WAIST_SVG_PATH)
+  const bg = ctx.createLinearGradient(0, gradY0, 0, gradY1)
+  bg.addColorStop(0, cardBgFrom)
+  bg.addColorStop(1, cardBgTo)
+  ctx.fillStyle = bg; ctx.fill(path)
+  // Figma 白色描边覆层（渐变 stroke，近似为半透明填充）
+  const ov = ctx.createLinearGradient(0, gradY0, 0, gradY1)
+  ov.addColorStop(0, 'rgba(255,255,255,0)')
+  ov.addColorStop(1, 'rgba(255,255,255,0.3)')
+  ctx.fillStyle = ov; ctx.fill(path)
+}
 
 /**
- * 绘制腰封图 → 710×168（Figma 精确尺寸，@2x 超采样）
- * 券卡渐变背景 + 标题文案居中
+ * ── 一键领券红包 ─────────────────────────────────────────────────────────────
+ *
+ * 3 张导出：
+ *   drawCouponBg       → 券包背景 702×352  （渐变底 + 标题文案，无按钮）
+ *   drawCouponWaistband→ 券包腰封 702×168  （渐变条 + 底部白 fade）
+ *   drawCouponButton   → 组件按钮 480×80   （渐变胶囊 + 立即领取）
+ *
+ * 工具内预览：
+ *   drawCouponPreview  → 702×352 合成图（背景 + 券卡占位 + 腰封 + 按钮）
  */
-export async function drawCouponWaistband(cfg: CouponConfig): Promise<HTMLCanvasElement> {
+
+/** 画胶囊按钮路径 */
+function capsulePath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+  const r = h / 2
+  ctx.beginPath()
+  ctx.moveTo(x + r, y)
+  ctx.lineTo(x + w - r, y)
+  ctx.arcTo(x + w, y,     x + w, y + r,     r)
+  ctx.lineTo(x + w, y + h - r)
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r)
+  ctx.lineTo(x + r, y + h)
+  ctx.arcTo(x,     y + h, x,     y + h - r, r)
+  ctx.lineTo(x,    y + r)
+  ctx.arcTo(x,     y,     x + r, y,         r)
+  ctx.closePath()
+}
+
+/**
+ * 券包背景 702×352（Figma node 69:4659）
+ * 渐变底 + 标题文案 + 两侧闪电装饰（不含按钮 / 券卡金额）
+ */
+export async function drawCouponBg(cfg: CouponConfig): Promise<HTMLCanvasElement> {
   await preloadFonts()
-  const W = 710, H = 168, S = 2
+  const W = 702, H = 352, S = 2
   const c = COUPON_COLORS[cfg.colorKey]
   const canvas = document.createElement('canvas')
   canvas.width = W * S; canvas.height = H * S
   const ctx = canvas.getContext('2d')!
   ctx.scale(S, S)
 
-  // 渐变背景（179° ≈ 从上到下）
   const bg = ctx.createLinearGradient(0, 0, 0, H)
   bg.addColorStop(0.01, c.cardBgFrom)
-  bg.addColorStop(1, c.cardBgTo)
+  bg.addColorStop(1,    c.cardBgTo)
   ctx.fillStyle = bg
   ctx.fillRect(0, 0, W, H)
 
-  // 标题文字（居中）
-  ctx.font = `400 32px ${FB}`
-  ctx.fillStyle = c.textColor
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.beginPath()
-  ctx.fillText(cfg.titleText, W / 2, H / 2, W - 60)
+  drawCouponHeader(ctx, cfg)
 
   return downsample(canvas)
 }
 
 /**
- * 绘制按钮图 → 480×80（Figma 精确尺寸，@2x 超采样）
- * 90° 渐变胶囊 + "立即领取" 文案
+ * 券包腰封 702×168（Figma node 69:3697 / 69:4722）
+ * 精确还原弧形顶边 SVG 路径 + 渐变填充
+ */
+export async function drawCouponWaistband(cfg: CouponConfig): Promise<HTMLCanvasElement> {
+  await preloadFonts()
+  const W = 702, H = 168, S = 2
+  const c = COUPON_COLORS[cfg.colorKey]
+  const canvas = document.createElement('canvas')
+  canvas.width = W * S; canvas.height = H * S
+  const ctx = canvas.getContext('2d')!
+  ctx.scale(S, S)
+
+  drawWaistShape(ctx, c.cardBgFrom, c.cardBgTo, 0, H)
+
+  void W
+  return downsample(canvas)
+}
+
+/**
+ * 组件按钮 480×80（Figma node 70:618）
+ * 90° 渐变胶囊 + "立即领取"
  */
 export async function drawCouponButton(cfg: CouponConfig): Promise<HTMLCanvasElement> {
   await preloadFonts()
@@ -1017,22 +1127,10 @@ export async function drawCouponButton(cfg: CouponConfig): Promise<HTMLCanvasEle
   const ctx = canvas.getContext('2d')!
   ctx.scale(S, S)
 
-  const R = H / 2  // 完全圆角
   const g = ctx.createLinearGradient(0, 0, W, 0)
   g.addColorStop(0, c.btnFrom)
   g.addColorStop(1, c.btnTo)
-
-  ctx.beginPath()
-  ctx.moveTo(R, 0)
-  ctx.lineTo(W - R, 0)
-  ctx.arcTo(W, 0, W, R, R)
-  ctx.lineTo(W, H - R)
-  ctx.arcTo(W, H, W - R, H, R)
-  ctx.lineTo(R, H)
-  ctx.arcTo(0, H, 0, H - R, R)
-  ctx.lineTo(0, R)
-  ctx.arcTo(0, 0, R, 0, R)
-  ctx.closePath()
+  capsulePath(ctx, 0, 0, W, H)
   ctx.fillStyle = g
   ctx.fill()
 
@@ -1040,94 +1138,92 @@ export async function drawCouponButton(cfg: CouponConfig): Promise<HTMLCanvasEle
   ctx.fillStyle = '#FFFFFF'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.beginPath()
   ctx.fillText('立即领取', W / 2, H / 2)
 
   return downsample(canvas)
 }
 
 /**
- * 绘制不带Tab背景图 → 702×352（Figma 精确尺寸）
- * 还原：顶部文案 + 3个券卡区域 + 底部领取按钮
+ * 工具内合成预览 702×352（不单独导出）
+ * 层次：渐变底 → 标题+闪电 → 3张白卡券（Figma 精确布局）→ 腰封弧形 → 按钮
  */
-export async function drawCouponNoTab(cfg: CouponConfig): Promise<HTMLCanvasElement> {
+export async function drawCouponPreview(cfg: CouponConfig): Promise<HTMLCanvasElement> {
   await preloadFonts()
   const W = 702, H = 352, S = 2
+  const WAIST_Y = 184   // Figma layout_KJQC3X y:184
+  const WAIST_H = 168
   const c = COUPON_COLORS[cfg.colorKey]
   const canvas = document.createElement('canvas')
   canvas.width = W * S; canvas.height = H * S
   const ctx = canvas.getContext('2d')!
   ctx.scale(S, S)
 
-  // ── 整体背景（浅色）──────────────────────────────────────────────────────
-  ctx.fillStyle = '#FFFFFF'
+  // ① 整体渐变背景
+  const bg = ctx.createLinearGradient(0, 0, 0, H)
+  bg.addColorStop(0.01, c.cardBgFrom)
+  bg.addColorStop(1,    c.cardBgTo)
+  ctx.fillStyle = bg
   ctx.fillRect(0, 0, W, H)
 
-  // ── 标题文案（y:0-84）──────────────────────────────────────────────────
-  ctx.font = `400 32px ${FB}`
-  ctx.fillStyle = c.textColor
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.beginPath()
-  ctx.fillText(cfg.titleText, W / 2, 42, W - 80)
+  // ② 标题 + 闪电装饰
+  drawCouponHeader(ctx, cfg)
 
-  // ── 3个券卡区域（内部 670×256 at x:16,y:84）──────────────────────────
-  // 每张卡约 218px 宽（含间隙），高 100px
-  const cardY = 84, cardH = 100, cardGap = 8
-  const cardW = Math.floor((W - 32 - cardGap * 2) / 3)  // ≈218
+  // ③ 券卡区（3列白卡，y:84-180 可见，腰封遮盖下方）
+  const CX0 = 18, CY0 = 84, CW = 192, CH = 94, CGAP = 12, CR = 14
   for (let i = 0; i < 3; i++) {
-    const cx = 16 + i * (cardW + cardGap)
-    const bg = ctx.createLinearGradient(cx, cardY, cx, cardY + cardH)
-    bg.addColorStop(0.01, c.cardBgFrom)
-    bg.addColorStop(1, c.cardBgTo)
-    // 圆角卡片
-    roundedRect(ctx, cx, cardY, cardW, cardH, 12)
-    ctx.fillStyle = bg
+    const cx = CX0 + i * (CW + CGAP)
+
+    roundedRect(ctx, cx, CY0, CW, CH, CR)
+    ctx.fillStyle = 'rgba(255,255,255,0.92)'
     ctx.fill()
-    // 内部虚线边框提示（占位产品图）
-    ctx.strokeStyle = 'rgba(255,255,255,0.6)'
-    ctx.lineWidth = 1
-    ctx.setLineDash([4, 4])
-    roundedRect(ctx, cx + 8, cardY + 8, cardW - 16, cardH - 16, 8)
-    ctx.stroke()
-    ctx.setLineDash([])
+
+    ctx.textAlign = 'center'
+
+    if (i === 0) {
+      // 第1列：仅标签，垂直居中
+      ctx.font = `700 18px ${FB}`
+      ctx.fillStyle = 'rgba(0,0,0,0.72)'
+      ctx.textBaseline = 'middle'
+      ctx.fillText('外卖餐饮券', cx + CW / 2, CY0 + CH / 2)
+    } else {
+      // 第2-3列：顶部标签 / ¥? 居中 / 底部券名
+      ctx.font = `700 14px ${FB}`
+      ctx.fillStyle = 'rgba(0,0,0,0.52)'
+      ctx.textBaseline = 'top'
+      ctx.fillText('外卖餐饮券', cx + CW / 2, CY0 + 8)
+
+      // ¥ 和 ? 并排，整体水平居中
+      const amtCX = cx + CW / 2 - 4   // 向左偏移让¥+?视觉居中
+      ctx.fillStyle = '#FF0000'
+      ctx.font = `400 17px ${FB}`
+      ctx.textAlign = 'right'
+      ctx.textBaseline = 'alphabetic'
+      ctx.fillText('¥', amtCX, CY0 + 66)
+      ctx.font = `700 32px ${FB}`
+      ctx.textAlign = 'left'
+      ctx.fillText('?', amtCX + 2, CY0 + 66)
+
+      // 底部券类名
+      ctx.font = `400 12px ${FB}`
+      ctx.fillStyle = '#222426'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'bottom'
+      ctx.fillText('外卖餐饮券', cx + CW / 2, CY0 + CH - 6)
+    }
   }
 
-  // ── 底部券包区域（y:184-352，702×168）───────────────────────────────────
-  const packY = 184, packH = 168
-  const packBg = ctx.createLinearGradient(0, packY, 0, packY + packH)
-  packBg.addColorStop(0.01, c.cardBgFrom)
-  packBg.addColorStop(1, c.cardBgTo)
-  ctx.fillStyle = packBg
-  ctx.fillRect(0, packY, W, packH)
+  // ④ 腰封弧形覆层（Figma node 69:3697，顶边凹弧 y≈39 at center）
+  ctx.save()
+  ctx.translate(0, WAIST_Y)
+  drawWaistShape(ctx, c.cardBgFrom, c.cardBgTo, 0, WAIST_H)
+  ctx.restore()
 
-  // 分隔线（渐变描边）
-  const sepG = ctx.createLinearGradient(0, packY, 0, packY + 1)
-  sepG.addColorStop(0, 'rgba(255,255,255,0)')
-  sepG.addColorStop(1, 'rgba(255,255,255,0.6)')
-  ctx.strokeStyle = sepG
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.moveTo(0, packY + 2); ctx.lineTo(W, packY + 2)
-  ctx.stroke()
-
-  // ── 立即领取按钮（480×80，x:111, y:packY+62）────────────────────────────
-  const btnX = 111, btnY = packY + 62, btnW = 480, btnH = 80
-  const btnR = btnH / 2
+  // ⑤ 按钮（Figma x:112, y:246=184+62, 480×80）
+  const btnX = 112, btnY = WAIST_Y + 44, btnW = 480, btnH = 80
   const btnG = ctx.createLinearGradient(btnX, 0, btnX + btnW, 0)
   btnG.addColorStop(0, c.btnFrom)
   btnG.addColorStop(1, c.btnTo)
-  ctx.beginPath()
-  ctx.moveTo(btnX + btnR, btnY)
-  ctx.lineTo(btnX + btnW - btnR, btnY)
-  ctx.arcTo(btnX + btnW, btnY, btnX + btnW, btnY + btnR, btnR)
-  ctx.lineTo(btnX + btnW, btnY + btnH - btnR)
-  ctx.arcTo(btnX + btnW, btnY + btnH, btnX + btnW - btnR, btnY + btnH, btnR)
-  ctx.lineTo(btnX + btnR, btnY + btnH)
-  ctx.arcTo(btnX, btnY + btnH, btnX, btnY + btnH - btnR, btnR)
-  ctx.lineTo(btnX, btnY + btnR)
-  ctx.arcTo(btnX, btnY, btnX + btnR, btnY, btnR)
-  ctx.closePath()
+  capsulePath(ctx, btnX, btnY, btnW, btnH)
   ctx.fillStyle = btnG
   ctx.fill()
 
@@ -1135,64 +1231,7 @@ export async function drawCouponNoTab(cfg: CouponConfig): Promise<HTMLCanvasElem
   ctx.fillStyle = '#FFFFFF'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.beginPath()
   ctx.fillText('立即领取', btnX + btnW / 2, btnY + btnH / 2)
-
-  return downsample(canvas)
-}
-
-/**
- * 绘制带Tab背景图 → 710×416（Figma 精确尺寸）
- * 上方 702×352 券包 + 下方 710×64 横滑Tab区域
- */
-export async function drawCouponWithTab(cfg: CouponConfig): Promise<HTMLCanvasElement> {
-  await preloadFonts()
-  const W = 710, H = 416, S = 2
-  const c = COUPON_COLORS[cfg.colorKey]
-  const canvas = document.createElement('canvas')
-  canvas.width = W * S; canvas.height = H * S
-  const ctx = canvas.getContext('2d')!
-  ctx.scale(S, S)
-
-  // 先画不带Tab的主体（702×352，居中4px边距）
-  const inner = await drawCouponNoTab(cfg)
-  ctx.drawImage(inner, 4, 0, 702, 352)
-
-  // Tab区域（y:352-416, 高64px，背景与卡片一致）
-  const tabY = 352, tabH = 64
-  const tabBg = ctx.createLinearGradient(0, tabY, 0, tabY + tabH)
-  tabBg.addColorStop(0, c.cardBgFrom)
-  tabBg.addColorStop(1, c.cardBgTo)
-  ctx.fillStyle = tabBg
-  ctx.fillRect(0, tabY, W, tabH)
-
-  // 简单Tab指示：3个tab pill + 当前选中态
-  const TAB_COUNT = 3, tabPW = Math.floor((W - 32 - 8 * 2) / TAB_COUNT)
-  const tabLabels = ['甜点饮品', '能量西餐', '品质生鲜']
-  for (let i = 0; i < TAB_COUNT; i++) {
-    const tx = 16 + i * (tabPW + 8)
-    const ty = tabY + 10, th = 44
-    const isSel = i === 0
-    // Tab背景
-    roundedRect(ctx, tx, ty, tabPW, th, 12)
-    if (isSel) {
-      // 选中：浅色渐变
-      const selBg = ctx.createLinearGradient(tx, ty, tx, ty + th)
-      selBg.addColorStop(0, 'rgba(255,255,255,0.9)')
-      selBg.addColorStop(1, 'rgba(255,255,255,0.7)')
-      ctx.fillStyle = selBg
-    } else {
-      ctx.fillStyle = 'rgba(255,255,255,0.35)'
-    }
-    ctx.fill()
-    // Tab文字
-    ctx.font = `400 18px ${FB}`
-    ctx.fillStyle = isSel ? c.textColor : 'rgba(255,255,255,0.85)'
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.beginPath()
-    ctx.fillText(tabLabels[i] || `标签${i+1}`, tx + tabPW / 2, ty + th / 2, tabPW - 8)
-  }
 
   return downsample(canvas)
 }

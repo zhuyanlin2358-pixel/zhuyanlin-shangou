@@ -8,20 +8,19 @@
  */
 import { Suspense, lazy } from 'react'
 import { useApp }   from '@/contexts/AppContext'
-import { findComponent, DONE_COMP_IDS, type ComponentId } from '@/types'
+import { findComponent, DONE_COMP_IDS, VENUE_COMP_IDS } from '@/types'
 import VenueManager      from './VenueManager'
 import VenuePhonePreview from './VenuePhonePreview'
-import SlotPanel  from '@/components/panels/SlotPanel'
-import FloorPanel from '@/components/panels/FloorPanel'
-import HTabPanel  from '@/components/panels/HTabPanel'
-
-// 高达工作区里显示哪些组件（P4 已完成）
-const VENUE_COMPS: ComponentId[] = ['slot', 'floor', 'h-tab']
+import SlotPanel   from '@/components/panels/SlotPanel'
+import FloorPanel  from '@/components/panels/FloorPanel'
+import HTabPanel   from '@/components/panels/HTabPanel'
+import CouponPanel from '@/components/panels/CouponPanel'
 
 // 懒加载各组件页
-const SlotPage  = lazy(() => import('./SlotPage'))
-const FloorPage = lazy(() => import('./FloorPage'))
-const HTabPage  = lazy(() => import('./HTabPage'))
+const SlotPage   = lazy(() => import('./SlotPage'))
+const FloorPage  = lazy(() => import('./FloorPage'))
+const HTabPage   = lazy(() => import('./HTabPage'))
+const CouponPage = lazy(() => import('./CouponPage'))
 
 function Loader() {
   return (
@@ -32,24 +31,26 @@ function Loader() {
 }
 
 export default function VenuePage() {
-  const { currentComp, goHome, goVenue, enterComp } = useApp()
+  const { currentComp, goHome, goVenue, enterComp, hasExportAll, triggerExportAll } = useApp()
 
   // 组件配置面板（与旧 Sidebar 一样）
   const configPanel = (() => {
     switch (currentComp) {
-      case 'slot':  return <div className="h-full overflow-y-auto"><SlotPanel /></div>
-      case 'floor': return <div className="h-full overflow-y-auto"><FloorPanel /></div>
-      case 'h-tab': return <div className="h-full overflow-y-auto"><HTabPanel /></div>
-      default:      return null
+      case 'slot':   return <div className="h-full overflow-y-auto"><SlotPanel /></div>
+      case 'floor':  return <div className="h-full overflow-y-auto"><FloorPanel /></div>
+      case 'h-tab':  return <div className="h-full overflow-y-auto"><HTabPanel /></div>
+      case 'coupon': return <div className="h-full overflow-y-auto"><CouponPanel /></div>
+      default:       return null
     }
   })()
 
   // 主内容区
   const centerContent = currentComp ? (
     <Suspense fallback={<Loader />}>
-      {currentComp === 'slot'  && <SlotPage  />}
-      {currentComp === 'floor' && <FloorPage />}
-      {currentComp === 'h-tab' && <HTabPage  />}
+      {currentComp === 'slot'   && <SlotPage   />}
+      {currentComp === 'floor'  && <FloorPage  />}
+      {currentComp === 'h-tab'  && <HTabPage   />}
+      {currentComp === 'coupon' && <CouponPage />}
     </Suspense>
   ) : <VenueManager />
 
@@ -80,7 +81,7 @@ export default function VenuePage() {
           <div className="mx-4 my-2 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }} />
 
           {/* 组件列表 */}
-          {VENUE_COMPS.map(id => {
+          {VENUE_COMP_IDS.map(id => {
             const comp   = findComponent(id)
             const isDone = DONE_COMP_IDS.includes(id)
             return (
@@ -121,7 +122,7 @@ export default function VenuePage() {
       <div className="flex-1 flex flex-col overflow-hidden" style={{ marginRight: 380 }}>
         {/* 标题栏 */}
         <div
-          className="h-12 flex items-center px-5 border-b shrink-0"
+          className="h-12 flex items-center px-5 border-b shrink-0 gap-3"
           style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}
         >
           <span className="text-sm font-semibold" style={{ color: 'var(--text-1)' }}>
@@ -129,11 +130,26 @@ export default function VenuePage() {
           </span>
           {currentComp && (
             <span
-              className="ml-3 text-xs px-2 py-0.5 rounded-full"
+              className="text-xs px-2 py-0.5 rounded-full"
               style={{ background: 'rgba(45,120,244,0.12)', color: '#6AA3FF' }}
             >
               配置完成后点「加入会场」↗
             </span>
+          )}
+          {/* 一键导出 ZIP（组件注册了 exportAll 时显示） */}
+          {hasExportAll && (
+            <button
+              onClick={triggerExportAll}
+              className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-white"
+              style={{ background: 'linear-gradient(90deg,#FF3060,#FF6030)' }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              一键导出 ZIP
+            </button>
           )}
         </div>
         <main className="flex-1 overflow-y-auto">

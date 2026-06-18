@@ -128,9 +128,9 @@ export default function VenuePhonePreview() {
             {/* 头图 */}
             {headerUrl ? (
               <img src={headerUrl} alt="头图"
-                style={{ width: 375, height: headerH, objectFit: 'cover', display: 'block' }} />
+                style={{ width: '100%', height: headerH, objectFit: 'cover', display: 'block' }} />
             ) : (
-              <div style={{ width: 375, height: Math.max(headerH, 40), background: '#f5f5f5',
+              <div style={{ width: '100%', height: Math.max(headerH, 40), background: '#f5f5f5',
                 display:'flex', alignItems:'center', justifyContent:'center' }}>
                 <span style={{ fontSize: 10, color: '#bbb' }}>暂无头图</span>
               </div>
@@ -162,7 +162,7 @@ export default function VenuePhonePreview() {
                 <img
                   src={item.previewUrl} alt={item.label}
                   draggable={false}
-                  style={{ width: 375, height: Math.round(item.origH * SCALE), display: 'block', objectFit: 'fill' }}
+                  style={{ width: '100%', height: Math.round(item.origH * SCALE), display: 'block', objectFit: 'fill' }}
                 />
               </div>
             ))}

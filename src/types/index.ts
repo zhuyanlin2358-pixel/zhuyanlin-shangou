@@ -140,6 +140,10 @@ export function findComponent(id: ComponentId): ComponentDef | undefined {
 
 export const DONE_COMP_IDS: ComponentId[] = ['yituosi', 'n4', 'n2', 'slot', 'floor', 'h-tab', 'coupon']
 
+// P4 高达组件已完成品 → 进入统一会场工作区（venue）
+// 每新增一个高达完成品只需往这里加，Sidebar / VenuePage / AppContext 自动同步
+export const VENUE_COMP_IDS: ComponentId[] = ['slot', 'floor', 'h-tab', 'coupon']
+
 export interface Logo {
   id: string
   name: string
