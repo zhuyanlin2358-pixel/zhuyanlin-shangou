@@ -283,13 +283,12 @@ function VenueItemRow({
       className="rounded-xl overflow-hidden"
       style={{ border: '1px solid var(--border)', background: 'var(--bg-subtle)' }}
     >
-      {/* 预览缩略图 */}
-      {/* 完整比例预览 */}
-      <div className="overflow-hidden" style={{ background: '#f0f0f0', lineHeight: 0 }}>
+      {/* 预览缩略图：固定高度裁切，统一各组件卡片高度 */}
+      <div className="overflow-hidden" style={{ background: '#f0f0f0', lineHeight: 0, height: 120 }}>
         <img
           src={item.previewUrl}
           alt={item.label}
-          style={{ width: '100%', height: 'auto', display: 'block' }}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }}
         />
       </div>
 
