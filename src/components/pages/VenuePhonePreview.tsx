@@ -123,8 +123,8 @@ export default function VenuePhonePreview() {
             </div>
           </div>
 
-          {/* 内容区（高度随内容撑开，无上限）*/}
-          <div style={{ background: bgColor }}>
+          {/* 内容区（高度随内容撑开，无上限；px-2 = 两侧等距留白）*/}
+          <div style={{ background: bgColor, padding: '0 8px' }}>
             {/* 头图 */}
             {headerUrl ? (
               <img src={headerUrl} alt="头图"
@@ -162,7 +162,7 @@ export default function VenuePhonePreview() {
                 <img
                   src={item.previewUrl} alt={item.label}
                   draggable={false}
-                  style={{ width: '100%', height: Math.round(item.origH * SCALE), display: 'block', objectFit: 'fill' }}
+                  style={{ width: '100%', height: 'auto', display: 'block' }}
                 />
               </div>
             ))}
