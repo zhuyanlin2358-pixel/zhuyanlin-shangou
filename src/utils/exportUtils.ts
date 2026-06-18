@@ -1148,14 +1148,12 @@ export async function drawCouponButton(cfg: CouponConfig): Promise<HTMLCanvasEle
  * 层次：渐变底 → 标题+闪电 → 3张白卡券（Figma 精确布局）→ 腰封弧形 → 按钮
  */
 /**
- * 工具内合成预览 750×352（不单独导出，仅用于手机预览 + 加入会场）
- * 宽度统一为 750px（与老虎机 / 楼层条 / 横滑Tab 一致），0.5x 显示 = 375px 手机宽
- * 702px 设计内容整体向右偏移 OFFSET=(750-702)/2=24px 居中，不拉伸不变形
+ * 工具内合成预览 702×352（不单独导出，用于 ExportCard + 加入会场）
+ * 背景、腰封、内容全部在同一 702px 坐标系内，比例完全一致
  */
 export async function drawCouponPreview(cfg: CouponConfig): Promise<HTMLCanvasElement> {
   await preloadFonts()
-  const W = 750, H = 352, S = 2            // 750px 与其他组件统一
-  const OFFSET = (750 - 702) / 2           // 24px：702px 设计在 750px 画布中的左边距
+  const W = 702, H = 352, S = 2
   const WAIST_Y = 184, WAIST_H = 168
   const c = COUPON_COLORS[cfg.colorKey]
   const canvas = document.createElement('canvas')
@@ -1163,21 +1161,17 @@ export async function drawCouponPreview(cfg: CouponConfig): Promise<HTMLCanvasEl
   const ctx = canvas.getContext('2d')!
   ctx.scale(S, S)
 
-  // ① 渐变背景（填满 750px）
+  // ① 渐变背景（702px，与腰封等宽）
   const bg = ctx.createLinearGradient(0, 0, 0, H)
   bg.addColorStop(0.01, c.cardBgFrom)
   bg.addColorStop(1,    c.cardBgTo)
   ctx.fillStyle = bg
   ctx.fillRect(0, 0, W, H)
 
-  // ② 702px 设计内容整体右移 OFFSET，保持原始坐标不变
-  ctx.save()
-  ctx.translate(OFFSET, 0)
-
-  // 标题 + 闪电装饰
+  // ② 标题 + 闪电装饰
   drawCouponHeader(ctx, cfg)
 
-  // 券卡区
+  // ③ 券卡区
   const CX0 = 18, CY0 = 84, CW = 192, CH = 94, CGAP = 12, CR = 14
   for (let i = 0; i < 3; i++) {
     const cx = CX0 + i * (CW + CGAP)
@@ -1185,7 +1179,6 @@ export async function drawCouponPreview(cfg: CouponConfig): Promise<HTMLCanvasEl
     ctx.fillStyle = 'rgba(255,255,255,0.92)'
     ctx.fill()
     ctx.textAlign = 'center'
-
     if (i === 0) {
       ctx.font = `700 18px ${FB}`
       ctx.fillStyle = 'rgba(0,0,0,0.72)'
@@ -1213,17 +1206,14 @@ export async function drawCouponPreview(cfg: CouponConfig): Promise<HTMLCanvasEl
     }
   }
 
-  // 腰封弧形（在 translate(OFFSET,0) 基础上再 translate(0,WAIST_Y)）
-  // 此时 local(0,0) = canvas(OFFSET, WAIST_Y)，渐变坐标用 local y 即可
+  // ④ 腰封弧形（702px 坐标，与背景等宽）
+  ctx.save()
   ctx.translate(0, WAIST_Y)
   drawWaistShape(ctx, c.cardBgFrom, c.cardBgTo, 0, WAIST_H)
-
   ctx.restore()
 
-  // ⑤ 按钮（腰封内居中，translate 后重新计算 x 使其相对 750px 居中）
-  const btnW = 480, btnH = 80
-  const btnX = (W - btnW) / 2             // 750px 画布水平居中
-  const btnY = WAIST_Y + 44
+  // ⑤ 按钮（702px 居中：(702-480)/2 = 111）
+  const btnX = 111, btnY = WAIST_Y + 44, btnW = 480, btnH = 80
   const btnG = ctx.createLinearGradient(btnX, 0, btnX + btnW, 0)
   btnG.addColorStop(0, c.btnFrom)
   btnG.addColorStop(1, c.btnTo)
