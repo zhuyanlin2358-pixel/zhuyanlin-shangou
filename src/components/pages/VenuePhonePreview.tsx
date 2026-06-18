@@ -159,14 +159,22 @@ export default function VenuePhonePreview() {
                 {item.spacingAbove > 0 && (
                   <div style={{ height: Math.round(item.spacingAbove * SCALE), background: bgColor }} />
                 )}
-                {/* 两侧留白与老虎机 / 横滑Tab 一致，头图不受影响 */}
-                <div style={{ padding: '0 8px', background: bgColor }}>
-                  <img
-                    src={item.previewUrl} alt={item.label}
-                    draggable={false}
-                    style={{ width: '100%', height: 'auto', display: 'block' }}
-                  />
-                </div>
+                {/* 留白：750px 设计 = 8px；702px 设计(红包)按比例多加 12px = 20px */}
+                {(() => {
+                  const isCoupon = item.componentId === 'coupon'
+                  const pad = isCoupon ? 20 : 8
+                  const r   = isCoupon ? 10 : 0
+                  return (
+                    <div style={{ padding: `0 ${pad}px`, background: bgColor }}>
+                      <img
+                        src={item.previewUrl} alt={item.label}
+                        draggable={false}
+                        style={{ width: '100%', height: 'auto', display: 'block',
+                          borderRadius: r, overflow: 'hidden' }}
+                      />
+                    </div>
+                  )
+                })()}
               </div>
             ))}
             <div style={{ height: 12, background: bgColor }} />
