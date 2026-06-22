@@ -8,6 +8,11 @@ import type { PrizeInfo, XfTransform } from '@/utils/exportUtils'
 import type { PrizeConfig, PrizeType, ImgTransform } from '@/types'
 import { getSlotStyle } from '@/utils/slotStyles'
 import VenueAddButton from '@/components/ui/VenueAddButton'
+import {
+  InlineConfigSection,
+  SlotColorConfig, SlotTextConfig, SlotEmptyConfig,
+  SlotPrizeConfig, SlotDialogBtnConfig, SlotDialogBgConfig,
+} from '@/components/panels/SlotConfigBlocks'
 
 /* ── 通用可拖拽图片容器 ── */
 interface DraggableWrapProps {
@@ -703,6 +708,9 @@ export default function SlotPage() {
               <VenueAddButton componentId="slot" label="老虎机" previewUrl={previews.s1} origW={750} origH={242} />
             </div>
           )}
+          <InlineConfigSection label="配色预设" badge="素材 1–5">
+            <SlotColorConfig />
+          </InlineConfigSection>
         </div>
 
         {/* ── 2 背景 ── */}
@@ -715,6 +723,9 @@ export default function SlotPage() {
               : <div style={{ width: 495, height: 160, borderRadius: 13, background: `linear-gradient(120deg,${config.slotTintFrom},${config.slotTintTo})`, flexShrink: 0 }} />
             }
           </ExportCard>
+          <InlineConfigSection label="文案设置" badge="素材 2">
+            <SlotTextConfig />
+          </InlineConfigSection>
         </div>
 
         {/* ── 3 空态页 ── */}
@@ -734,6 +745,9 @@ export default function SlotPage() {
               拖动插图调整位置 · 滚轮调整大小
             </div>
           )}
+          <InlineConfigSection label="空态页设置" badge="素材 3">
+            <SlotEmptyConfig />
+          </InlineConfigSection>
         </div>
 
         {/* ── 4 按钮（两款）── */}
@@ -792,6 +806,9 @@ export default function SlotPage() {
               />
             ))}
           </div>
+          <InlineConfigSection label="奖品图设置" badge="素材 6">
+            <SlotPrizeConfig />
+          </InlineConfigSection>
         </div>
 
         {/* ── 分隔线：弹窗部分 ── */}
@@ -818,6 +835,9 @@ export default function SlotPage() {
                 </ExportCard>
               ))}
             </div>
+            <InlineConfigSection label="弹窗按钮配色" badge="素材 7">
+              <SlotDialogBtnConfig />
+            </InlineConfigSection>
           </div>
 
           {/* ── 8 弹窗结果页 ── */}
@@ -838,6 +858,9 @@ export default function SlotPage() {
                 </ExportCard>
               ))}
             </div>
+            <InlineConfigSection label="弹窗结果页配色" badge="素材 8">
+              <SlotDialogBgConfig />
+            </InlineConfigSection>
           </div>
         </div>
 
