@@ -80,7 +80,7 @@ export function preloadFonts(): Promise<void> {
 
   // 3 秒超时后也标为"已就绪"（降级为系统字体继续渲染）
   const timeout = new Promise<void>(resolve =>
-    setTimeout(() => { _fontsLoaded = true; resolve() }, 3000)
+    setTimeout(() => { _fontsLoaded = true; resolve() }, 1200)  // 超时降级用系统字体先渲染
   )
 
   _fontsPromise = Promise.race([load, timeout])
