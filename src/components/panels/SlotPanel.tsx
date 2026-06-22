@@ -296,26 +296,6 @@ export default function SlotPanel() {
         )}
       </Section>
 
-      {/* 背景色提示：统一在会场管理里设置，不在此处重复 */}
-      <div
-        className="mx-3 mb-1 px-3 py-2.5 rounded-lg flex items-start gap-2"
-        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
-      >
-        <span style={{ fontSize: 13, marginTop: 1, flexShrink: 0 }}>💡</span>
-        <div>
-          <div className="text-[11px] font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>
-            先在「会场搭建」里设置背景色
-          </div>
-          <div className="text-[10px] mt-0.5 leading-snug" style={{ color: 'rgba(255,255,255,0.3)' }}>
-            配色预设会自动根据背景色推荐适配方案
-          </div>
-        </div>
-        {/* 当前会场背景色小色块 */}
-        <div
-          className="ml-auto shrink-0 rounded"
-          style={{ width: 16, height: 16, background: venueBgColor, border: '1px solid rgba(255,255,255,0.15)', marginTop: 2 }}
-        />
-      </div>
 
       <Section id="文案设置" badge="素材 2" openSection={openSection} toggle={toggle}>
         <PF label="主标题文案">

@@ -84,7 +84,7 @@ export default function VenuePhonePreview() {
       className="fixed top-0 right-0 h-screen flex flex-col border-l"
       style={{ width: 380, background: '#0D1117', borderColor: 'rgba(255,255,255,0.07)' }}
     >
-      {/* ── 标题栏（含高度调节）── */}
+      {/* ── 标题栏 ── */}
       <div
         className="h-12 flex items-center justify-between px-4 border-b shrink-0"
         style={{ borderColor: 'rgba(255,255,255,0.07)' }}
@@ -99,6 +99,27 @@ export default function VenuePhonePreview() {
             </span>
           )}
         </div>
+      </div>
+
+      {/* ── 背景色提示条：引导用户先在会场管理里设好背景色 ── */}
+      <div
+        className="flex items-center gap-2 px-4 py-1.5 shrink-0"
+        style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+      >
+        {/* 当前背景色色块 */}
+        <div
+          className="rounded shrink-0"
+          style={{ width: 12, height: 12, background: bgColor, border: '1px solid rgba(255,255,255,0.2)' }}
+        />
+        <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          背景色
+        </span>
+        <span className="text-[10px] font-mono" style={{ color: 'rgba(255,255,255,0.2)' }}>
+          {bgColor.toUpperCase()}
+        </span>
+        <span className="ml-auto text-[10px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
+          在「会场搭建」里修改
+        </span>
       </div>
 
       {/* ── 手机预览区（高度自适应，无上限；外层可滚动）── */}
