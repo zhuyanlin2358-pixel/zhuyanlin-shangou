@@ -26,19 +26,29 @@ export default function CouponPage() {
 
   useEffect(() => {
     let cancelled = false
-    const render = () => Promise.all([
-      drawCouponPreview(config).then(c => c.toDataURL()),
-      drawCouponBg(config).then(c => c.toDataURL()),
-      drawCouponWaistband(config).then(c => c.toDataURL()),
-      drawCouponButton(config).then(c => c.toDataURL()),
-    ]).then(([full, bg, waist, btn]) => {
+
+    const render = async () => {
+      // ① Preview 优先：完整预览先出，用户立刻看到内容 + 「加入会场」可用
+      const full = await drawCouponPreview(config).then(c => c.toDataURL()).catch(() => '')
       if (cancelled) return
-      setPrevFull(full); setPrevBg(bg); setPrevWaist(waist); setPrevBtn(btn)
-    }).catch(() => {})
+      setPrevFull(full)
 
-    render()   // 立即渲染（字体已缓存时 0ms，否则等字体）
+      // ② 让浏览器先把 preview 绘制到屏幕，再渲染 3 张导出图
+      await new Promise<void>(r => requestAnimationFrame(() => r()))
+      if (cancelled) return
 
-    // 首次访问字体未就绪时：字体加载完后自动刷新一次，确保文字正确
+      const [bg, waist, btn] = await Promise.all([
+        drawCouponBg(config).then(c => c.toDataURL()),
+        drawCouponWaistband(config).then(c => c.toDataURL()),
+        drawCouponButton(config).then(c => c.toDataURL()),
+      ]).catch(() => ['', '', ''] as [string, string, string])
+      if (cancelled) return
+      setPrevBg(bg as string); setPrevWaist(waist as string); setPrevBtn(btn as string)
+    }
+
+    render()
+
+    // 首次访问字体未就绪时：字体加载完后整体刷新一次，确保文字正确
     if (!isFontsReady()) {
       preloadFonts().then(() => { if (!cancelled) render() })
     }
