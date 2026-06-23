@@ -14,7 +14,7 @@
 import { Suspense, lazy, useState, useEffect } from 'react'
 import { useApp } from '@/contexts/AppContext'
 import { findComponent, DONE_COMP_IDS, VENUE_COMP_IDS } from '@/types'
-import VenueManager      from './VenueManager'
+import VenueHeaderEditor from './VenueHeaderEditor'
 import VenuePhonePreview from './VenuePhonePreview'
 import SlotCanvasView    from './SlotCanvasView'
 import FloorPanel  from '@/components/panels/FloorPanel'
@@ -162,7 +162,7 @@ export default function VenuePage() {
       {currentComp === 'h-tab'  && <HTabPage   />}
       {currentComp === 'coupon' && <CouponPage />}
     </Suspense>
-  ) : <VenueManager />
+  ) : <VenueHeaderEditor />
 
   return (
     <div className="flex h-screen" style={{ background: 'var(--bg)' }}>
@@ -184,7 +184,7 @@ export default function VenuePage() {
         </button>
 
         <nav className="flex-1 py-2">
-          <TextNavBtn active={!currentComp} onClick={goVenue}>会场</TextNavBtn>
+          <TextNavBtn active={!currentComp} onClick={goVenue}>活动头图</TextNavBtn>
           <div className="mx-4 my-2 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }} />
           {VENUE_COMP_IDS.map(id => {
             const comp   = findComponent(id)
@@ -226,7 +226,7 @@ export default function VenuePage() {
           style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}
         >
           <span className="text-sm font-semibold" style={{ color: 'var(--text-1)' }}>
-            {currentComp ? (findComponent(currentComp)?.name ?? currentComp) : '高达会场'}
+            {currentComp ? (findComponent(currentComp)?.name ?? currentComp) : '活动头图'}
           </span>
           {currentComp && (
             <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(45,120,244,0.12)', color: '#6AA3FF' }}>
