@@ -1,4 +1,4 @@
-import { ArrowLeft, Package, Sun, Moon, ClipboardCheck } from 'lucide-react'
+import { ArrowLeft, Sun, Moon } from 'lucide-react'
 import { useApp } from '@/contexts/AppContext'
 import CompBrowser from './CompBrowser'
 import SlotPanel from '@/components/panels/SlotPanel'
@@ -11,7 +11,7 @@ import HTabPanel from '@/components/panels/HTabPanel'
 import CouponPanel from '@/components/panels/CouponPanel'
 
 export default function Sidebar() {
-  const { page, currentComp, goHome, goAssets, goReview, darkMode, toggleDarkMode } = useApp()
+  const { page, currentComp, goHome, darkMode, toggleDarkMode } = useApp()
   const isConfig = page === 'comp' && currentComp !== null
 
   const panel = (() => {
@@ -74,22 +74,6 @@ export default function Sidebar() {
           className="border-t shrink-0"
           style={{ borderColor: 'var(--sidebar-border)' }}
         >
-          <button
-            onClick={goAssets}
-            className="w-full flex items-center gap-2 px-4 py-3 text-xs transition-colors hover:opacity-80 border-t"
-            style={{ color: page === 'assets' ? 'var(--accent)' : 'var(--text-2)', borderColor: 'var(--sidebar-border)' }}
-          >
-            <Package size={14} style={{ flexShrink: 0 }} />
-            <span>我的资产</span>
-          </button>
-          <button
-            onClick={goReview}
-            className="w-full flex items-center gap-2 px-4 py-3 text-xs transition-colors hover:opacity-80 border-t"
-            style={{ color: page === 'review' ? 'var(--accent)' : 'var(--text-2)', borderColor: 'var(--sidebar-border)' }}
-          >
-            <ClipboardCheck size={14} style={{ flexShrink: 0 }} />
-            <span>提交审核</span>
-          </button>
           <button
             onClick={toggleDarkMode}
             className="w-full flex items-center gap-2 px-4 py-3 text-xs transition-colors hover:opacity-80 border-t"
