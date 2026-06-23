@@ -100,6 +100,25 @@ const F  = '"FZLanTingHei-M","PingFang SC","Microsoft YaHei",sans-serif'
 // FZLanTingHei-DB-GBK：标题/按钮/大字
 const FB = '"FZLanTingHei-DB","FZLanTingHei-M","PingFang SC","Microsoft YaHei",sans-serif'
 
+/**
+ * 按 CSS 角度创建 LinearGradient（Figma 导出格式兼容）
+ * CSS 0° = 向上, 顺时针; Canvas 以 x 轴为 0°, 逆时针
+ */
+function cssAngleGradient(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number, w: number, h: number,
+  cssDeg: number,
+): CanvasGradient {
+  const rad  = (90 - cssDeg) * Math.PI / 180
+  const cosA = Math.cos(rad), sinA = Math.sin(rad)
+  const len  = Math.abs(w * cosA) + Math.abs(h * sinA)
+  const cx = x + w / 2, cy = y + h / 2
+  return ctx.createLinearGradient(
+    cx - (len / 2) * cosA, cy - (len / 2) * sinA,
+    cx + (len / 2) * cosA, cy + (len / 2) * sinA,
+  )
+}
+
 function roundedRect(
   ctx: CanvasRenderingContext2D,
   x: number, y: number, w: number, h: number, r: number,
@@ -141,26 +160,31 @@ export async function drawSlotBannerCanvas(
   // 背景：调用风格注册表（背景在各自的702×242区域内自绘，无全宽clip）
   getSlotStyle(cfg.slotStyle).drawBg(ctx, W, H, { tintFrom: cfg.slotTintFrom, tintTo: cfg.slotTintTo, rect7From: cfg.slotRect7From, rect7To: cfg.slotRect7To })
 
-  // 白色奖品框（Figma 13:431：白色 + 底部淡粉渐变 + 白色描边 + 内阴影）
-  roundedRect(ctx, 43, 75, 427, 142, 24)
-  const boxFill = ctx.createLinearGradient(43, 75, 43, 75 + 142)
-  boxFill.addColorStop(0, '#FFFFFF')
+  // 白色奖品框（Figma 6:104：x=43 y=84 w=427 h=142 r=24）
+  // Figma fill: linear-gradient(180deg, transparent 67%, rgba(255,246,249) 100%) + #FFFFFF
+  // Figma effect: inset 0px -1px 0px 0px rgba(255,255,255,1)（底部 1px 白色高光）
+  const BOX_Y = 84, BOX_H = 142, BOX_BOTTOM = BOX_Y + BOX_H   // 226
+  roundedRect(ctx, 43, BOX_Y, 427, BOX_H, 24)
+  const boxFill = ctx.createLinearGradient(43, BOX_Y, 43, BOX_BOTTOM)
+  boxFill.addColorStop(0,    '#FFFFFF')
   boxFill.addColorStop(0.67, '#FFFFFF')
-  boxFill.addColorStop(1, 'rgba(255,246,249,1)')
+  boxFill.addColorStop(1,    'rgba(255,246,249,1)')
   ctx.fillStyle = boxFill; ctx.fill()
   ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 1; ctx.stroke()
-  roundedRect(ctx, 43, 75, 427, 142, 24)
-  const boxInner = ctx.createLinearGradient(43, 217 - 4, 43, 217)
-  boxInner.addColorStop(0, 'rgba(255,255,255,0)')
-  boxInner.addColorStop(1, 'rgba(255,255,255,0.6)')
-  ctx.fillStyle = boxInner; ctx.fill()
+  // 底部 1px 白色 inset 高光（Figma boxShadow inset 0px -1px 0px 0px white）
+  roundedRect(ctx, 43, BOX_Y, 427, BOX_H, 24)
+  ctx.save(); ctx.clip()
+  ctx.fillStyle = 'rgba(255,255,255,1)'
+  ctx.fillRect(43, BOX_BOTTOM - 1, 427, 1)
+  ctx.restore()
 
-  // 按钮渐变
+  // 按钮渐变（Figma: linear-gradient(-35deg, ...)）
   const btnX = 499
   roundedRect(ctx, btnX, 104, 194, 80, 40)
-  const btnG = ctx.createLinearGradient(btnX, 0, btnX + 194, 0)
-  btnG.addColorStop(0, cfg.btnActiveFrom)
-  btnG.addColorStop(1, cfg.btnActiveTo)
+  const btnG = cssAngleGradient(ctx, btnX, 104, 194, 80, -35)
+  btnG.addColorStop(0,    cfg.btnActiveFrom)
+  btnG.addColorStop(0.31, cfg.btnActiveTo)
+  btnG.addColorStop(1,    cfg.btnActiveTo)
   ctx.fillStyle = btnG
   ctx.fill()
 
@@ -187,7 +211,7 @@ export async function drawSlotBannerCanvas(
   const innerW = 427 - 24  // 403
   const cardsW = 3 * 124 + 2 * 8  // 388
   const px = 43 + 12 + (innerW - cardsW) / 2  // ≈ 62.5
-  const py = 75 + (142 - 124) / 2              // 84
+  const py = 84 + (142 - 124) / 2              // 93（白色框 y=84，奖品居中）
   prizeCanvases.forEach((pc, i) => {
     if (pc) ctx.drawImage(pc, px + i * 132, py, 124, 124)
   })
@@ -277,8 +301,11 @@ export function drawButtonCanvas(text: string, from: string, to: string, textCol
   const ctx = canvas.getContext('2d')!
   ctx.scale(2, 2)
   roundedRect(ctx, 0, 0, 194, 80, 40)
-  const g = ctx.createLinearGradient(0, 0, 194, 0)
-  g.addColorStop(0, from); g.addColorStop(1, to)
+  // Figma: linear-gradient(-35deg, from 0%, to 31%)
+  const g = cssAngleGradient(ctx, 0, 0, 194, 80, -35)
+  g.addColorStop(0,    from)
+  g.addColorStop(0.31, to)
+  g.addColorStop(1,    to)
   ctx.fillStyle = g; ctx.fill()
   ctx.font = `400 34px ${F}`; ctx.fillStyle = textColor
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
@@ -546,14 +573,20 @@ export async function drawSlotBgCanvas(
     rect7From: cfg.slotRect7From, rect7To: cfg.slotRect7To,
   })
 
-  // 白色奖品框（与 slot_1 相同，slot_2 保留框体但不放奖品图）
-  roundedRect(ctx, 43, 75, 427, 142, 24)
-  const boxFill2 = ctx.createLinearGradient(43, 75, 43, 217)
-  boxFill2.addColorStop(0, '#FFFFFF')
+  // 白色奖品框（Figma y=84，与 slot_1 相同规格）
+  const BOX2_Y = 84, BOX2_H = 142, BOX2_BOTTOM = BOX2_Y + BOX2_H
+  roundedRect(ctx, 43, BOX2_Y, 427, BOX2_H, 24)
+  const boxFill2 = ctx.createLinearGradient(43, BOX2_Y, 43, BOX2_BOTTOM)
+  boxFill2.addColorStop(0,    '#FFFFFF')
   boxFill2.addColorStop(0.67, '#FFFFFF')
-  boxFill2.addColorStop(1, 'rgba(255,246,249,1)')
+  boxFill2.addColorStop(1,    'rgba(255,246,249,1)')
   ctx.fillStyle = boxFill2; ctx.fill()
   ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 1; ctx.stroke()
+  roundedRect(ctx, 43, BOX2_Y, 427, BOX2_H, 24)
+  ctx.save(); ctx.clip()
+  ctx.fillStyle = 'rgba(255,255,255,1)'
+  ctx.fillRect(43, BOX2_BOTTOM - 1, 427, 1)
+  ctx.restore()
 
   // 日常活动：两侧装饰箭头（与 slot_1 完全相同）
   if (cfg.slotStyle === 'daily') {
@@ -1161,50 +1194,66 @@ export async function drawCouponPreview(cfg: CouponConfig): Promise<HTMLCanvasEl
   const ctx = canvas.getContext('2d')!
   ctx.scale(S, S)
 
-  // ① 渐变背景（702px，与腰封等宽）
+  // ① 渐变背景（Figma 精确圆角 r=24）
+  const BG_R24 =
+    'M0 24C0 10.7452 10.7452 0 24 0H678C691.255 0 702 10.7452 702 24V328' +
+    'C702 341.255 691.255 352 678 352H24C10.7452 352 0 341.255 0 328V24Z'
   const bg = ctx.createLinearGradient(0, 0, 0, H)
   bg.addColorStop(0.01, c.cardBgFrom)
   bg.addColorStop(1,    c.cardBgTo)
   ctx.fillStyle = bg
-  ctx.fillRect(0, 0, W, H)
+  ctx.fill(new Path2D(BG_R24))
 
   // ② 标题 + 闪电装饰
   drawCouponHeader(ctx, cfg)
 
-  // ③ 券卡区
-  const CX0 = 18, CY0 = 84, CW = 192, CH = 94, CGAP = 12, CR = 14
-  for (let i = 0; i < 3; i++) {
-    const cx = CX0 + i * (CW + CGAP)
+  // ③ 券卡区（Figma 精确：3张全卡 + 1张半卡，clip 在 x=16 w=670）
+  // 卡高 244px，延伸到腰封下方，腰封绘制时会覆盖下半部分
+  const CY0 = 84, CW = 192, CH = 244, CR = 16
+  // Figma 精确 x 坐标：col1=18, col2=222, col3=425, col4=628（半卡可见58px）
+  const CARD_XS = [18, 222, 425, 628]
+
+  ctx.save()
+  // 只显示 x=16 ~ x=686（670px宽）内的卡片，超出部分裁切
+  ctx.beginPath()
+  ctx.rect(16, CY0, 670, 256)
+  ctx.clip()
+
+  for (let i = 0; i < 4; i++) {
+    const cx = CARD_XS[i]
     roundedRect(ctx, cx, CY0, CW, CH, CR)
     ctx.fillStyle = 'rgba(255,255,255,0.92)'
     ctx.fill()
     ctx.textAlign = 'center'
     if (i === 0) {
-      ctx.font = `700 18px ${FB}`
+      // 第1张：只有标题，无金额
+      ctx.font = `700 22px ${FB}`
       ctx.fillStyle = 'rgba(0,0,0,0.72)'
-      ctx.textBaseline = 'middle'
-      ctx.fillText('外卖餐饮券', cx + CW / 2, CY0 + CH / 2)
+      ctx.textBaseline = 'top'
+      ctx.fillText('外卖餐饮券', cx + CW / 2, CY0 + 5)
     } else {
-      ctx.font = `700 14px ${FB}`
+      // 第2-4张：标题 + ¥? + 副文案
+      ctx.font = `700 22px ${FB}`
       ctx.fillStyle = 'rgba(0,0,0,0.52)'
       ctx.textBaseline = 'top'
-      ctx.fillText('外卖餐饮券', cx + CW / 2, CY0 + 8)
+      ctx.fillText('外卖餐饮券', cx + CW / 2, CY0 + 5)
       const amtCX = cx + CW / 2 - 4
       ctx.fillStyle = '#FF0000'
-      ctx.font = `400 17px ${FB}`
+      ctx.font = `400 22px ${FB}`
       ctx.textAlign = 'right'
       ctx.textBaseline = 'alphabetic'
-      ctx.fillText('¥', amtCX, CY0 + 66)
-      ctx.font = `700 32px ${FB}`
+      ctx.fillText('¥', amtCX, CY0 + 82)
+      ctx.font = `700 55px ${FB}`
       ctx.textAlign = 'left'
-      ctx.fillText('?', amtCX + 2, CY0 + 66)
-      ctx.font = `400 12px ${FB}`
+      ctx.fillText('?', amtCX + 2, CY0 + 86)
+      ctx.font = `400 22px ${FB}`
       ctx.fillStyle = '#222426'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'bottom'
-      ctx.fillText('外卖餐饮券', cx + CW / 2, CY0 + CH - 6)
+      ctx.fillText('外卖餐饮券', cx + CW / 2, CY0 + CH - 16)
     }
   }
+  ctx.restore()
 
   // ④ 腰封弧形（702px 坐标，与背景等宽）
   ctx.save()

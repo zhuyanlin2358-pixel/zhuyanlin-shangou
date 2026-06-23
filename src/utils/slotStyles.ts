@@ -110,6 +110,15 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
       rect7G.addColorStop(1, rect7To ?? '#FFC7D4')
       ctx.fillStyle = rect7G
       ctx.fillRect(342, 0, 384, 105)
+
+      // Figma inset highlight: inset 0px 2px 0px rgba(255,255,255,1)
+      // 鼓轮区顶部 2px 纯白高光，模拟立体感描边
+      const hlGrad = ctx.createLinearGradient(342, 0, 342, 3)
+      hlGrad.addColorStop(0,   'rgba(255,255,255,1)')
+      hlGrad.addColorStop(1,   'rgba(255,255,255,0)')
+      ctx.fillStyle = hlGrad
+      ctx.fillRect(342, 0, 384, 3)
+
       ctx.restore()
 
       // ② 圆形2柔光（底层，在蒙版下方）
@@ -147,6 +156,13 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
       mainBg.addColorStop(1, tintTo)
       ctx.fillStyle = mainBg
       ctx.fillRect(SX, 0, SW, H)
+
+      // Figma inset highlight: inset 0px 1px 0px 0px rgba(255,255,255,1)
+      // 蒙版弧形内侧描边：clip 内 2px 白色 stroke（1px 在内侧可见）
+      ctx.strokeStyle = 'rgba(255,255,255,0.9)'
+      ctx.lineWidth   = 2     // 路径居中：2px 中 1px 在 clip 内可见
+      ctx.stroke()
+
       ctx.restore()
 
       ctx.restore()  // 释放 skinPath clip

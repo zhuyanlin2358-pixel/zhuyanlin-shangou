@@ -1,38 +1,21 @@
 /**
  * 会场管理（VenuePage 内部 home 视图）
- * 功能：头图设置 · 背景色 · 已加入组件列表（排序/间距/删除）· 导出会场拼图
+ * 头图/背景色已移至右侧手机预览配置区，此处只保留：
+ *   - 已加入组件列表（排序/间距/删除）
+ *   - 导出会场拼图
  */
-import { useRef, useCallback, useState } from 'react'
-import { Trash2, ChevronUp, ChevronDown, Download, ImageIcon } from 'lucide-react'
+import { useCallback, useState } from 'react'
+import { Trash2, ChevronUp, ChevronDown, Download } from 'lucide-react'
 import { useVenue } from '@/contexts/VenueContext'
 import { useApp }   from '@/contexts/AppContext'
-import { ColorField } from '@/components/ui/PanelField'
-import type { VenueHeaderSize } from '@/types'
-
-const HEADER_SIZES: { key: VenueHeaderSize; label: string; h: number }[] = [
-  { key: '424', label: '标准头图', h: 424 },
-  { key: '624', label: '大头图',   h: 624 },
-  { key: '274', label: '极矮头图', h: 274 },
-]
 
 export default function VenueManager() {
   const {
     items, removeItem, moveItem, setSpacing,
-    headerUrl, setHeaderUrl, headerSize, setHeaderSize,
-    bgColor, setBgColor,
+    headerUrl, headerSize, bgColor,
   } = useVenue()
   const { showToast } = useApp()
   const [exporting, setExporting] = useState(false)
-  const fileRef = useRef<HTMLInputElement>(null)
-
-  // 上传头图
-  const handleHeaderUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = ev => setHeaderUrl(ev.target?.result as string)
-    reader.readAsDataURL(file)
-  }
 
   // 导出会场拼图
   const handleExportVenue = useCallback(async () => {
@@ -47,21 +30,16 @@ export default function VenueManager() {
       const W = 750
       const headerH = headerUrl ? parseInt(headerSize) : 0
 
-      // 计算总高度
       let totalH = headerH
-      for (const it of items) {
-        totalH += it.spacingAbove + it.origH
-      }
+      for (const it of items) totalH += it.spacingAbove + it.origH
 
       const canvas = document.createElement('canvas')
       canvas.width = W; canvas.height = totalH
       const ctx = canvas.getContext('2d')!
 
-      // 背景色
       ctx.fillStyle = bgColor
       ctx.fillRect(0, 0, W, totalH)
 
-      // 头图
       let curY = 0
       if (headerUrl && headerH > 0) {
         await new Promise<void>(res => {
@@ -73,26 +51,19 @@ export default function VenueManager() {
         curY = headerH
       }
 
-      // 各组件
       for (const it of items) {
         curY += it.spacingAbove
-        // 间距区域用背景色填充
         ctx.fillStyle = bgColor
         ctx.fillRect(0, curY - it.spacingAbove, W, it.spacingAbove)
-
         await new Promise<void>(res => {
           const img = new Image()
-          img.onload = () => {
-            ctx.drawImage(img, 0, curY, W, it.origH)
-            res()
-          }
+          img.onload = () => { ctx.drawImage(img, 0, curY, W, it.origH); res() }
           img.onerror = () => res()
           img.src = it.previewUrl
         })
         curY += it.origH
       }
 
-      // 下载
       const link = document.createElement('a')
       link.download = '会场拼图.png'
       link.href = canvas.toDataURL('image/png')
@@ -109,112 +80,6 @@ export default function VenueManager() {
       <h2 className="text-base font-semibold mb-5" style={{ color: 'var(--text-1)' }}>
         会场搭建
       </h2>
-
-      {/* ── 头图设置 ── */}
-      <section className="mb-6">
-        <div className="text-xs font-semibold mb-2" style={{ color: 'var(--text-2)' }}>
-          头图
-        </div>
-
-        {/* 尺寸切换 */}
-        <div className="flex gap-2 mb-3">
-          {HEADER_SIZES.map(s => (
-            <button
-              key={s.key}
-              onClick={() => setHeaderSize(s.key)}
-              className="px-3 py-1.5 text-xs rounded-lg transition-all"
-              style={{
-                border: `1px solid ${headerSize === s.key ? '#FF5050' : 'var(--border)'}`,
-                background: headerSize === s.key ? 'rgba(255,80,80,0.08)' : 'var(--bg-subtle)',
-                color: headerSize === s.key ? '#FF8080' : 'var(--text-2)',
-              }}
-            >
-              {s.label}
-              <span className="ml-1 opacity-50">750×{s.h}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* 上传区 */}
-        <div
-          onClick={() => fileRef.current?.click()}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all hover:opacity-80"
-          style={{ border: '1.5px dashed var(--border)', background: 'var(--bg-subtle)' }}
-        >
-          {headerUrl ? (
-            <img
-              src={headerUrl}
-              alt="头图预览"
-              className="rounded"
-              style={{ width: 80, height: Math.round(80 * parseInt(headerSize) / 750), objectFit: 'cover' }}
-            />
-          ) : (
-            <div className="w-16 h-10 rounded flex items-center justify-center" style={{ background: 'var(--bg)' }}>
-              <ImageIcon size={18} style={{ color: 'var(--text-3)' }} />
-            </div>
-          )}
-          <div>
-            <div className="text-xs font-medium" style={{ color: 'var(--text-1)' }}>
-              {headerUrl ? '点击更换头图' : '上传头图'}
-            </div>
-            <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-3)' }}>
-              750 × {HEADER_SIZES.find(s => s.key === headerSize)?.h} px，置顶显示
-            </div>
-          </div>
-          {headerUrl && (
-            <button
-              onClick={e => { e.stopPropagation(); setHeaderUrl('') }}
-              className="ml-auto text-xs px-2 py-1 rounded"
-              style={{ color: 'var(--text-3)' }}
-            >
-              移除
-            </button>
-          )}
-        </div>
-        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleHeaderUpload} />
-
-        {/* 头图动效 */}
-        <div className="mt-3">
-          <div className="text-xs font-semibold mb-2" style={{ color: 'var(--text-2)' }}>
-            头图动效
-          </div>
-          <div
-            className="flex items-center gap-3 px-4 py-3 rounded-xl"
-            style={{ border: '1.5px dashed var(--border)', background: 'var(--bg-subtle)' }}
-          >
-            {/* 动效图标 */}
-            <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-              style={{ background: 'rgba(255,255,255,0.06)' }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                strokeWidth={1.6} style={{ color: 'var(--text-3)' }}>
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 8v4l3 3"/>
-              </svg>
-            </div>
-            <div className="flex-1">
-              <div className="text-xs font-medium" style={{ color: 'var(--text-2)' }}>
-                待开发
-              </div>
-              <div className="text-[10px] mt-0.5 leading-snug" style={{ color: 'var(--text-3)' }}>
-                头图动效配置，包含入场动效、循环动效及自定义动销动画库
-              </div>
-            </div>
-            <span
-              className="text-[10px] px-2 py-0.5 rounded-full shrink-0"
-              style={{ background: 'rgba(255,200,0,0.1)', color: 'rgba(255,180,0,0.8)' }}
-            >
-              即将上线
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 背景色 ── */}
-      <section className="mb-6">
-        <ColorField label="会场背景色" value={bgColor} onChange={setBgColor} />
-      </section>
 
       {/* ── 已加入组件列表 ── */}
       <section className="mb-6">
@@ -268,7 +133,7 @@ export default function VenueManager() {
   )
 }
 
-// ── 单个组件行（模块顶层）────────────────────────────────────────────────────
+// ── 单个组件行 ──────────────────────────────────────────────────────────────
 function VenueItemRow({
   item, index, total, onMove, onRemove, onSpacing,
 }: {
@@ -283,11 +148,10 @@ function VenueItemRow({
       className="rounded-xl overflow-hidden"
       style={{ border: '1px solid var(--border)', background: 'var(--bg-subtle)' }}
     >
-      {/* 预览缩略图：固定高度裁切，统一各组件卡片高度 */}
+      {/* 缩略图 */}
       <div className="overflow-hidden" style={{ background: '#f0f0f0', lineHeight: 0, height: 120 }}>
         <img
-          src={item.previewUrl}
-          alt={item.label}
+          src={item.previewUrl} alt={item.label}
           style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }}
         />
       </div>
@@ -300,16 +164,12 @@ function VenueItemRow({
         <span className="text-xs flex-1 truncate" style={{ color: 'var(--text-1)' }}>
           {item.label}
         </span>
-        <span className="text-[10px] shrink-0" style={{ color: 'var(--text-3)' }}>
-          间距
-        </span>
+        <span className="text-[10px] shrink-0" style={{ color: 'var(--text-3)' }}>间距</span>
         <input
-          type="range"
-          min={0} max={60} step={2}
+          type="range" min={0} max={60} step={2}
           value={item.spacingAbove}
           onChange={e => onSpacing(Number(e.target.value))}
-          className="w-20 shrink-0"
-          style={{ accentColor: '#FF5050' }}
+          className="w-20 shrink-0" style={{ accentColor: '#FF5050' }}
         />
         <span className="text-[10px] w-7 shrink-0 text-right" style={{ color: 'var(--text-2)' }}>
           {item.spacingAbove}px

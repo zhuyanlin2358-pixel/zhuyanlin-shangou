@@ -33,10 +33,10 @@ function Loader() {
 export default function VenuePage() {
   const { currentComp, goHome, goVenue, enterComp, hasExportAll, triggerExportAll } = useApp()
 
-  // 组件配置面板（与旧 Sidebar 一样）
+  // 组件配置面板（slot 已将配置内联到主内容区，面板列隐藏让主区获得更多宽度）
   const configPanel = (() => {
     switch (currentComp) {
-      case 'slot':   return <div className="h-full overflow-y-auto"><SlotPanel /></div>
+      case 'slot':   return null  // 配置内联在 SlotPage 各 section 下方
       case 'floor':  return <div className="h-full overflow-y-auto"><FloorPanel /></div>
       case 'h-tab':  return <div className="h-full overflow-y-auto"><HTabPanel /></div>
       case 'coupon': return <div className="h-full overflow-y-auto"><CouponPanel /></div>
