@@ -211,7 +211,7 @@ export async function drawSlotBannerCanvas(
   const innerW = 427 - 24  // 403
   const cardsW = 3 * 124 + 2 * 8  // 388
   const px = 43 + 12 + (innerW - cardsW) / 2  // ≈ 62.5
-  const py = 75 + (142 - 124) / 2              // 84
+  const py = 84 + (142 - 124) / 2              // 93（白色框 y=84，奖品居中）
   prizeCanvases.forEach((pc, i) => {
     if (pc) ctx.drawImage(pc, px + i * 132, py, 124, 124)
   })

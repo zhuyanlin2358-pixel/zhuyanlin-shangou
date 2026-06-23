@@ -156,6 +156,13 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
       mainBg.addColorStop(1, tintTo)
       ctx.fillStyle = mainBg
       ctx.fillRect(SX, 0, SW, H)
+
+      // Figma inset highlight: inset 0px 1px 0px 0px rgba(255,255,255,1)
+      // 蒙版弧形内侧描边：clip 内 2px 白色 stroke（1px 在内侧可见）
+      ctx.strokeStyle = 'rgba(255,255,255,0.9)'
+      ctx.lineWidth   = 2     // 路径居中：2px 中 1px 在 clip 内可见
+      ctx.stroke()
+
       ctx.restore()
 
       ctx.restore()  // 释放 skinPath clip
