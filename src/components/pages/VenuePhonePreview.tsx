@@ -90,7 +90,7 @@ export default function VenuePhonePreview() {
         style={{ borderColor: 'rgba(255,255,255,0.07)' }}
       >
         <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.6)' }}>
-          手机预览 · 375px
+          画布预览 · 375px
         </span>
         <div className="flex items-center gap-2">
           {items.length > 0 && (

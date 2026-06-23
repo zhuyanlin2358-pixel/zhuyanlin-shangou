@@ -17,7 +17,7 @@ export default function Stepper() {
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     if (n === 4) {
       // toast hint
-      const e = new CustomEvent('show-toast', { detail: '步骤 4：点击各素材卡片右下角「⬇ 导出」，或顶栏「一键导出 ZIP」' })
+      const e = new CustomEvent('show-toast', { detail: '步骤 4：点击各素材卡片右下角「⬇ 导出」，或顶栏「完成设计并下载」' })
       window.dispatchEvent(e)
     }
   }

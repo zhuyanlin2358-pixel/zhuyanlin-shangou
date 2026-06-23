@@ -258,14 +258,26 @@ git checkout main && git merge feature/venue-preview && git push origin main && 
 bash scripts/sync-obsidian.sh
 ```
 
-> 当前所有功能已合并 main。feature/venue-preview 作为日常开发分支持续使用。
+## 当前分支状态（2026-06-23）
+
+| 分支 | 用途 | 状态 |
+|------|------|------|
+| `main` | 线上稳定版，GitHub Pages 自动部署 | ✅ 当前线上版 |
+| `feature/toolbar-optimize` | 工具栏优化（老虎机 inline 配置、Figma 精确还原、字体子集化）| 🚧 开发中，未发布 |
+| `feature/ui-redesign` | UI 改版专用，等设计师方案后开工 | ⏳ 待启动 |
+| `feature/venue-preview` | 历史分支，功能已合并 main | 📦 归档 |
+
+> ⚠️ **提醒**：设计师确认配置区方案后，切换到 `feature/ui-redesign` 分支再动工。
+> 改版前先 merge `feature/toolbar-optimize` 的优化内容，避免冲突。
 
 ---
 
 ## 待做
 
+- **UI 改版**：等产品设计师确认配置区方案（候选A/B/C），在 `feature/ui-redesign` 分支开发
+- **工具栏优化合并**：`feature/toolbar-optimize` 确认无问题后发布
 - **一拖四**：规范确认后开发
 - **N4/N2 加入会场**：需 captureElement → previewUrl 方案
-- **头图动效库**：协作方提供动效代码后接入 VenueManager（占位已预留）
-- **券红包 Figma 还原**：白色券卡精确位置（3张半，Figma 坐标：col1 x:18，col2 x:222，col3 x:425，col4 partial x:628）
+- **头图动效库**：协作方提供动效代码后接入（VenueManager 占位已预留）
+- **设计规则引擎**：等字体规范文档，填入 Obsidian 后转化为产品推荐逻辑
 - **Skill AI 出图**：等 zhuxiangyu04 API 方案

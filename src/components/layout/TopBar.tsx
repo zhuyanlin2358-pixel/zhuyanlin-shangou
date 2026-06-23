@@ -55,7 +55,7 @@ export default function TopBar() {
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-white"
             style={{ background: 'linear-gradient(90deg,#FF3060,#FF6030)' }}
           >
-            <Download size={13} /><span>一键导出 ZIP</span>
+            <Download size={13} /><span>完成设计并下载</span>
           </button>
         )}
         {!isComp && (
