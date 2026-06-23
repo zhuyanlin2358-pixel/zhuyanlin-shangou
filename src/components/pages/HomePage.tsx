@@ -6,11 +6,9 @@ export default function HomePage() {
   const { goVenue } = useApp()
 
   useEffect(() => {
-    gsap.from(['.hp-label', '.hp-title', '.hp-sub'], {
-      opacity: 0, y: -10, duration: 0.5, stagger: 0.08, ease: 'power2.out', clearProps: 'all',
-    })
-    gsap.from('.hp-btn', { opacity: 0, y: 14, duration: 0.45, delay: 0.2, ease: 'power2.out', clearProps: 'all' })
-    gsap.from('.hp-soon', { opacity: 0, duration: 0.4, delay: 0.35, ease: 'power2.out', clearProps: 'all' })
+    gsap.from('.hp-head',  { opacity: 0, y: -16, duration: 0.5, ease: 'power2.out', clearProps: 'all' })
+    gsap.from('.hp-entry', { opacity: 0, y: 20,  duration: 0.45, delay: 0.15, ease: 'power2.out', clearProps: 'all' })
+    gsap.from('.hp-later', { opacity: 0,          duration: 0.4,  delay: 0.35, ease: 'power2.out', clearProps: 'all' })
   }, [])
 
   return (
@@ -21,88 +19,83 @@ export default function HomePage() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '40px 24px',
       gap: 0,
     }}>
 
-      {/* 标题区 */}
-      <div style={{ textAlign: 'center', marginBottom: 48 }}>
-        <div className="hp-label" style={{
-          fontSize: 11, letterSpacing: '2px',
-          color: 'rgba(255,255,255,0.2)', marginBottom: 14,
-        }}>
+      {/* ── 标题 ── */}
+      <div className="hp-head" style={{ textAlign: 'center', marginBottom: 56 }}>
+        <p style={{ margin: '0 0 16px', fontSize: 12, letterSpacing: '2px', color: 'rgba(255,255,255,0.22)' }}>
           美团闪购
-        </div>
-        <h1 className="hp-title" style={{
-          fontSize: 36, fontWeight: 700, color: '#fff',
-          margin: 0, marginBottom: 12, letterSpacing: '-0.5px',
-        }}>
+        </p>
+        <h1 style={{ margin: '0 0 12px', fontSize: 40, fontWeight: 700, color: '#fff', letterSpacing: '-1px', lineHeight: 1.2 }}>
           设计工作台
         </h1>
-        <p className="hp-sub" style={{
-          fontSize: 14, color: 'rgba(255,255,255,0.35)', margin: 0,
-        }}>
-          选择组件，配置参数，导出上线素材
+        <p style={{ margin: 0, fontSize: 15, color: 'rgba(255,255,255,0.38)' }}>
+          选择你要完成的任务
         </p>
       </div>
 
-      {/* 主入口按钮 */}
+      {/* ── 主入口 ── */}
       <button
-        className="hp-btn"
+        className="hp-entry"
         onClick={goVenue}
         style={{
-          width: 320,
-          padding: '20px 28px',
-          background: 'rgba(255,255,255,0.05)',
-          border: '1px solid rgba(255,255,255,0.12)',
-          borderRadius: 14,
+          width: 340,
+          padding: '24px 28px',
+          background: '#161B22',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 16,
           cursor: 'pointer',
           textAlign: 'left',
           marginBottom: 12,
-          transition: 'all 0.18s',
+          transition: 'border-color 0.15s, transform 0.15s, box-shadow 0.15s',
           display: 'block',
         }}
         onMouseEnter={e => {
           const el = e.currentTarget as HTMLElement
-          el.style.background = 'rgba(255,48,96,0.08)'
-          el.style.borderColor = 'rgba(255,48,96,0.3)'
-          el.style.transform = 'translateY(-1px)'
+          el.style.borderColor = 'rgba(255,48,96,0.45)'
+          el.style.transform = 'translateY(-2px)'
+          el.style.boxShadow = '0 8px 32px rgba(255,48,96,0.1)'
         }}
         onMouseLeave={e => {
           const el = e.currentTarget as HTMLElement
-          el.style.background = 'rgba(255,255,255,0.05)'
-          el.style.borderColor = 'rgba(255,255,255,0.12)'
+          el.style.borderColor = 'rgba(255,255,255,0.1)'
           el.style.transform = 'none'
+          el.style.boxShadow = 'none'
         }}
       >
-        <div style={{ fontSize: 16, fontWeight: 600, color: '#fff', marginBottom: 6 }}>
+        <div style={{ fontSize: 17, fontWeight: 700, color: '#fff', marginBottom: 8 }}>
           打开设计工具
         </div>
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', lineHeight: 1.6 }}>
+        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', lineHeight: 1.7 }}>
           配置老虎机、楼层条、红包等组件<br />
-          导出全套切图，或拼成完整会场页
+          导出切图，或拼成完整活动页
+        </div>
+        <div style={{ marginTop: 16, fontSize: 12, color: 'rgba(255,80,100,0.7)', display: 'flex', alignItems: 'center', gap: 4 }}>
+          点击进入
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </div>
       </button>
 
-      {/* 场景方案库（待开发）*/}
+      {/* ── 场景方案库（待开发）── */}
       <div
-        className="hp-soon"
+        className="hp-later"
         style={{
-          width: 320,
-          padding: '14px 20px',
+          width: 340,
+          padding: '12px 20px',
           border: '1px dashed rgba(255,255,255,0.07)',
           borderRadius: 10,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          opacity: 0.5,
+          gap: 12,
         }}
       >
         <div>
-          <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.4)' }}>场景方案库</div>
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', marginTop: 2 }}>大促 / 日常 / 节日，一键套用</div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)', fontWeight: 500 }}>场景方案库</div>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.15)', marginTop: 2 }}>大促 / 日常 / 节日，一键套用</div>
         </div>
-        <span style={{ fontSize: 10, color: 'rgba(255,180,0,0.5)', border: '1px solid rgba(255,180,0,0.15)', borderRadius: 4, padding: '2px 7px' }}>
+        <span style={{ fontSize: 10, color: 'rgba(255,180,0,0.4)', border: '1px solid rgba(255,180,0,0.12)', borderRadius: 4, padding: '2px 7px', flexShrink: 0 }}>
           待开发
         </span>
       </div>
