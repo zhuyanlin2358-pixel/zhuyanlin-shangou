@@ -1161,50 +1161,66 @@ export async function drawCouponPreview(cfg: CouponConfig): Promise<HTMLCanvasEl
   const ctx = canvas.getContext('2d')!
   ctx.scale(S, S)
 
-  // ① 渐变背景（702px，与腰封等宽）
+  // ① 渐变背景（Figma 精确圆角 r=24）
+  const BG_R24 =
+    'M0 24C0 10.7452 10.7452 0 24 0H678C691.255 0 702 10.7452 702 24V328' +
+    'C702 341.255 691.255 352 678 352H24C10.7452 352 0 341.255 0 328V24Z'
   const bg = ctx.createLinearGradient(0, 0, 0, H)
   bg.addColorStop(0.01, c.cardBgFrom)
   bg.addColorStop(1,    c.cardBgTo)
   ctx.fillStyle = bg
-  ctx.fillRect(0, 0, W, H)
+  ctx.fill(new Path2D(BG_R24))
 
   // ② 标题 + 闪电装饰
   drawCouponHeader(ctx, cfg)
 
-  // ③ 券卡区
-  const CX0 = 18, CY0 = 84, CW = 192, CH = 94, CGAP = 12, CR = 14
-  for (let i = 0; i < 3; i++) {
-    const cx = CX0 + i * (CW + CGAP)
+  // ③ 券卡区（Figma 精确：3张全卡 + 1张半卡，clip 在 x=16 w=670）
+  // 卡高 244px，延伸到腰封下方，腰封绘制时会覆盖下半部分
+  const CY0 = 84, CW = 192, CH = 244, CR = 16
+  // Figma 精确 x 坐标：col1=18, col2=222, col3=425, col4=628（半卡可见58px）
+  const CARD_XS = [18, 222, 425, 628]
+
+  ctx.save()
+  // 只显示 x=16 ~ x=686（670px宽）内的卡片，超出部分裁切
+  ctx.beginPath()
+  ctx.rect(16, CY0, 670, 256)
+  ctx.clip()
+
+  for (let i = 0; i < 4; i++) {
+    const cx = CARD_XS[i]
     roundedRect(ctx, cx, CY0, CW, CH, CR)
     ctx.fillStyle = 'rgba(255,255,255,0.92)'
     ctx.fill()
     ctx.textAlign = 'center'
     if (i === 0) {
-      ctx.font = `700 18px ${FB}`
+      // 第1张：只有标题，无金额
+      ctx.font = `700 22px ${FB}`
       ctx.fillStyle = 'rgba(0,0,0,0.72)'
-      ctx.textBaseline = 'middle'
-      ctx.fillText('外卖餐饮券', cx + CW / 2, CY0 + CH / 2)
+      ctx.textBaseline = 'top'
+      ctx.fillText('外卖餐饮券', cx + CW / 2, CY0 + 5)
     } else {
-      ctx.font = `700 14px ${FB}`
+      // 第2-4张：标题 + ¥? + 副文案
+      ctx.font = `700 22px ${FB}`
       ctx.fillStyle = 'rgba(0,0,0,0.52)'
       ctx.textBaseline = 'top'
-      ctx.fillText('外卖餐饮券', cx + CW / 2, CY0 + 8)
+      ctx.fillText('外卖餐饮券', cx + CW / 2, CY0 + 5)
       const amtCX = cx + CW / 2 - 4
       ctx.fillStyle = '#FF0000'
-      ctx.font = `400 17px ${FB}`
+      ctx.font = `400 22px ${FB}`
       ctx.textAlign = 'right'
       ctx.textBaseline = 'alphabetic'
-      ctx.fillText('¥', amtCX, CY0 + 66)
-      ctx.font = `700 32px ${FB}`
+      ctx.fillText('¥', amtCX, CY0 + 82)
+      ctx.font = `700 55px ${FB}`
       ctx.textAlign = 'left'
-      ctx.fillText('?', amtCX + 2, CY0 + 66)
-      ctx.font = `400 12px ${FB}`
+      ctx.fillText('?', amtCX + 2, CY0 + 86)
+      ctx.font = `400 22px ${FB}`
       ctx.fillStyle = '#222426'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'bottom'
-      ctx.fillText('外卖餐饮券', cx + CW / 2, CY0 + CH - 6)
+      ctx.fillText('外卖餐饮券', cx + CW / 2, CY0 + CH - 16)
     }
   }
+  ctx.restore()
 
   // ④ 腰封弧形（702px 坐标，与背景等宽）
   ctx.save()
