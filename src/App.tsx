@@ -62,6 +62,21 @@ function MainContent() {
   const { page, currentComp, toast, hasPreview } = useApp()
   useGlobalScrollVisible()
 
+  // 首页：全屏独立布局，跳过 Sidebar + TopBar
+  if (page === 'home') {
+    return (
+      <>
+        <HomePage />
+        {toast && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 text-sm px-4 py-2 rounded-full shadow-lg z-50"
+            style={{ background: '#1a1a1a', color: '#fff', whiteSpace: 'nowrap' }}>
+            {toast}
+          </div>
+        )}
+      </>
+    )
+  }
+
   // 会场页：全屏独立布局，跳过 Sidebar + TopBar
   if (page === 'venue') {
     return (
