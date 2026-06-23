@@ -100,6 +100,25 @@ const F  = '"FZLanTingHei-M","PingFang SC","Microsoft YaHei",sans-serif'
 // FZLanTingHei-DB-GBK：标题/按钮/大字
 const FB = '"FZLanTingHei-DB","FZLanTingHei-M","PingFang SC","Microsoft YaHei",sans-serif'
 
+/**
+ * 按 CSS 角度创建 LinearGradient（Figma 导出格式兼容）
+ * CSS 0° = 向上, 顺时针; Canvas 以 x 轴为 0°, 逆时针
+ */
+function cssAngleGradient(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number, w: number, h: number,
+  cssDeg: number,
+): CanvasGradient {
+  const rad  = (90 - cssDeg) * Math.PI / 180
+  const cosA = Math.cos(rad), sinA = Math.sin(rad)
+  const len  = Math.abs(w * cosA) + Math.abs(h * sinA)
+  const cx = x + w / 2, cy = y + h / 2
+  return ctx.createLinearGradient(
+    cx - (len / 2) * cosA, cy - (len / 2) * sinA,
+    cx + (len / 2) * cosA, cy + (len / 2) * sinA,
+  )
+}
+
 function roundedRect(
   ctx: CanvasRenderingContext2D,
   x: number, y: number, w: number, h: number, r: number,
@@ -155,12 +174,13 @@ export async function drawSlotBannerCanvas(
   boxInner.addColorStop(1, 'rgba(255,255,255,0.6)')
   ctx.fillStyle = boxInner; ctx.fill()
 
-  // 按钮渐变
+  // 按钮渐变（Figma: linear-gradient(-35deg, ...)）
   const btnX = 499
   roundedRect(ctx, btnX, 104, 194, 80, 40)
-  const btnG = ctx.createLinearGradient(btnX, 0, btnX + 194, 0)
-  btnG.addColorStop(0, cfg.btnActiveFrom)
-  btnG.addColorStop(1, cfg.btnActiveTo)
+  const btnG = cssAngleGradient(ctx, btnX, 104, 194, 80, -35)
+  btnG.addColorStop(0,    cfg.btnActiveFrom)
+  btnG.addColorStop(0.31, cfg.btnActiveTo)
+  btnG.addColorStop(1,    cfg.btnActiveTo)
   ctx.fillStyle = btnG
   ctx.fill()
 
@@ -277,8 +297,11 @@ export function drawButtonCanvas(text: string, from: string, to: string, textCol
   const ctx = canvas.getContext('2d')!
   ctx.scale(2, 2)
   roundedRect(ctx, 0, 0, 194, 80, 40)
-  const g = ctx.createLinearGradient(0, 0, 194, 0)
-  g.addColorStop(0, from); g.addColorStop(1, to)
+  // Figma: linear-gradient(-35deg, from 0%, to 31%)
+  const g = cssAngleGradient(ctx, 0, 0, 194, 80, -35)
+  g.addColorStop(0,    from)
+  g.addColorStop(0.31, to)
+  g.addColorStop(1,    to)
   ctx.fillStyle = g; ctx.fill()
   ctx.font = `400 34px ${F}`; ctx.fillStyle = textColor
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'

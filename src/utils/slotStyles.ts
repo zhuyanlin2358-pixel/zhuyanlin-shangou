@@ -110,6 +110,15 @@ export const SLOT_STYLE_REGISTRY: Record<string, SlotStyleDef> = {
       rect7G.addColorStop(1, rect7To ?? '#FFC7D4')
       ctx.fillStyle = rect7G
       ctx.fillRect(342, 0, 384, 105)
+
+      // Figma inset highlight: inset 0px 2px 0px rgba(255,255,255,1)
+      // 鼓轮区顶部 2px 纯白高光，模拟立体感描边
+      const hlGrad = ctx.createLinearGradient(342, 0, 342, 3)
+      hlGrad.addColorStop(0,   'rgba(255,255,255,1)')
+      hlGrad.addColorStop(1,   'rgba(255,255,255,0)')
+      ctx.fillStyle = hlGrad
+      ctx.fillRect(342, 0, 384, 3)
+
       ctx.restore()
 
       // ② 圆形2柔光（底层，在蒙版下方）
