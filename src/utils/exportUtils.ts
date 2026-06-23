@@ -160,19 +160,23 @@ export async function drawSlotBannerCanvas(
   // 背景：调用风格注册表（背景在各自的702×242区域内自绘，无全宽clip）
   getSlotStyle(cfg.slotStyle).drawBg(ctx, W, H, { tintFrom: cfg.slotTintFrom, tintTo: cfg.slotTintTo, rect7From: cfg.slotRect7From, rect7To: cfg.slotRect7To })
 
-  // 白色奖品框（Figma 13:431：白色 + 底部淡粉渐变 + 白色描边 + 内阴影）
-  roundedRect(ctx, 43, 75, 427, 142, 24)
-  const boxFill = ctx.createLinearGradient(43, 75, 43, 75 + 142)
-  boxFill.addColorStop(0, '#FFFFFF')
+  // 白色奖品框（Figma 6:104：x=43 y=84 w=427 h=142 r=24）
+  // Figma fill: linear-gradient(180deg, transparent 67%, rgba(255,246,249) 100%) + #FFFFFF
+  // Figma effect: inset 0px -1px 0px 0px rgba(255,255,255,1)（底部 1px 白色高光）
+  const BOX_Y = 84, BOX_H = 142, BOX_BOTTOM = BOX_Y + BOX_H   // 226
+  roundedRect(ctx, 43, BOX_Y, 427, BOX_H, 24)
+  const boxFill = ctx.createLinearGradient(43, BOX_Y, 43, BOX_BOTTOM)
+  boxFill.addColorStop(0,    '#FFFFFF')
   boxFill.addColorStop(0.67, '#FFFFFF')
-  boxFill.addColorStop(1, 'rgba(255,246,249,1)')
+  boxFill.addColorStop(1,    'rgba(255,246,249,1)')
   ctx.fillStyle = boxFill; ctx.fill()
   ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 1; ctx.stroke()
-  roundedRect(ctx, 43, 75, 427, 142, 24)
-  const boxInner = ctx.createLinearGradient(43, 217 - 4, 43, 217)
-  boxInner.addColorStop(0, 'rgba(255,255,255,0)')
-  boxInner.addColorStop(1, 'rgba(255,255,255,0.6)')
-  ctx.fillStyle = boxInner; ctx.fill()
+  // 底部 1px 白色 inset 高光（Figma boxShadow inset 0px -1px 0px 0px white）
+  roundedRect(ctx, 43, BOX_Y, 427, BOX_H, 24)
+  ctx.save(); ctx.clip()
+  ctx.fillStyle = 'rgba(255,255,255,1)'
+  ctx.fillRect(43, BOX_BOTTOM - 1, 427, 1)
+  ctx.restore()
 
   // 按钮渐变（Figma: linear-gradient(-35deg, ...)）
   const btnX = 499
@@ -569,14 +573,20 @@ export async function drawSlotBgCanvas(
     rect7From: cfg.slotRect7From, rect7To: cfg.slotRect7To,
   })
 
-  // 白色奖品框（与 slot_1 相同，slot_2 保留框体但不放奖品图）
-  roundedRect(ctx, 43, 75, 427, 142, 24)
-  const boxFill2 = ctx.createLinearGradient(43, 75, 43, 217)
-  boxFill2.addColorStop(0, '#FFFFFF')
+  // 白色奖品框（Figma y=84，与 slot_1 相同规格）
+  const BOX2_Y = 84, BOX2_H = 142, BOX2_BOTTOM = BOX2_Y + BOX2_H
+  roundedRect(ctx, 43, BOX2_Y, 427, BOX2_H, 24)
+  const boxFill2 = ctx.createLinearGradient(43, BOX2_Y, 43, BOX2_BOTTOM)
+  boxFill2.addColorStop(0,    '#FFFFFF')
   boxFill2.addColorStop(0.67, '#FFFFFF')
-  boxFill2.addColorStop(1, 'rgba(255,246,249,1)')
+  boxFill2.addColorStop(1,    'rgba(255,246,249,1)')
   ctx.fillStyle = boxFill2; ctx.fill()
   ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 1; ctx.stroke()
+  roundedRect(ctx, 43, BOX2_Y, 427, BOX2_H, 24)
+  ctx.save(); ctx.clip()
+  ctx.fillStyle = 'rgba(255,255,255,1)'
+  ctx.fillRect(43, BOX2_BOTTOM - 1, 427, 1)
+  ctx.restore()
 
   // 日常活动：两侧装饰箭头（与 slot_1 完全相同）
   if (cfg.slotStyle === 'daily') {
