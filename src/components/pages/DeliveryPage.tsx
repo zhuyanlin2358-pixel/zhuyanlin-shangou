@@ -208,7 +208,9 @@ function SlotComponentSection({
   }
 
   // 按类型分组 assets
-  const mainAssets   = assets.filter(a => !a.label.includes('奖品图') && !a.label.includes('弹窗'))
+  const coreAssets   = assets.filter(a => a.label.includes('主视觉') || a.label.includes('背景') || a.label.includes('空态'))
+  const buttonAssets = assets.filter(a => a.label.startsWith('按钮'))
+  const linkAssets   = assets.filter(a => a.label.startsWith('链接'))
   const prizeAssets  = assets.filter(a => a.label.startsWith('奖品图'))
   const dialogBtns   = assets.filter(a => a.label.startsWith('弹窗按钮'))
   const dialogPages  = assets.filter(a => a.label.startsWith('弹窗_'))
@@ -232,8 +234,18 @@ function SlotComponentSection({
 
       {/* 分组内容 */}
       <div className="p-3 space-y-0.5">
-        {/* 主视觉 + 按钮 + 链接（平铺） */}
-        {mainAssets.map((a, i) => ARow(a, i))}
+        {/* 核心素材（主视觉/背景/空态，平铺） */}
+        {coreAssets.map((a, i) => ARow(a, i))}
+
+        {/* 抽奖按钮（可折叠） */}
+        <CollapsibleGroup label="抽奖按钮" count={buttonAssets.length}>
+          {buttonAssets.map((a, i) => ARow(a, i))}
+        </CollapsibleGroup>
+
+        {/* 链接文字（可折叠） */}
+        <CollapsibleGroup label="链接文字" count={linkAssets.length}>
+          {linkAssets.map((a, i) => ARow(a, i))}
+        </CollapsibleGroup>
 
         {/* 奖品图（可折叠 + 增加按钮） */}
         <CollapsibleGroup
