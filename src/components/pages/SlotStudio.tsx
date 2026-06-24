@@ -678,13 +678,13 @@ export default function SlotStudio({ onBack }: { onBack: () => void }) {
     : '属性面板'
 
   return (
-    <div className="flex flex-col h-screen" style={{ background: '#080C14' }}>
+    <div className="flex flex-col h-screen" style={{ background: 'var(--sl-bg)' }}>
       {/* 顶栏 */}
       <div className="flex items-center gap-3 px-5 h-12 shrink-0 border-b"
-        style={{ background: '#0D1117', borderColor: 'rgba(255,255,255,0.07)' }}>
+        style={{ background: 'var(--sl-panel)', borderColor: 'var(--sl-border)' }}>
         <button onClick={onBack}
-          className="flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-xl text-white hover:opacity-90"
-          style={{ background: 'linear-gradient(90deg,#FF3060,#FF6030)', border: 'none', cursor: 'pointer' }}>
+          className="flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-xl hover:opacity-90"
+          style={{ background: 'var(--sl-primary-grad)', color: 'var(--sl-cta-text)', border: 'none', cursor: 'pointer' }}>
           <Icons.back /> 完成并返回画布
         </button>
         <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)' }} />
@@ -706,7 +706,7 @@ export default function SlotStudio({ onBack }: { onBack: () => void }) {
 
         {/* 左20%：结构树 */}
         <div className="flex flex-col border-r overflow-y-auto shrink-0"
-          style={{ width: '20%', minWidth: 160, maxWidth: 215, background: '#0C111B', borderColor: 'rgba(255,255,255,0.07)' }}>
+          style={{ width: '20%', minWidth: 160, maxWidth: 215, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)' }}>
           <div style={{
             fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
             color: 'rgba(255,255,255,0.2)',
@@ -726,7 +726,7 @@ export default function SlotStudio({ onBack }: { onBack: () => void }) {
 
         {/* 右40% */}
         <div className="flex flex-col border-l overflow-hidden shrink-0"
-          style={{ width: '40%', minWidth: 280, background: '#0D1117', borderColor: 'rgba(255,255,255,0.07)' }}>
+          style={{ width: '40%', minWidth: 280, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)' }}>
           <div className="h-11 flex items-center px-4 border-b shrink-0"
             style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
             <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>{currentLabel}</span>

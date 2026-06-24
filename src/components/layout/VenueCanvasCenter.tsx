@@ -138,8 +138,8 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
     <div
       className="flex-1 flex flex-col items-center overflow-y-auto"
       style={{
-        background: '#080C14',
-        backgroundImage: 'radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)',
+        background: 'var(--sl-bg)',
+        backgroundImage: 'radial-gradient(rgba(235,233,252,0.04) 1px, transparent 1px)',
         backgroundSize: '20px 20px',
       }}
     >
@@ -212,27 +212,27 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
               </div>
             )}
 
-            {/* ── 状态栏 overlay（叠在头图上，参考 Image #105: 124/750 = 62px@375）── */}
+            {/* ── 状态栏 overlay（88px @750 = 44px @375，标准 iOS 状态栏）── */}
             <div style={{
               position: 'absolute', top: 0, left: 0, right: 0,
-              height: Math.round(62 * zoomPct / 100),
+              height: Math.round(44 * zoomPct / 100),
               display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
-              padding: `0 ${Math.round(18 * zoomPct / 100)}px ${Math.round(10 * zoomPct / 100)}px`,
+              padding: `0 ${Math.round(18 * zoomPct / 100)}px ${Math.round(8 * zoomPct / 100)}px`,
               pointerEvents: 'none',
             }}>
-              <span style={{ fontSize: Math.round(15 * zoomPct / 100), fontWeight: 700, color: barColor, opacity: barAlpha }}>
+              <span style={{ fontSize: Math.round(13 * zoomPct / 100), fontWeight: 700, color: barColor, opacity: barAlpha }}>
                 9:41
               </span>
               <BarIcons color={barColor} />
             </div>
 
-            {/* ── 导航栏 overlay（叠在头图上，开关控制）── */}
+            {/* ── 导航栏 overlay（71px @750 = 36px @375；状态栏44+导航36=80≈159/2）── */}
             {showNavBar && (
               <div style={{
                 position: 'absolute',
-                top: Math.round(62 * zoomPct / 100),   // 紧跟状态栏
+                top: Math.round(44 * zoomPct / 100),   // 紧跟状态栏
                 left: 0, right: 0,
-                height: Math.round(44 * zoomPct / 100),
+                height: Math.round(36 * zoomPct / 100),
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: `0 ${Math.round(16 * zoomPct / 100)}px`,
                 pointerEvents: 'none',

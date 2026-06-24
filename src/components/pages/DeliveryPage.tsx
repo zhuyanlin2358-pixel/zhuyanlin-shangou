@@ -793,11 +793,11 @@ export default function DeliveryPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen" style={{ background: '#080C14' }}>
+    <div className="flex flex-col h-screen" style={{ background: 'var(--sl-bg)' }}>
 
       {/* 顶栏 */}
       <div className="flex items-center gap-4 px-6 h-14 shrink-0 border-b"
-        style={{ background: '#0D1117', borderColor: 'rgba(255,255,255,0.07)' }}>
+        style={{ background: 'var(--sl-panel)', borderColor: 'var(--sl-border)' }}>
         <button onClick={goVenue}
           className="flex items-center gap-2 text-xs transition-opacity hover:opacity-70"
           style={{ color: 'rgba(255,255,255,0.4)', background: 'none', border: 'none', cursor: 'pointer' }}>
@@ -825,9 +825,10 @@ export default function DeliveryPage() {
         )}
         {/* 一键打包（只含已选）*/}
         <button onClick={handleDownloadAll} disabled={allStatus === 'loading' || !selectedCount}
-          className="flex items-center gap-2 px-5 py-2 text-sm font-bold rounded-xl text-white transition-all"
+          className="flex items-center gap-2 px-5 py-2 text-sm font-bold rounded-xl transition-all"
           style={{
-            background: allStatus === 'done' ? 'rgba(34,197,94,0.8)' : 'linear-gradient(90deg,#FF3060,#FF6030)',
+            background: allStatus === 'done' ? 'rgba(34,197,94,0.8)' : 'var(--sl-primary-grad)',
+            color: allStatus === 'done' ? '#fff' : 'var(--sl-cta-text)',
             cursor: allStatus === 'loading' || !selectedCount ? 'not-allowed' : 'pointer',
             opacity: allStatus === 'loading' || !selectedCount ? 0.6 : 1,
           }}>
@@ -856,7 +857,14 @@ export default function DeliveryPage() {
               </button>
             </div>
           ) : items.map(item => {
-            const { assetList } = buildAssets(item)
+            // ⚠️ 防护：buildAssets 内部有同步 .map() 调用（prizes/floors/items），
+            //    任何 context 数组异常都会抛出，不加 try/catch 就会白屏
+            let assetList: AssetDef[] = []
+            try {
+              assetList = buildAssets(item).assetList as AssetDef[]
+            } catch (err) {
+              console.error('[DeliveryPage] buildAssets threw for', item.id, err)
+            }
             if (item.componentId === 'slot') {
               return (
                 <SlotComponentSection
@@ -891,7 +899,7 @@ export default function DeliveryPage() {
 
         {/* 右侧：已选素材切图预览 */}
         <div className="flex flex-col shrink-0 border-l overflow-hidden"
-          style={{ width: 360, borderColor: 'rgba(255,255,255,0.07)', background: '#0A0E18' }}>
+          style={{ width: 360, borderColor: 'var(--sl-border)', background: 'var(--sl-panel)' }}>
           <div className="px-4 py-3 border-b shrink-0 flex items-center justify-between"
             style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
             <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.25)' }}>

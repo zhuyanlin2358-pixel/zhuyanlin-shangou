@@ -88,11 +88,11 @@ export default function VenuePage() {
 
   // ── 画布布局模式（默认三列） ────────────────────────────────────────────────
   return (
-    <div className="flex flex-col h-screen" style={{ background: 'var(--bg)' }}>
+    <div className="flex flex-col h-screen" style={{ background: 'var(--sl-bg)' }}>
 
       {/* ── 统一顶栏（单行，所有控件集中对齐）── */}
       <div className="flex items-center shrink-0 border-b"
-        style={{ height: 48, background: '#0D1117', borderColor: 'rgba(255,255,255,0.07)', padding: '0 16px', gap: 0 }}>
+        style={{ height: 48, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)', padding: '0 16px', gap: 0 }}>
 
         {/* 返回首页 */}
         <button onClick={goHome}
@@ -141,8 +141,8 @@ export default function VenuePage() {
         {/* 完成 · 下载素材（主 CTA）*/}
         <button
           onClick={goDelivery}
-          className="flex items-center gap-2 text-[13px] font-bold rounded-xl text-white transition-all hover:opacity-90 shrink-0"
-          style={{ background: 'linear-gradient(90deg, #FF3060, #FF6030)', padding: '7px 16px', border: 'none', cursor: 'pointer' }}
+          className="flex items-center gap-2 text-[13px] font-bold rounded-xl transition-all hover:opacity-90 shrink-0"
+          style={{ background: 'var(--sl-primary-grad)', color: 'var(--sl-cta-text)', padding: '7px 16px', border: 'none', cursor: 'pointer' }}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>

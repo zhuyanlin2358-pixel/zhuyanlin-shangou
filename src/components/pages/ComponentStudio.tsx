@@ -156,18 +156,18 @@ export default function ComponentStudio({ compId, onBack }: Props) {
   const meta = COMP_META[compId] ?? { studioLabel: compId, panelLabel: '配置', layers: [] }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#080C14' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--sl-bg)' }}>
 
       {/* ── 顶栏（与 SlotStudio 完全相同）── */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 12, padding: '0 20px',
-        height: 48, flexShrink: 0, background: '#0D1117',
-        borderBottom: '1px solid rgba(255,255,255,0.07)',
+        height: 48, flexShrink: 0, background: 'var(--sl-panel)',
+        borderBottom: '1px solid var(--sl-border)',
       }}>
         <button onClick={onBack} style={{
           display: 'flex', alignItems: 'center', gap: 8, padding: '6px 16px',
-          fontSize: 12, fontWeight: 700, borderRadius: 12, color: '#fff',
-          background: 'linear-gradient(90deg,#FF3060,#FF6030)', border: 'none', cursor: 'pointer',
+          fontSize: 12, fontWeight: 700, borderRadius: 12, color: 'var(--sl-cta-text)',
+          background: 'var(--sl-primary-grad)', border: 'none', cursor: 'pointer',
         }}>
           {Ic('M10 4L6 8l4 4')}
           完成并返回画布
@@ -186,7 +186,7 @@ export default function ComponentStudio({ compId, onBack }: Props) {
         <div style={{
           width: '20%', minWidth: 160, maxWidth: 215,
           display: 'flex', flexDirection: 'column', flexShrink: 0,
-          background: '#0C111B', borderRight: '1px solid rgba(255,255,255,0.07)',
+          background: 'var(--sl-panel)', borderRight: '1px solid var(--sl-border)',
           overflowY: 'auto',
         }}>
           <div style={{
@@ -264,7 +264,7 @@ export default function ComponentStudio({ compId, onBack }: Props) {
         <div style={{
           width: '40%', minWidth: 280, maxWidth: 370,
           display: 'flex', flexDirection: 'column', flexShrink: 0,
-          background: '#0D1117', borderLeft: '1px solid rgba(255,255,255,0.07)',
+          background: 'var(--sl-panel)', borderLeft: '1px solid var(--sl-border)',
           overflow: 'hidden',
         }}>
           <div style={{

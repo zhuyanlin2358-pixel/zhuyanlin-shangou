@@ -299,6 +299,24 @@ body.dark-mode *:hover,
   to { transform: rotate(360deg); }
 }
 
+/* ── Studio / Venue / Delivery 深色主题 Token（realtimecolors.com 配色）── */
+:root {
+  --sl-bg:           #010104;              /* 画布/主背景（近黑，极淡紫调） */
+  --sl-panel:        #08080e;              /* 侧边栏/顶栏面板 */
+  --sl-surface:      #0f0f1a;              /* 区块/卡片底 */
+  --sl-border:       rgba(235,233,252,0.07);
+  --sl-border-md:    rgba(235,233,252,0.12);
+  --sl-text-1:       #ebe9fc;             /* 主文字（淡紫白） */
+  --sl-text-2:       rgba(235,233,252,0.60);
+  --sl-text-3:       rgba(235,233,252,0.38);
+  --sl-text-4:       rgba(235,233,252,0.20);
+  --sl-primary:      #fad900;             /* 美团黄 */
+  --sl-accent:       #ffa203;             /* 暖橙 */
+  --sl-cta-text:     #1a1000;             /* 黄底深色文字 */
+  --sl-primary-grad: linear-gradient(90deg, #fad900, #ffa203);
+  --sl-cta-shadow:   rgba(250,217,0,0.3);
+}
+
 /* ── Linear / Vercel 精致深色系设计 token ── */
 body.dark-mode {
   /* 背景层次（更细腻的层叠） */

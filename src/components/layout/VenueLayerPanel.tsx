@@ -92,8 +92,8 @@ export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: P
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        background: '#0C111B',
-        borderRight: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--sl-panel)',
+        borderRight: '1px solid var(--sl-border)',
         flexShrink: 0,
       }}
     >
