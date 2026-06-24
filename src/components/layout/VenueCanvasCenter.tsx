@@ -24,11 +24,10 @@ const HEADER_SIZES: { key: VenueHeaderSize; h: number }[] = [
   { key: '274', h: 274 },
 ]
 
-// slot 预览热区配置（百分比，基于 750×242 坐标系）
+// slot 预览热区配置（仅两处：标题文案 + 奖品图）
 const SLOT_ZONES: { id: string; label: string; top: string; left: string; w: string; h: string }[] = [
-  { id: 'text',  label: '文案',   top: '4%',  left: '3%',   w: '29%', h: '26%' },
-  { id: 'prize', label: '奖品图', top: '30%', left: '5.5%', w: '57%', h: '59%' },
-  { id: 'color', label: '配色/按钮', top: '42%', left: '66%', w: '27%', h: '33%' },
+  { id: 'text',  label: '标题文案', top: '4%',  left: '3%',   w: '31%', h: '26%' },
+  { id: 'prize', label: '奖品图',   top: '29%', left: '5%',   w: '58%', h: '62%' },
 ]
 
 interface Props {
@@ -310,16 +309,16 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
                   const xPct = ((e.clientX - rect.left) / rect.width)  * 100
                   const yPct = ((e.clientY - rect.top)  / rect.height) * 100
 
-                  // 对应 750×242 坐标系的区域判断
-                  let zone = 'color' // 其余区域（背景）→ 配色
-                  if (xPct >= 3  && xPct <= 30 && yPct >= 4  && yPct <= 28) zone = 'text'
-                  else if (xPct >= 5  && xPct <= 62 && yPct >= 30 && yPct <= 90) zone = 'prize'
-                  else if (xPct >= 66 && xPct <= 93 && yPct >= 42 && yPct <= 76) zone = 'color'
-                  // 其余（背景区）→ 'color'（配色预设）
+                  // 只检测两处热区（标题文案 / 奖品图）
+                  let zone = ''
+                  if (xPct >= 3  && xPct <= 34 && yPct >= 4  && yPct <= 30) zone = 'text'
+                  else if (xPct >= 5  && xPct <= 63 && yPct >= 29 && yPct <= 91) zone = 'prize'
 
-                  setDblClickId(item.id)          // 激活黄色框 + 热区 overlay
-                  onSelectLayer(item.id)           // 选中图层
-                  onZoneSelect?.(item.id, zone)    // 立刻切换右侧面板
+                  if (!zone) return  // 点在热区外（背景/按钮）→ 不触发双击模式
+
+                  setDblClickId(item.id)
+                  onSelectLayer(item.id)
+                  onZoneSelect?.(item.id, zone)
                 }}
                 className="relative"
                 style={{

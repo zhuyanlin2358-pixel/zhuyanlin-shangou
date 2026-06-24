@@ -28,9 +28,10 @@ import {
 import type { PrizeInfo, XfTransform, BannerConfig } from '@/utils/exportUtils'
 import type { SlotConfig } from '@/types'
 import {
-  SlotColorConfig as InlineSlotColorConfig,
-  SlotTextConfig  as InlineSlotTextConfig,
-  SlotPrizeConfig as InlineSlotPrizeConfig,
+  SlotColorConfig  as InlineSlotColorConfig,
+  SlotTextConfig   as InlineSlotTextConfig,
+  SlotPrizeConfig  as InlineSlotPrizeConfig,
+  InlineConfigSection,
 } from '@/components/panels/SlotConfigBlocks'
 
 const FloorPanel  = lazy(() => import('@/components/panels/FloorPanel'))
@@ -488,7 +489,7 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
   const activeCompId: ComponentId | null = pendingComp ?? selectedItem?.componentId ?? null
 
   const ZONE_LABEL: Record<string, string> = {
-    text: '文案设置', prize: '奖品图设置', color: '配色 / 背景'
+    text: '标题文案', prize: '奖品图设置',
   }
   // 面板标题
   const panelTitle = pendingComp
@@ -572,24 +573,36 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
             {/* slot + 热区激活 → 只显示对应配置，顶部加面包屑 */}
             {selectedItem.componentId === 'slot' && activeZone ? (
               <div className="pt-2">
-                <div className="px-3">
+                <div className="px-4 py-2">
                   {activeZone === 'text'  && <InlineSlotTextConfig />}
                   {activeZone === 'prize' && <InlineSlotPrizeConfig />}
-                  {activeZone === 'color' && <InlineSlotColorConfig />}
                 </div>
               </div>
             ) : (
               <>
+                {/* slot 单击：只显示三个核心配置区，双击标题/奖品图可精准跳转 */}
                 {selectedItem.componentId === 'slot' && (
-                  <div className="px-4 pt-3 pb-1 text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                    双击画布预览 → 选热区可快速定位配置 · 「高级设置」含弹窗/导出
+                  <div className="py-2">
+                    <div className="px-4 pt-2 pb-1 text-[10px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                      双击预览标题/奖品图可精准配置
+                    </div>
+                    <div className="px-4 space-y-1">
+                      <InlineConfigSection label="配色预设" badge="风格" defaultOpen>
+                        <InlineSlotColorConfig />
+                      </InlineConfigSection>
+                      <InlineConfigSection label="标题文案" badge="文案" defaultOpen>
+                        <InlineSlotTextConfig />
+                      </InlineConfigSection>
+                      <InlineConfigSection label="奖品图设置" badge="商品图">
+                        <InlineSlotPrizeConfig />
+                      </InlineConfigSection>
+                    </div>
                   </div>
                 )}
                 <Suspense fallback={<PLoader />}>
                   {selectedItem.componentId === 'floor'  && <FloorPanel />}
                   {selectedItem.componentId === 'h-tab'  && <HTabInlinePanel sourceId={selectedItem.sourceId} />}
                   {selectedItem.componentId === 'coupon' && <CouponPanel />}
-                  {selectedItem.componentId === 'slot'   && <SlotPanel />}
                 </Suspense>
               </>
             )}
