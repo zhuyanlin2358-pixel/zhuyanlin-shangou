@@ -164,7 +164,7 @@ export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: P
 
   return (
     <aside
-      className="flex flex-col h-screen shrink-0 border-r"
+      className="flex flex-col h-full shrink-0 border-r"
       style={{ width: 220, background: '#0C111B', borderColor: 'rgba(255,255,255,0.07)' }}
     >
       {/* 返回首页 */}
@@ -216,10 +216,10 @@ export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: P
         )}
       </div>
 
-      {/* 下半：组件工坊（固定高度，不随上半滚动） */}
+      {/* 下半：组件工坊（最多 220px，超出可滚动） */}
       <div
-        className="shrink-0 border-t"
-        style={{ borderColor: 'rgba(255,255,255,0.07)' }}
+        className="border-t overflow-y-auto"
+        style={{ borderColor: 'rgba(255,255,255,0.07)', maxHeight: 220, flexShrink: 0 }}
       >
         <SectionLabel>组件工坊</SectionLabel>
         {VENUE_COMP_IDS.map(id => (

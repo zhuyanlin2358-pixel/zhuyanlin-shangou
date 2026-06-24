@@ -60,8 +60,9 @@ export default function HomePage() {
           >
             <div style={{
               padding: '24px 22px',
-              background: 'rgba(0,0,0,0.82)',
+              background: 'rgba(255,255,255,0.45)',
               backdropFilter: 'blur(8px)',
+              border: '1.5px solid rgba(255,255,255,0.6)',
               cursor: 'pointer',
               userSelect: 'none',
               WebkitUserSelect: 'none',
@@ -78,13 +79,13 @@ export default function HomePage() {
                   <path d="M3 9h18M9 21V9"/>
                 </svg>
               </div>
-              <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 6, color: '#fff' }}>
+              <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 6, color: '#1a0a00' }}>
                 搭建活动页面
               </div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>
+              <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.45)', lineHeight: 1.5 }}>
                 老虎机 · 楼层条<br />横滑Tab · 一键领券
               </div>
-              <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>
+              <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(0,0,0,0.28)' }}>
                 三列画布编辑器
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                   <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -104,9 +105,9 @@ export default function HomePage() {
           >
             <div style={{
               padding: '24px 22px',
-              background: 'rgba(255,255,255,0.38)',
+              background: 'rgba(255,255,255,0.45)',
               backdropFilter: 'blur(8px)',
-              border: '1.5px solid rgba(255,255,255,0.55)',
+              border: '1.5px solid rgba(255,255,255,0.6)',
               cursor: 'pointer',
               userSelect: 'none',
               WebkitUserSelect: 'none',
