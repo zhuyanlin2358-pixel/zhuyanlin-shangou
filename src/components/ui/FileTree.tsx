@@ -28,22 +28,23 @@ export interface FileItemProps {
 export function FileItem({
   label, icon, active, badge, action, depth = 0, onClick, sublabel,
 }: FileItemProps) {
+  const [hovered, setHovered] = useState(false)
   return (
     <div
       onClick={onClick}
-      className="group relative flex items-center gap-2 select-none cursor-pointer transition-all"
+      className="relative flex items-center gap-2 select-none cursor-pointer transition-all"
       style={{
         paddingLeft: 12 + depth * 14,
         paddingRight: 8,
         paddingTop: 5,
         paddingBottom: 5,
         borderRadius: 7,
-        background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
+        background: active ? 'rgba(255,255,255,0.08)' : hovered ? 'rgba(255,255,255,0.04)' : 'transparent',
         color: active ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.62)',
         marginBottom: 1,
       }}
-      onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)' }}
-      onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       {/* 激活指示条 */}
       {active && (
@@ -83,9 +84,9 @@ export function FileItem({
         </span>
       )}
 
-      {/* 操作按钮（hover 显示） */}
+      {/* 操作按钮（hover 或 active 时显示） */}
       {action && (
-        <div style={{ flexShrink: 0, opacity: 0 }} className="group-hover:opacity-100 transition-opacity">
+        <div style={{ flexShrink: 0, opacity: hovered || active ? 1 : 0, transition: 'opacity 0.12s' }}>
           {action}
         </div>
       )}
