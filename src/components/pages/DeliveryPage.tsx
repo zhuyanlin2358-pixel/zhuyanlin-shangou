@@ -506,51 +506,6 @@ export default function DeliveryPage() {
     setPreviewLoading(false)
   }, [showToast])
 
-  // ── 选中状态：默认全选，存储未选中的 id（反向集合）──────────────────────────
-  const [deselected, setDeselected] = useState<Set<string>>(new Set())
-  const toggleId = useCallback((id: string) => {
-    setDeselected(prev => {
-      const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next
-    })
-  }, [])
-
-  // 每次 items/配置变化时重算 selectedIds（默认包含所有未被手动取消选中的 id）
-  const selectedIds = useMemo<Set<string>>(() => {
-    const all = new Set<string>()
-    for (const item of items) {
-      const { assetList } = buildAssets(item)
-      assetList.forEach(a => { if (!deselected.has(a.id)) all.add(a.id) })
-    }
-    return all
-  }, [items, deselected, buildAssets])
-
-  const selectedCount = selectedIds.size
-
-  // ── 全部打包（只含已选素材）────────────────────────────────────────────────
-  const [allStatus, setAllStatus] = useState<'idle'|'loading'|'done'>('idle')
-  const handleDownloadAll = useCallback(async () => {
-    if (!items.length) { showToast('没有组件'); return }
-    if (!selectedCount)  { showToast('请先选择要下载的素材'); return }
-    setAllStatus('loading'); showToast('正在生成素材…')
-    try {
-      await preloadFonts()
-      const zip = new JSZip()
-      for (const item of items) {
-        const { assetList } = buildAssets(item)
-        const sel = assetList.filter(a => selectedIds.has(a.id))
-        if (!sel.length) continue
-        const folder = zip.folder(item.label) ?? zip
-        for (const asset of sel) {
-          const c = await asset.generate()
-          folder.file(`${asset.label}.png`, await canvasToBlob(c))
-        }
-      }
-      downloadBlob(await zip.generateAsync({ type: 'blob' }), '会场素材全包.zip')
-      setAllStatus('done'); showToast(`✅ 已打包 ${selectedCount} 个素材！`)
-    } catch { showToast('❌ 打包失败') }
-    setTimeout(() => setAllStatus('idle'), 3000)
-  }, [items, selectedIds, selectedCount, buildAssets, showToast])
-
   // 为每个 VenueItem 构建素材列表（id = `${item.id}_${label}` 用于选中跟踪）
   const buildAssets = useCallback((item: typeof items[0]) => {
     const mk = (label: string) => `${item.id}_${label}`  // 生成唯一 id
@@ -683,6 +638,51 @@ export default function DeliveryPage() {
 
     return { assetList: [] as Parameters<typeof AssetRow>[], downloadAll: async () => {} }
   }, [slotCtx, couponCtx, hTabCtx, floorCtx])
+
+  // ── 选中状态：默认全选，存储未选中的 id（反向集合）──────────────────────────
+  const [deselected, setDeselected] = useState<Set<string>>(new Set())
+  const toggleId = useCallback((id: string) => {
+    setDeselected(prev => {
+      const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next
+    })
+  }, [])
+
+  // 每次 items/deselected/buildAssets 变化时重算 selectedIds
+  const selectedIds = useMemo<Set<string>>(() => {
+    const all = new Set<string>()
+    for (const item of items) {
+      const { assetList } = buildAssets(item)
+      assetList.forEach(a => { if (!deselected.has(a.id)) all.add(a.id) })
+    }
+    return all
+  }, [items, deselected, buildAssets])
+
+  const selectedCount = selectedIds.size
+
+  // ── 全部打包（只含已选素材）────────────────────────────────────────────────
+  const [allStatus, setAllStatus] = useState<'idle'|'loading'|'done'>('idle')
+  const handleDownloadAll = useCallback(async () => {
+    if (!items.length) { showToast('没有组件'); return }
+    if (!selectedCount)  { showToast('请先选择要下载的素材'); return }
+    setAllStatus('loading'); showToast('正在生成素材…')
+    try {
+      await preloadFonts()
+      const zip = new JSZip()
+      for (const item of items) {
+        const { assetList } = buildAssets(item)
+        const sel = assetList.filter(a => selectedIds.has(a.id))
+        if (!sel.length) continue
+        const folder = zip.folder(item.label) ?? zip
+        for (const asset of sel) {
+          const c = await asset.generate()
+          folder.file(`${asset.label}.png`, await canvasToBlob(c))
+        }
+      }
+      downloadBlob(await zip.generateAsync({ type: 'blob' }), '会场素材全包.zip')
+      setAllStatus('done'); showToast(`✅ 已打包 ${selectedCount} 个素材！`)
+    } catch { showToast('❌ 打包失败') }
+    setTimeout(() => setAllStatus('idle'), 3000)
+  }, [items, selectedIds, selectedCount, buildAssets, showToast])
 
   const COMP_ICON: Record<string, React.ReactNode> = {
     slot: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 4v16M16 4v16"/></svg>,
