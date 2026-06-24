@@ -14,9 +14,13 @@ import { useApp } from '@/contexts/AppContext'
 const N4Page       = lazy(() => import('./N4Page'))
 const N2Page       = lazy(() => import('./N2Page'))
 const YituosiPage  = lazy(() => import('./YituosiPage'))
+const CouponPage   = lazy(() => import('./CouponPage'))
+const SlotPage     = lazy(() => import('./SlotPage'))
 const N4ConfigPanel   = lazy(() => import('@/components/panels/N4ConfigPanel'))
 const N2ConfigPanel   = lazy(() => import('@/components/panels/N2ConfigPanel'))
 const YituosiPanel    = lazy(() => import('@/components/panels/YituosiPanel'))
+const CouponPanel     = lazy(() => import('@/components/panels/CouponPanel'))
+const SlotPanel       = lazy(() => import('@/components/panels/SlotPanel'))
 
 function Loader() {
   return <div className="flex items-center justify-center h-40 text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>加载中…</div>
@@ -24,7 +28,7 @@ function Loader() {
 
 // ── 素材类型数据 ───────────────────────────────────────────────────────────────
 type MaterialStatus = 'done' | 'coming'
-type MaterialId = 'yituosi' | 'n4' | 'n2' | 'po-header' | 'logo' | 'popup' | 'banner'
+type MaterialId = 'yituosi' | 'n4' | 'n2' | 'po-header' | 'logo' | 'popup' | 'banner' | 'coupon' | 'slot'
 
 interface MaterialItem {
   id: MaterialId
@@ -54,6 +58,9 @@ function IconPopup() {
 }
 function IconBanner() {
   return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><rect x="2" y="7" width="20" height="10" rx="2"/></svg>
+}
+function IconCoupon() {
+  return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>
 }
 
 const CATEGORIES: MaterialCategory[] = [
@@ -97,6 +104,15 @@ const CATEGORIES: MaterialCategory[] = [
     icon: <IconBanner />,
     items: [
       { id: 'banner', name: 'Banner 通栏', size: '750×…', status: 'coming' },
+    ],
+  },
+  {
+    id: 'promo',
+    label: '营销组件',
+    icon: <IconCoupon />,
+    items: [
+      { id: 'coupon', name: '一键领券红包', size: '702×352', status: 'done' },
+      { id: 'slot',   name: '老虎机',       size: '750×242', status: 'done' },
     ],
   },
 ]
@@ -208,6 +224,8 @@ function StudioContent({ selected }: { selected: MaterialId | null }) {
         {selected === 'n4'      && <N4Page />}
         {selected === 'n2'      && <N2Page />}
         {selected === 'yituosi' && <YituosiPage />}
+        {selected === 'coupon'  && <CouponPage />}
+        {selected === 'slot'    && <SlotPage />}
       </Suspense>
     </div>
   )
@@ -220,6 +238,8 @@ function StudioPanel({ selected }: { selected: MaterialId | null }) {
       case 'n4':      return 'N4 文字标签'
       case 'n2':      return 'N2 品牌 Logo'
       case 'yituosi': return '一拖四'
+      case 'coupon':  return '一键领券红包'
+      case 'slot':    return '老虎机'
       default:        return '属性配置'
     }
   })()
@@ -241,6 +261,8 @@ function StudioPanel({ selected }: { selected: MaterialId | null }) {
           {selected === 'n4'      && <N4ConfigPanel />}
           {selected === 'n2'      && <N2ConfigPanel />}
           {selected === 'yituosi' && <YituosiPanel />}
+          {selected === 'coupon'  && <CouponPanel />}
+          {selected === 'slot'    && <SlotPanel />}
         </Suspense>
       </div>
     </div>
@@ -286,9 +308,11 @@ export default function MaterialStudioPage() {
           {selected && (
             <span className="text-[11px] px-2 py-0.5 rounded-full"
               style={{ background: 'rgba(45,120,244,0.12)', color: '#6AA3FF' }}>
-              {selected === 'n4' ? 'N4 文字标签 · 240×156 px'
-                : selected === 'n2' ? 'N2 品牌 Logo'
+              {selected === 'n4'      ? 'N4 文字标签 · 240×156 px'
+                : selected === 'n2'      ? 'N2 品牌 Logo'
                 : selected === 'yituosi' ? '一拖四 · PO 频道首图'
+                : selected === 'coupon'  ? '一键领券红包 · 702×352 + 腰封 + 按钮'
+                : selected === 'slot'    ? '老虎机 · 750×242 + 弹窗素材'
                 : ''}
             </span>
           )}
