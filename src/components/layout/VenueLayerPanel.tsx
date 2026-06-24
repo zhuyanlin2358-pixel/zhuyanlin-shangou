@@ -7,7 +7,6 @@
  * - 统一的 sidebar-item 样式
  */
 import { useVenue } from '@/contexts/VenueContext'
-import { useApp }   from '@/contexts/AppContext'
 import { VENUE_COMP_IDS, findComponent } from '@/types'
 import type { ComponentId } from '@/types'
 import { FileTree, FileItem, TreeSection } from '@/components/ui/FileTree'
@@ -47,14 +46,13 @@ interface Props {
 }
 
 export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: Props) {
-  const { goHome }     = useApp()
   const { items, removeItem } = useVenue()
-  const addedSet    = new Set(items.map(it => it.componentId))
+  const addedSet = new Set(items.map(it => it.componentId))
 
   return (
     <aside
       style={{
-        width: 220,
+        width: 216,
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
@@ -63,28 +61,8 @@ export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: P
         flexShrink: 0,
       }}
     >
-      {/* 返回首页 */}
-      <div style={{ padding: '0 10px' }}>
-        <button
-          onClick={goHome}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            width: '100%', padding: '10px 8px',
-            fontSize: 12, color: 'rgba(255,255,255,0.38)',
-            background: 'none', border: 'none', cursor: 'pointer',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
-            marginBottom: 4,
-          }}
-        >
-          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M10 4L6 8l4 4"/>
-          </svg>
-          返回首页
-        </button>
-      </div>
-
-      {/* 可滚动主体 */}
-      <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '0 6px' }}>
+      {/* 可滚动主体（直接从顶部开始，不再嵌套返回首页）*/}
+      <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '8px 6px 6px' }}>
 
         {/* 页面结构 */}
         <TreeSection label="页面结构">

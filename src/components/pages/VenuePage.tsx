@@ -12,8 +12,12 @@
  *   包含：弹窗、导出、Tab文案、奖品图等深度配置
  */
 import { Suspense, lazy, useState } from 'react'
-import { useApp } from '@/contexts/AppContext'
+import { useApp }   from '@/contexts/AppContext'
+import { useVenue } from '@/contexts/VenueContext'
 import type { ComponentId } from '@/types'
+import type { ZoomOpt } from '@/components/layout/VenueCanvasCenter'
+
+const ZOOM_OPTS: ZoomOpt[] = [50, 75, 100, 125, 150]
 
 import VenueLayerPanel   from '@/components/layout/VenueLayerPanel'
 import VenueCanvasCenter from '@/components/layout/VenueCanvasCenter'
@@ -28,7 +32,11 @@ function Loader() {
 
 // ── 主组件 ────────────────────────────────────────────────────────────────────
 export default function VenuePage() {
-  const { goDelivery } = useApp()
+  const { goDelivery, goHome } = useApp()
+  const { items } = useVenue()
+
+  // 画布缩放（由顶栏统一管理，传给 VenueCanvasCenter）
+  const [zoomPct, setZoomPct] = useState<ZoomOpt>(100)
 
   // 画布模式：选中图层
   const [selectedLayer, setSelectedLayer] = useState<'header' | string | null>(null)
@@ -82,23 +90,61 @@ export default function VenuePage() {
   return (
     <div className="flex flex-col h-screen" style={{ background: 'var(--bg)' }}>
 
-      {/* 顶部工具栏 */}
-      <div className="flex items-center px-5 shrink-0 gap-3 border-b"
-        style={{ height: 44, background: 'var(--bg)', borderColor: 'var(--border)' }}>
-        <span className="text-sm font-semibold" style={{ color: 'var(--text-1)' }}>会场搭建</span>
-        <span className="text-[11px] px-2 py-0.5 rounded-full"
-          style={{ background: 'rgba(45,120,244,0.1)', color: '#6AA3FF' }}>
-          选中图层 → 右侧配置 · 「高级设置」开启完整编辑
-        </span>
+      {/* ── 统一顶栏（单行，所有控件集中对齐）── */}
+      <div className="flex items-center shrink-0 border-b"
+        style={{ height: 48, background: '#0D1117', borderColor: 'rgba(255,255,255,0.07)', padding: '0 16px', gap: 0 }}>
+
+        {/* 返回首页 */}
+        <button onClick={goHome}
+          className="flex items-center gap-1.5 text-[12px] transition-opacity hover:opacity-70 shrink-0"
+          style={{ color: 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer', padding: '0 10px 0 0' }}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+          首页
+        </button>
+
+        {/* 分隔线 */}
+        <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)', margin: '0 12px', flexShrink: 0 }} />
+
+        {/* 页面标题 + 组件数 */}
+        <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginRight: 8 }}>会场搭建</span>
+        {items.length > 0 && (
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontWeight: 400 }}>
+            {items.length} 个组件
+          </span>
+        )}
+
+        {/* 弹性间距 */}
         <div style={{ flex: 1 }} />
 
-        {/* 完成 · 下载素材（主 CTA） */}
+        {/* 画布缩放控制（紧凑型，不超过 150px 宽）*/}
+        <div className="flex items-center" style={{ gap: 2, marginRight: 12 }}>
+          {ZOOM_OPTS.map(z => (
+            <button key={z} onClick={() => setZoomPct(z)}
+              style={{
+                padding: '3px 7px', fontSize: 10, borderRadius: 6, cursor: 'pointer',
+                background: zoomPct === z ? 'rgba(255,255,255,0.12)' : 'transparent',
+                color: zoomPct === z ? '#fff' : 'rgba(255,255,255,0.3)',
+                border: `1px solid ${zoomPct === z ? 'rgba(255,255,255,0.18)' : 'transparent'}`,
+                fontWeight: zoomPct === z ? 600 : 400,
+                lineHeight: 1,
+              }}>
+              {z}%
+            </button>
+          ))}
+        </div>
+
+        {/* 分隔线 */}
+        <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)', margin: '0 14px 0 2px', flexShrink: 0 }} />
+
+        {/* 完成 · 下载素材（主 CTA）*/}
         <button
           onClick={goDelivery}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-xl text-white transition-all hover:opacity-90"
-          style={{ background: 'linear-gradient(90deg, #FF3060, #FF6030)' }}
+          className="flex items-center gap-2 text-[13px] font-bold rounded-xl text-white transition-all hover:opacity-90 shrink-0"
+          style={{ background: 'linear-gradient(90deg, #FF3060, #FF6030)', padding: '7px 16px', border: 'none', cursor: 'pointer' }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="7 10 12 15 17 10"/>
             <line x1="12" y1="15" x2="12" y2="3"/>
@@ -119,6 +165,7 @@ export default function VenuePage() {
           onSelectLayer={handleSelectLayer}
           onZoneSelect={handleZoneSelect}
           activeZone={activeZone}
+          zoomPct={zoomPct}
         />
         <VenueDynamicPanel
           selectedLayer={selectedLayer}

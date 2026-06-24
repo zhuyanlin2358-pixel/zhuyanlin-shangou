@@ -375,29 +375,34 @@ export function SlotPrizeConfig() {
   )
 }
 
-/* ── 行内配置容器（带折叠手风琴）── */
+/* ── 行内配置容器（折叠面板，干净卡片风格）── */
 export function InlineConfigSection({
   label, badge, defaultOpen = true, children,
 }: { label: string; badge?: string; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
     <div
-      className="mt-3 rounded-xl overflow-hidden"
-      style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.025)' }}
+      className="rounded-xl overflow-hidden"
+      style={{ border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)' }}
     >
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left hover:bg-white/[0.03] transition-colors"
+        className="w-full flex items-center gap-2 px-3 py-2 text-left transition-colors"
+        style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+        onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'}
+        onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-red-400/60 shrink-0" />
-        <span className="flex-1 text-xs font-medium text-white/70">{label}</span>
+        <ChevronDown size={11}
+          style={{ color: 'rgba(255,255,255,0.3)', transform: open ? 'none' : 'rotate(-90deg)', transition: 'transform 0.18s', flexShrink: 0 }} />
+        <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.75)' }}>{label}</span>
         {badge && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/[0.06] text-white/30 shrink-0">{badge}</span>
+          <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>
+            {badge}
+          </span>
         )}
-        <ChevronDown size={12} className={`text-white/25 transition-transform duration-200 shrink-0 ${open ? '' : '-rotate-90'}`} />
       </button>
       {open && (
-        <div className="px-4 py-3 space-y-3 border-t border-white/[0.07]">
+        <div className="px-3 pb-3 pt-1 space-y-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
           {children}
         </div>
       )}
