@@ -47,8 +47,8 @@ interface Props {
 }
 
 export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: Props) {
-  const { goHome }  = useApp()
-  const { items }   = useVenue()
+  const { goHome }     = useApp()
+  const { items, removeItem } = useVenue()
   const addedSet    = new Set(items.map(it => it.componentId))
 
   return (
@@ -105,6 +105,27 @@ export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: P
                 active={selectedLayer === item.id}
                 badge={idx + 1}
                 onClick={() => onSelect(item.id)}
+                action={
+                  <button
+                    onClick={e => {
+                      e.stopPropagation()
+                      removeItem(item.id)
+                      // 如果删的是当前选中项，清空选中
+                      if (selectedLayer === item.id) onSelect(null)
+                    }}
+                    title="从画布移除"
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: 20, height: 20, borderRadius: 5,
+                      background: 'rgba(239,68,68,0.1)', color: 'rgba(239,68,68,0.7)',
+                      border: 'none', cursor: 'pointer',
+                    }}
+                  >
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <path d="M4 4l8 8M12 4l-8 8"/>
+                    </svg>
+                  </button>
+                }
               />
             ))}
             {items.length === 0 && (
