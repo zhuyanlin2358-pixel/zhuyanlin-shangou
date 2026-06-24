@@ -85,24 +85,26 @@ async function genSlotUrl(config: SlotConfig): Promise<string> {
   return c.toDataURL('image/png')
 }
 
-// ── 自动同步 canvas（floor / htab / coupon）─────────────────────────────────
+// ── 自动同步 canvas（所有组件，debounce）─────────────────────────────────────
 
 function useAutoSync(item: VenueItem | null) {
   const { updatePreview } = useVenue()
-  const { config: floorCfg, floors } = useFloor()
+  const { config: floorCfg, floors }   = useFloor()
   const { config: hTabCfg, items: hTabItems } = useHTab()
-  const { config: couponCfg } = useCoupon()
+  const { config: couponCfg }          = useCoupon()
+  const { config: slotCfg }            = useSlot()
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const scheduleUpdate = useCallback((gen: () => Promise<string>, key: { sourceId?: string; label?: string }) => {
+  const scheduleUpdate = useCallback((
+    gen: () => Promise<string>,
+    key: { sourceId?: string; label?: string },
+    delay = 500,
+  ) => {
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(async () => {
-      try {
-        const url = await gen()
-        updatePreview(key, url)
-      } catch { /* ignore */ }
-    }, 500)
+      try { updatePreview(key, await gen()) } catch { /* ignore */ }
+    }, delay)
   }, [updatePreview])
 
   // Floor
@@ -110,10 +112,7 @@ function useAutoSync(item: VenueItem | null) {
     if (!item || item.componentId !== 'floor') return
     const fi = floors.find(f => f.id === item.sourceId)
     if (!fi) return
-    scheduleUpdate(
-      () => genFloorUrl({ ...floorCfg, text: fi.text }),
-      { sourceId: item.sourceId }
-    )
+    scheduleUpdate(() => genFloorUrl({ ...floorCfg, text: fi.text }), { sourceId: item.sourceId })
   }, [floorCfg, floors, item?.id])
 
   // HTab
@@ -130,11 +129,18 @@ function useAutoSync(item: VenueItem | null) {
   // Coupon
   useEffect(() => {
     if (!item || item.componentId !== 'coupon') return
-    scheduleUpdate(
-      () => genCouponUrl(couponCfg),
-      { sourceId: item.sourceId ?? undefined, label: item.label }
-    )
+    scheduleUpdate(() => genCouponUrl(couponCfg), { sourceId: item.sourceId ?? undefined, label: item.label })
   }, [couponCfg, item?.id])
+
+  // Slot — 配色/文案变化自动刷新（800ms 防抖，避免频繁绘制）
+  useEffect(() => {
+    if (!item || item.componentId !== 'slot') return
+    scheduleUpdate(() => genSlotUrl(slotCfg), { sourceId: item.sourceId ?? undefined, label: item.label }, 800)
+  }, [
+    slotCfg.slotTintFrom, slotCfg.slotTintTo, slotCfg.titleText, slotCfg.titleColor,
+    slotCfg.btnActiveFrom, slotCfg.btnActiveTo, slotCfg.slotStyle,
+    slotCfg.linksColor, item?.id,
+  ])
 }
 
 // ── 头图配置 ──────────────────────────────────────────────────────────────────
@@ -343,17 +349,31 @@ function AddToCanvasButton({ compId, onDone }: { compId: ComponentId; onDone: ()
   )
 }
 
-// ── Slot 手动刷新按钮 ─────────────────────────────────────────────────────────
-function SlotRefreshButton({ item }: { item: VenueItem }) {
+// ── 通用刷新按钮（所有组件）─────────────────────────────────────────────────
+function RefreshButton({ item }: { item: VenueItem }) {
   const { updatePreview } = useVenue()
-  const { config } = useSlot()
+  const { config: slotCfg } = useSlot()
+  const { config: floorCfg, floors } = useFloor()
+  const { config: hTabCfg, items: hTabItems } = useHTab()
+  const { config: couponCfg } = useCoupon()
   const [loading, setLoading] = useState(false)
 
   const handle = async () => {
     setLoading(true)
     try {
-      const url = await genSlotUrl(config)
-      updatePreview({ sourceId: item.sourceId ?? undefined, label: item.label }, url)
+      let url = ''
+      if (item.componentId === 'slot') {
+        url = await genSlotUrl(slotCfg)
+      } else if (item.componentId === 'floor') {
+        const fi = floors.find(f => f.id === item.sourceId) ?? floors[0]
+        if (fi) url = await genFloorUrl({ ...floorCfg, text: fi.text })
+      } else if (item.componentId === 'h-tab') {
+        const hi = hTabItems.find(h => h.id === item.sourceId) ?? hTabItems[0]
+        if (hi) url = await genHTabUrl({ colorKey: hTabCfg.colorKey, tabs: hi.tabs, activeIndex: hi.activeIndex })
+      } else if (item.componentId === 'coupon') {
+        url = await genCouponUrl(couponCfg)
+      }
+      if (url) updatePreview({ sourceId: item.sourceId ?? undefined, label: item.label }, url)
     } finally {
       setLoading(false)
     }
@@ -369,7 +389,7 @@ function SlotRefreshButton({ item }: { item: VenueItem }) {
         border: '1px solid rgba(255,255,255,0.1)', cursor: loading ? 'not-allowed' : 'pointer',
       }}
     >
-      <RefreshCw size={11} style={{ opacity: loading ? 0.4 : 1 }} />
+      <RefreshCw size={11} style={{ opacity: loading ? 0.4 : 1, animation: loading ? 'btnSpin 0.8s linear infinite' : 'none' }} />
       {loading ? '更新中…' : '更新画布预览'}
     </button>
   )
@@ -626,9 +646,9 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
           </button>
         )}
 
-        {/* 老虎机：手动刷新画布（非热区模式才显示） */}
-        {selectedItem?.componentId === 'slot' && !activeZone && (
-          <SlotRefreshButton item={selectedItem} />
+        {/* 所有已在画布的组件都显示「更新画布预览」按钮 */}
+        {selectedItem && !activeZone && (
+          <RefreshButton item={selectedItem} />
         )}
 
       </div>
