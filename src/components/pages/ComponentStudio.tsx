@@ -71,6 +71,44 @@ const Ic = (d: string) => (
   </svg>
 )
 
+// ── 结构树行 ──────────────────────────────────────────────────────────────────
+function LayerRow({ active, onClick, label, sub }: {
+  active: boolean; onClick: () => void; label: string; sub: string
+}) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        position: 'relative',
+        display: 'flex', alignItems: 'center', gap: 8,
+        height: 36, paddingLeft: 10, paddingRight: 6,
+        borderRadius: 8, cursor: 'pointer', marginBottom: 1, userSelect: 'none',
+        background: active ? 'rgba(45,120,244,0.13)' : hovered ? 'rgba(255,255,255,0.05)' : 'transparent',
+        color: active ? '#7BB7FF' : hovered ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.58)',
+        transition: 'background 0.12s, color 0.12s',
+      }}
+    >
+      {active && (
+        <div style={{
+          position: 'absolute', left: 0, top: '18%', bottom: '18%',
+          width: 2.5, background: '#4A90FF', borderRadius: 2,
+        }} />
+      )}
+      <span style={{ flexShrink: 0, display: 'flex', opacity: active ? 1 : 0.45 }}>
+        {Ic('M2 4h12v8H2zM5 4v8M9 4v8')}
+      </span>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 12.5, fontWeight: active ? 600 : 400, lineHeight: 1.3,
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
+        <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.28)', lineHeight: 1.2 }}>{sub}</div>
+      </div>
+    </div>
+  )
+}
+
 // ── 实时 Canvas 预览 Hook（300ms debounce）────────────────────────────────────
 function useCanvasPreview(compId: ComponentId) {
   const { config: floorCfg, floors }          = useFloor()
@@ -146,41 +184,23 @@ export default function ComponentStudio({ compId, onBack }: Props) {
 
         {/* 左 20%：结构树 */}
         <div style={{
-          width: '20%', minWidth: 150, maxWidth: 210,
+          width: '20%', minWidth: 160, maxWidth: 215,
           display: 'flex', flexDirection: 'column', flexShrink: 0,
           background: '#0C111B', borderRight: '1px solid rgba(255,255,255,0.07)',
           overflowY: 'auto',
         }}>
           <div style={{
-            fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.18)',
-            padding: '12px 14px 6px', textTransform: 'uppercase', letterSpacing: 1.5,
+            fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.2)',
+            padding: '12px 14px 4px',
+            textTransform: 'uppercase', letterSpacing: '0.1em', lineHeight: '26px',
           }}>组件结构</div>
-          <div style={{ padding: '0 4px 12px' }}>
+          <div style={{ padding: '2px 6px 16px' }}>
             {meta.layers.map(layer => {
               const active = activeLayer === layer.id
               return (
-                <div key={layer.id}
+                <LayerRow key={layer.id} active={active}
                   onClick={() => setActiveLayer(active ? null : layer.id)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    padding: '7px 12px', borderRadius: 8, cursor: 'pointer',
-                    marginBottom: 1, userSelect: 'none',
-                    background: active ? 'rgba(45,120,244,0.12)' : 'transparent',
-                    borderLeft: `2px solid ${active ? '#2D78F4' : 'transparent'}`,
-                    color: active ? '#6AA3FF' : 'rgba(255,255,255,0.6)',
-                    transition: 'all 0.12s',
-                  }}
-                  onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)' }}
-                  onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-                >
-                  <div style={{ flexShrink: 0, opacity: active ? 1 : 0.5 }}>
-                    {Ic('M2 4h12v8H2zM5 4v8M9 4v8')}
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 11, fontWeight: 500, lineHeight: 1.4 }}>{layer.label}</div>
-                    <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.28)', marginTop: 1 }}>{layer.sub}</div>
-                  </div>
-                </div>
+                  label={layer.label} sub={layer.sub} />
               )
             })}
           </div>

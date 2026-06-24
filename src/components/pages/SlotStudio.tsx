@@ -3,6 +3,7 @@
  * 布局：20% 结构树 | 40% 预览+演示 | 40% 素材预览+配置
  */
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
 import { useSlot } from '@/contexts/SlotContext'
 import {
   drawSlotBannerCanvas, drawPrizeCanvas, drawButtonCanvas,
@@ -402,6 +403,105 @@ function SectionHead({ label }: { label: string }) {
 }
 
 // ── 左侧结构树 ────────────────────────────────────────────────────────────────
+function LayerItem({ layer, selected, onSelect, depth, expanded, onToggle }: {
+  layer: Layer; selected: LayerId | null
+  onSelect: (id: LayerId) => void
+  depth: number; expanded: Set<LayerId>; onToggle: (id: LayerId) => void
+}) {
+  const [hovered, setHovered] = useState(false)
+  const active  = selected === layer.id
+  const hasKids = !!layer.children?.length
+  const isOpen  = expanded.has(layer.id)
+  const Icon    = layer.icon
+
+  return (
+    <div>
+      <div
+        onClick={() => { onSelect(layer.id); if (hasKids) onToggle(layer.id) }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        className="relative flex items-center gap-2 select-none cursor-pointer"
+        style={{
+          height: 36,
+          paddingLeft: 10 + depth * 16,
+          paddingRight: 6,
+          borderRadius: 8,
+          marginBottom: 1,
+          background: active ? 'rgba(45,120,244,0.13)' : hovered ? 'rgba(255,255,255,0.05)' : 'transparent',
+          color: active ? '#7BB7FF' : hovered ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.58)',
+          transition: 'background 0.12s, color 0.12s',
+        }}
+      >
+        {/* 激活指示条 */}
+        {active && (
+          <div style={{
+            position: 'absolute', left: 0, top: '18%', bottom: '18%',
+            width: 2.5, background: '#4A90FF', borderRadius: 2,
+          }} />
+        )}
+
+        {/* Chevron（仅有子节点时显示）*/}
+        {hasKids && (
+          <motion.span
+            animate={{ rotate: isOpen ? 0 : -90 }}
+            transition={{ duration: 0.18, ease: 'easeInOut' }}
+            style={{ display: 'flex', flexShrink: 0, opacity: 0.35 }}
+          >
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none"
+              stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <path d="M4 6l4 4 4-4"/>
+            </svg>
+          </motion.span>
+        )}
+
+        {/* 图标 */}
+        <span style={{ flexShrink: 0, display: 'flex', opacity: active ? 1 : 0.45 }}>
+          <Icon />
+        </span>
+
+        {/* 文字 */}
+        <div className="flex-1 min-w-0">
+          <div style={{
+            fontSize: 12.5, fontWeight: active ? 600 : 400,
+            lineHeight: 1.3, whiteSpace: 'nowrap',
+            overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>
+            {layer.label}
+          </div>
+          <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.28)', lineHeight: 1.2 }}>
+            {layer.sub}
+          </div>
+        </div>
+      </div>
+
+      {/* 子节点（展开动画）*/}
+      <AnimatePresence initial={false}>
+        {hasKids && isOpen && layer.children && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div style={{ position: 'relative', paddingLeft: 10 + depth * 16 + 22 }}>
+              {/* 缩进线 */}
+              <div style={{
+                position: 'absolute',
+                left: 10 + depth * 16 + 10,
+                top: 4, bottom: 6,
+                width: 1.5, background: 'rgba(255,255,255,0.07)', borderRadius: 1,
+              }} />
+              <LayerTree layers={layer.children} selected={selected} onSelect={onSelect}
+                depth={0} expanded={expanded} onToggle={onToggle} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
 function LayerTree({ layers, selected, onSelect, depth = 0, expanded, onToggle }: {
   layers: Layer[]; selected: LayerId | null
   onSelect: (id: LayerId) => void
@@ -409,43 +509,10 @@ function LayerTree({ layers, selected, onSelect, depth = 0, expanded, onToggle }
 }) {
   return (
     <>
-      {layers.map(layer => {
-        const active = selected === layer.id
-        const hasKids = !!layer.children?.length
-        const isOpen  = expanded.has(layer.id)
-        const Icon    = layer.icon
-        return (
-          <div key={layer.id}>
-            <div
-              onClick={() => { onSelect(layer.id); if (hasKids) onToggle(layer.id) }}
-              className="flex items-center gap-2 py-2 cursor-pointer transition-all rounded-lg select-none"
-              style={{
-                paddingLeft: 12 + depth * 12, paddingRight: 8,
-                background: active ? 'rgba(45,120,244,0.12)' : 'transparent',
-                borderLeft: active ? '2px solid #2D78F4' : '2px solid transparent',
-                color: active ? '#6AA3FF' : 'rgba(255,255,255,0.6)',
-              }}
-              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)' }}
-              onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-            >
-              <span style={{ flexShrink: 0, opacity: active ? 1 : 0.55 }}><Icon /></span>
-              <div className="flex-1 min-w-0">
-                <div style={{ fontSize: 11, fontWeight: 500, truncate: 'true' } as React.CSSProperties}>{layer.label}</div>
-                <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.28)', marginTop: 1 }}>{layer.sub}</div>
-              </div>
-              {hasKids && (
-                <span style={{ opacity: 0.3, transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.18s', flexShrink: 0 }}>
-                  <Icons.chevron />
-                </span>
-              )}
-            </div>
-            {hasKids && isOpen && layer.children && (
-              <LayerTree layers={layer.children} selected={selected} onSelect={onSelect}
-                depth={depth + 1} expanded={expanded} onToggle={onToggle} />
-            )}
-          </div>
-        )
-      })}
+      {layers.map(layer => (
+        <LayerItem key={layer.id} layer={layer} selected={selected} onSelect={onSelect}
+          depth={depth} expanded={expanded} onToggle={onToggle} />
+      ))}
     </>
   )
 }
@@ -637,13 +704,18 @@ export default function SlotStudio({ onBack }: { onBack: () => void }) {
       {/* 三栏 20 / 40 / 40 */}
       <div className="flex flex-1 overflow-hidden">
 
-        {/* 左20% */}
+        {/* 左20%：结构树 */}
         <div className="flex flex-col border-r overflow-y-auto shrink-0"
-          style={{ width: '20%', minWidth: 155, maxWidth: 210, background: '#0C111B', borderColor: 'rgba(255,255,255,0.07)' }}>
-          <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.18)', padding: '12px 14px 6px', textTransform: 'uppercase', letterSpacing: 1.5 }}>
+          style={{ width: '20%', minWidth: 160, maxWidth: 215, background: '#0C111B', borderColor: 'rgba(255,255,255,0.07)' }}>
+          <div style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+            color: 'rgba(255,255,255,0.2)',
+            padding: '12px 14px 4px',
+            lineHeight: '26px',
+          }}>
             组件结构
           </div>
-          <div className="flex-1 px-1 pb-4">
+          <div style={{ flex: 1, padding: '2px 6px 16px' }}>
             <LayerTree layers={layers} selected={selected} onSelect={setSelected}
               expanded={expanded} onToggle={handleToggle} />
           </div>

@@ -1,32 +1,35 @@
 /**
- * 高达会场 · 左侧图层面板（精致化版本）
+ * 高达会场 · 左侧图层面板
  *
- * 参考 Linear/animate-ui 风格：
- * - FileTree 组件驱动，带折叠动画
- * - 细分区块：页面结构 + 组件工坊
- * - 统一的 sidebar-item 样式
+ * 参考 animate-ui / shadcn sidebar 风格：
+ * - 36px 行高，圆角 hover/active
+ * - 章节标签分隔
+ * - 删除按钮 hover 渐显
  */
 import { useVenue } from '@/contexts/VenueContext'
 import { VENUE_COMP_IDS, findComponent } from '@/types'
 import type { ComponentId } from '@/types'
 import { FileTree, FileItem, TreeSection } from '@/components/ui/FileTree'
 
-// ── SVG 图标（精简线描）────────────────────────────────────────────────────────
-const Ic = (d: string) => (
-  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor"
-    strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-    <path d={d}/>
-  </svg>
-)
+// ── SVG 图标（16×16 线描风）──────────────────────────────────────────────────
+function Ic({ d, d2 }: { d: string; d2?: string }) {
+  return (
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none"
+      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d={d}/>
+      {d2 && <path d={d2}/>}
+    </svg>
+  )
+}
 
 const Icons = {
-  header: () => Ic('M2 3h12v10H2zM2 6h12M5 6v7'),
-  slot:   () => Ic('M2 4h12v8H2zM6 4v8M10 4v8'),
-  floor:  () => Ic('M3 5h10M3 8h10M3 11h10'),
-  htab:   () => Ic('M2 4h4v8H2zM8 4h4v8H8'),
-  coupon: () => Ic('M2 6h12v4H2zM2 9h12M8 6v4'),
-  image:  () => Ic('M2 3h12v10H2zM2 9l3-3 2 2 3-4 4 5'),
-  add:    () => Ic('M8 3v10M3 8h10'),
+  header: () => <Ic d="M2 3h12v10H2z" d2="M2 6h12M5 6v7" />,
+  slot:   () => <Ic d="M2 4h12v8H2z" d2="M6 4v8M10 4v8" />,
+  floor:  () => <Ic d="M3 5h10M3 8h10M3 11h10" />,
+  htab:   () => <Ic d="M2 4h4v8H2z" d2="M8 4h4v8H8" />,
+  coupon: () => <Ic d="M2 6h12v4H2z" d2="M2 9h12M8 6v4" />,
+  image:  () => <Ic d="M2 3h12v10H2z" d2="M2 9l3-3 2 2 3-4 4 5" />,
+  trash:  () => <Ic d="M3 4h10M6 4V3h4v1M5 4v9h6V4" />,
 }
 
 function compIcon(id: ComponentId) {
@@ -37,6 +40,39 @@ function compIcon(id: ComponentId) {
     case 'coupon': return <Icons.coupon />
     default:       return <Icons.image />
   }
+}
+
+// ── 删除按钮 ─────────────────────────────────────────────────────────────────
+function DeleteBtn({ onClick }: { onClick: (e: React.MouseEvent) => void }) {
+  return (
+    <button
+      onClick={onClick}
+      title="从画布移除"
+      style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: 20, height: 20, borderRadius: 5, flexShrink: 0,
+        background: 'rgba(239,68,68,0.1)',
+        color: 'rgba(239,68,68,0.65)',
+        border: 'none', cursor: 'pointer',
+        transition: 'background 0.12s, color 0.12s',
+      }}
+      onMouseEnter={e => {
+        const el = e.currentTarget as HTMLElement
+        el.style.background = 'rgba(239,68,68,0.2)'
+        el.style.color = 'rgba(239,68,68,0.9)'
+      }}
+      onMouseLeave={e => {
+        const el = e.currentTarget as HTMLElement
+        el.style.background = 'rgba(239,68,68,0.1)'
+        el.style.color = 'rgba(239,68,68,0.65)'
+      }}
+    >
+      <svg width="10" height="10" viewBox="0 0 16 16" fill="none"
+        stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+        <path d="M4 4l8 8M12 4l-8 8"/>
+      </svg>
+    </button>
+  )
 }
 
 interface Props {
@@ -52,7 +88,7 @@ export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: P
   return (
     <aside
       style={{
-        width: 216,
+        width: 220,
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
@@ -61,19 +97,21 @@ export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: P
         flexShrink: 0,
       }}
     >
-      {/* 可滚动主体（直接从顶部开始，不再嵌套返回首页）*/}
-      <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '8px 6px 6px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '10px 6px 8px' }}>
 
-        {/* 页面结构 */}
+        {/* ── 页面结构 ── */}
         <TreeSection label="页面结构">
           <FileTree>
+            {/* 活动头图 */}
             <FileItem
               icon={<Icons.header />}
               label="活动头图"
-              active={selectedLayer === 'header'}
               sublabel="头图 · 背景色 · 尺寸"
+              active={selectedLayer === 'header'}
               onClick={() => onSelect('header')}
             />
+
+            {/* 已加入画布的组件 */}
             {items.map((item, idx) => (
               <FileItem
                 key={item.id}
@@ -84,30 +122,22 @@ export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: P
                 badge={idx + 1}
                 onClick={() => onSelect(item.id)}
                 action={
-                  <button
-                    onClick={e => {
-                      e.stopPropagation()
-                      removeItem(item.id)
-                      // 如果删的是当前选中项，清空选中
-                      if (selectedLayer === item.id) onSelect(null)
-                    }}
-                    title="从画布移除"
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      width: 20, height: 20, borderRadius: 5,
-                      background: 'rgba(239,68,68,0.1)', color: 'rgba(239,68,68,0.7)',
-                      border: 'none', cursor: 'pointer',
-                    }}
-                  >
-                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                      <path d="M4 4l8 8M12 4l-8 8"/>
-                    </svg>
-                  </button>
+                  <DeleteBtn onClick={e => {
+                    e.stopPropagation()
+                    removeItem(item.id)
+                    if (selectedLayer === item.id) onSelect(null)
+                  }} />
                 }
               />
             ))}
+
             {items.length === 0 && (
-              <div style={{ padding: '8px 12px', fontSize: 11, color: 'rgba(255,255,255,0.2)', lineHeight: 1.5 }}>
+              <div style={{
+                padding: '10px 10px 6px',
+                fontSize: 11,
+                color: 'rgba(255,255,255,0.18)',
+                lineHeight: 1.5,
+              }}>
                 添加组件后在此显示
               </div>
             )}
@@ -115,13 +145,13 @@ export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: P
         </TreeSection>
 
         {/* 分隔线 */}
-        <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '4px 4px 8px' }} />
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '0 4px 10px' }} />
 
-        {/* 组件工坊 */}
+        {/* ── 组件工坊 ── */}
         <TreeSection label="组件工坊">
           <FileTree>
             {VENUE_COMP_IDS.map(id => {
-              const comp = findComponent(id)
+              const comp  = findComponent(id)
               const added = addedSet.has(id)
               return (
                 <FileItem
@@ -136,6 +166,7 @@ export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: P
             })}
           </FileTree>
         </TreeSection>
+
       </div>
     </aside>
   )
