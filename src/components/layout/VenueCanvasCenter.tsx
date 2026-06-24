@@ -34,13 +34,31 @@ interface Props {
   zoomPct: ZoomOpt
 }
 
+// ── 简易亮度检测（决定状态栏/导航栏文字颜色）─────────────────────────────────
+function hexLuminance(hex: string): number {
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return 0.5
+  const r = parseInt(hex.slice(1,3),16)/255
+  const g = parseInt(hex.slice(3,5),16)/255
+  const b = parseInt(hex.slice(5,7),16)/255
+  return 0.299*r + 0.587*g + 0.114*b
+}
+
 export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZoneSelect, activeZone = '', zoomPct }: Props) {
   const {
     items, moveItem,
     headerUrl, headerSize, bgColor,
   } = useVenue()
+
+  const [showNavBar, setShowNavBar] = useState(false)
+
   const phoneW  = Math.round(375 * (zoomPct / 100))
+  const phoneH  = Math.round(812 * (zoomPct / 100))   // 固定 iPhone 比例
   const headerH = (HEADER_SIZES.find(s => s.key === headerSize)?.h ?? 424) * (zoomPct / 200)
+
+  // 根据背景色决定状态栏/导航栏颜色
+  const isLightBg = hexLuminance(bgColor) > 0.4
+  const barColor  = isLightBg ? '#000' : '#fff'
+  const barAlpha  = 0.85
 
   // ── 拖拽排序 ──────────────────────────────────────────────────────────────
   const draggedId    = useRef<string | null>(null)
@@ -91,42 +109,109 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
 
   const handlePointerUp = () => { draggedId.current = null; setDragOver(null) }
 
+  // ── 状态栏 iOS 图标（SVG）──────────────────────────────────────────────────
+  const BarIcons = ({ color }: { color: string }) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: Math.round(5 * zoomPct / 100) }}>
+      {/* 信号 */}
+      <svg width={Math.round(17 * zoomPct / 100)} height={Math.round(12 * zoomPct / 100)} viewBox="0 0 17 12" fill={color} opacity={barAlpha}>
+        <rect x="0" y="7" width="2.5" height="5" rx="0.6"/>
+        <rect x="4.5" y="5" width="2.5" height="7" rx="0.6"/>
+        <rect x="9" y="3" width="2.5" height="9" rx="0.6"/>
+        <rect x="13.5" y="0" width="2.5" height="12" rx="0.6" opacity="0.28"/>
+      </svg>
+      {/* WiFi */}
+      <svg width={Math.round(16 * zoomPct / 100)} height={Math.round(12 * zoomPct / 100)} viewBox="0 0 16 12" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" opacity={barAlpha}>
+        <circle cx="8" cy="11" r="0.8" fill={color} stroke="none"/>
+        <path d="M5.2 8.2a4 4 0 015.6 0"/>
+        <path d="M2.5 5.5a8 8 0 0111 0"/>
+      </svg>
+      {/* 电池 */}
+      <svg width={Math.round(25 * zoomPct / 100)} height={Math.round(12 * zoomPct / 100)} viewBox="0 0 25 12">
+        <rect x="0.5" y="1.5" width="20" height="9" rx="2" stroke={color} strokeWidth="1" fill="none" opacity={0.35 * barAlpha}/>
+        <rect x="21" y="4" width="2.5" height="4" rx="1" fill={color} opacity={0.4 * barAlpha}/>
+        <rect x="2" y="3" width="15" height="6" rx="1" fill={color} opacity={barAlpha}/>
+      </svg>
+    </div>
+  )
+
   return (
     <div
       className="flex-1 flex flex-col items-center overflow-y-auto"
       style={{
-        // 微网格背景，暗示这是画布
         background: '#080C14',
-        backgroundImage: [
-          'radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)',
-        ].join(','),
+        backgroundImage: 'radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)',
         backgroundSize: '20px 20px',
       }}
     >
-      {/* 手机帧 */}
-      <div className="flex-1 flex items-start justify-center py-6 px-4 w-full">
+      {/* 功能切换条（导航栏开关）*/}
+      <div className="flex items-center gap-2 shrink-0"
+        style={{ paddingTop: 20, paddingBottom: 10 }}>
+        <button
+          onClick={() => setShowNavBar(v => !v)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px',
+            borderRadius: 7, fontSize: 10, cursor: 'pointer',
+            background: showNavBar ? 'rgba(45,120,244,0.15)' : 'rgba(255,255,255,0.06)',
+            color: showNavBar ? '#6AA3FF' : 'rgba(255,255,255,0.35)',
+            border: `1px solid ${showNavBar ? 'rgba(45,120,244,0.25)' : 'rgba(255,255,255,0.08)'}`,
+          }}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M3 6h18M3 12h18M3 18h18"/></svg>
+          导航栏 · {showNavBar ? '显示中' : '已隐藏'}
+        </button>
+      </div>
+
+      {/* 手机帧（固定高度 = iPhone 比例，内容区域可滚动）*/}
+      <div className="flex items-start justify-center px-4 w-full"
+        style={{ paddingBottom: 24 }}>
         <div
-          className="rounded-[24px] overflow-hidden shadow-2xl shrink-0"
+          className="rounded-[24px] overflow-hidden shadow-2xl shrink-0 flex flex-col"
           style={{
             width: phoneW,
+            height: phoneH,
             background: bgColor,
-            border: '2px solid rgba(255,255,255,0.1)',
+            border: '2px solid rgba(255,255,255,0.12)',
             boxShadow: '0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05)',
-            transition: 'width 0.2s ease',
+            transition: 'width 0.2s ease, height 0.2s ease',
           }}
         >
-          {/* 状态栏 */}
-          <div
-            className="flex items-center justify-between px-4 shrink-0"
-            style={{ height: 26, background: bgColor }}
-          >
-            <span style={{ fontSize: 9, fontWeight: 700, color: '#333' }}>9:41</span>
-            <div className="flex gap-1">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="rounded-full" style={{ width: 3, height: i === 3 ? 5 : 3, background: '#333', opacity: 0.4 }} />
-              ))}
-            </div>
+          {/* ── iOS 状态栏 ── */}
+          <div style={{
+            height: Math.round(48 * zoomPct / 100), flexShrink: 0,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
+            padding: `0 ${Math.round(18 * zoomPct / 100)}px ${Math.round(8 * zoomPct / 100)}px`,
+            background: bgColor,
+          }}>
+            <span style={{ fontSize: Math.round(15 * zoomPct / 100), fontWeight: 700, color: barColor, opacity: barAlpha }}>
+              9:41
+            </span>
+            <BarIcons color={barColor} />
           </div>
+
+          {/* ── 可选导航栏（标题栏）── */}
+          {showNavBar && (
+            <div style={{
+              height: Math.round(44 * zoomPct / 100), flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: `0 ${Math.round(16 * zoomPct / 100)}px`,
+              background: bgColor,
+              borderBottom: `1px solid ${isLightBg ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)'}`,
+            }}>
+              {/* 返回按钮 */}
+              <svg width={Math.round(12 * zoomPct / 100)} height={Math.round(22 * zoomPct / 100)} viewBox="0 0 12 22" fill="none" stroke={barColor} strokeWidth="2" strokeLinecap="round">
+                <path d="M10 2L2 11l8 9"/>
+              </svg>
+              {/* 分享按钮 */}
+              <svg width={Math.round(22 * zoomPct / 100)} height={Math.round(22 * zoomPct / 100)} viewBox="0 0 24 24" fill="none" stroke={barColor} strokeWidth="1.8" strokeLinecap="round">
+                <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+                <polyline points="16 6 12 2 8 6"/>
+                <line x1="12" y1="2" x2="12" y2="15"/>
+              </svg>
+            </div>
+          )}
+
+          {/* ── 可滚动内容区 ── */}
+          <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
 
           {/* 头图区域 */}
           <div
@@ -229,7 +314,7 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
                 }}
               >
                 {item.spacingAbove > 0 && (
-                  <div style={{ height: Math.round(item.spacingAbove * SCALE), background: bgColor }} />
+                  <div style={{ height: Math.round(item.spacingAbove * zoomPct / 200), background: bgColor }} />
                 )}
                 <div
                   style={{
@@ -327,8 +412,21 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
             )
           })}
 
-          <div style={{ height: 12, background: bgColor }} />
-        </div>
+          <div style={{ height: 20, background: bgColor }} />
+          </div>{/* end 滚动内容区 */}
+
+          {/* ── Home indicator ── */}
+          <div style={{
+            height: Math.round(34 * zoomPct / 100), flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: bgColor,
+          }}>
+            <div style={{
+              width: Math.round(134 * zoomPct / 100), height: Math.max(4, Math.round(5 * zoomPct / 100)),
+              borderRadius: 99, background: barColor, opacity: 0.22,
+            }} />
+          </div>
+        </div>{/* end 手机帧 */}
       </div>
     </div>
   )
