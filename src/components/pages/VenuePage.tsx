@@ -92,7 +92,7 @@ export default function VenuePage() {
 
       {/* ── 统一顶栏（Figma风格：左固定 + 中绝对居中 + 右固定）── */}
       <div className="flex items-center shrink-0 border-b"
-        style={{ position: 'relative', height: 48, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)', padding: 0, gap: 0 }}>
+        style={{ height: 48, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)', padding: 0, gap: 0 }}>
 
         {/* 左段：220px，与侧边栏等宽，← 首页 + 页面结构 */}
         <div style={{
@@ -123,28 +123,20 @@ export default function VenuePage() {
         </div>
 
         {/* 中央标题：绝对居中，不影响两端布局 */}
-        <div style={{
-          position: 'absolute', left: '50%', top: '50%',
-          transform: 'translate(-50%, -50%)',
-          display: 'flex', alignItems: 'center', gap: 8,
-          pointerEvents: 'none',
-        }}>
+        {/* 中段：flex-1，标题左 + 缩放右，不重叠 */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '0 20px', gap: 12 }}>
           <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--sl-text-1)', whiteSpace: 'nowrap' }}>
             会场搭建
           </span>
           {items.length > 0 && (
             <span style={{
-              fontSize: 10, fontWeight: 600, color: 'rgba(235,233,252,0.45)',
-              background: 'rgba(235,233,252,0.08)', borderRadius: 4,
-              padding: '1px 6px',
+              fontSize: 10, fontWeight: 600, color: 'rgba(235,233,252,0.4)',
+              background: 'rgba(235,233,252,0.07)', borderRadius: 4, padding: '1px 6px',
             }}>
               {items.length} 个组件
             </span>
           )}
-        </div>
-
-        {/* 中段：flex-1，缩放控制居中（对应画布区域）*/}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+          <div style={{ flex: 1 }} />
           {ZOOM_OPTS.map(z => (
             <button key={z} onClick={() => setZoomPct(z)}
               style={{
