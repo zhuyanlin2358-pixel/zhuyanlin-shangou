@@ -1,95 +1,191 @@
 /**
  * 高达会场统一工作区
  *
- * 始终保持三列布局，不再跳转到独立编辑页：
- *   [图层面板 220px] | [画布预览 flex-1] | [动态属性面板 280px]
+ * 两种模式：
  *
- * 两种右侧面板状态：
- *   selectedLayer ≠ null  → 编辑已在画布上的组件（配置实时同步 canvas）
- *   pendingComp   ≠ null  → 配置新组件（尚未加入画布），底部显示「加入会场」
+ * ① 画布布局模式（默认三列）
+ *   [图层面板 220px] | [手机画布 flex-1] | [核心属性面板 280px]
+ *   右侧面板：只放当前选中组件的核心属性 + 底部「高级设置 →」按钮
+ *
+ * ② 高级设置模式（点击「高级设置」进入）
+ *   [返回条 40px] | [组件完整配置页 flex-1] | [手机预览 380px]
+ *   包含：弹窗、导出、Tab文案、奖品图等深度配置
  */
-import { useState } from 'react'
-import { useApp } from '@/contexts/AppContext'
+import { Suspense, lazy, useState } from 'react'
+import { useApp }   from '@/contexts/AppContext'
+import { useVenue } from '@/contexts/VenueContext'
+import { findComponent } from '@/types'
 import type { ComponentId } from '@/types'
 
 import VenueLayerPanel   from '@/components/layout/VenueLayerPanel'
 import VenueCanvasCenter from '@/components/layout/VenueCanvasCenter'
 import VenueDynamicPanel from '@/components/layout/VenueDynamicPanel'
+import VenuePhonePreview from './VenuePhonePreview'
+import { drawVenueStitch } from '@/utils/venueExport'
 
+const SlotPage   = lazy(() => import('./SlotPage'))
+const FloorPage  = lazy(() => import('./FloorPage'))
+const HTabPage   = lazy(() => import('./HTabPage'))
+const CouponPage = lazy(() => import('./CouponPage'))
+
+function Loader() {
+  return <div className="flex items-center justify-center h-40 text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>加载中…</div>
+}
+
+// ── 高级设置模式左侧收缩条 ────────────────────────────────────────────────────
+function AdvancedStrip({ label, onBack }: { label: string; onBack: () => void }) {
+  return (
+    <div className="flex flex-col items-center py-3 gap-4 h-full shrink-0 border-r"
+      style={{ width: 44, background: '#0C111B', borderColor: 'rgba(255,255,255,0.07)' }}>
+      <button onClick={onBack} title="返回画布"
+        className="p-2 rounded-lg transition-opacity hover:opacity-70"
+        style={{ color: 'rgba(255,255,255,0.45)', background: 'none', border: 'none', cursor: 'pointer' }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      {/* 竖排组件名 */}
+      <div style={{ writingMode: 'vertical-rl', fontSize: 10, color: 'rgba(255,255,255,0.2)', letterSpacing: 2 }}>
+        {label}
+      </div>
+    </div>
+  )
+}
+
+// ── 主组件 ────────────────────────────────────────────────────────────────────
 export default function VenuePage() {
-  const { hasExportAll, triggerExportAll } = useApp()
+  const { showToast }    = useApp()
+  const { items, headerUrl, headerSize, bgColor } = useVenue()
 
-  // 当前选中的已加入画布组件（string = VenueItem.id，'header' = 头图，null = 页面设置）
+  // 画布模式：选中图层
   const [selectedLayer, setSelectedLayer] = useState<'header' | string | null>(null)
-
-  // 正在配置、尚未加入画布的组件（点「组件工坊」时设置）
+  // 画布模式：正在配置、待加入画布的新组件
   const [pendingComp,   setPendingComp]   = useState<ComponentId | null>(null)
+  // 高级设置模式：哪个组件正在全屏精细编辑
+  const [advancedComp,  setAdvancedComp]  = useState<ComponentId | null>(null)
 
-  // 点击「组件工坊」→ 清空 selectedLayer，切换到 pending 配置模式
-  const handleAddNew = (compId: ComponentId) => {
-    setSelectedLayer(null)
-    setPendingComp(compId)
-  }
-
-  // 点击图层列表 → 清空 pending，切换到已有组件配置模式
   const handleSelectLayer = (layer: 'header' | string | null) => {
     setPendingComp(null)
     setSelectedLayer(layer)
   }
 
+  const handleAddNew = (compId: ComponentId) => {
+    setSelectedLayer(null)
+    setPendingComp(compId)
+  }
+
+  const handleAdvanced = (compId: ComponentId) => {
+    setAdvancedComp(compId)
+  }
+
+  const exitAdvanced = () => setAdvancedComp(null)
+
+  // 导出会场拼图
+  const handleExportVenue = async () => {
+    if (items.length === 0 && !headerUrl) {
+      showToast('画布上还没有组件，先添加后再导出')
+      return
+    }
+    try {
+      await drawVenueStitch({ items, headerUrl, headerSize, bgColor })
+      showToast('✅ 会场拼图已下载')
+    } catch {
+      showToast('导出失败，请重试')
+    }
+  }
+
+  // ── 高级设置模式 ────────────────────────────────────────────────────────────
+  if (advancedComp) {
+    const label = findComponent(advancedComp)?.name ?? advancedComp
+    return (
+      <div className="flex h-screen" style={{ background: 'var(--bg)' }}>
+        {/* 收缩条 */}
+        <AdvancedStrip label={label} onBack={exitAdvanced} />
+
+        {/* 组件完整配置页 */}
+        <div className="flex-1 flex flex-col overflow-hidden" style={{ marginRight: 380 }}>
+          {/* 顶栏 */}
+          <div className="h-11 flex items-center px-4 border-b shrink-0 gap-3"
+            style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
+            <button onClick={exitAdvanced}
+              className="flex items-center gap-1.5 text-xs transition-opacity hover:opacity-70"
+              style={{ color: 'rgba(255,255,255,0.45)', background: 'none', border: 'none', cursor: 'pointer' }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                <path d="M19 12H5M12 5l-7 7 7 7"/>
+              </svg>
+              返回画布
+            </button>
+            <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)' }} />
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-1)' }}>
+              高级设置：{label}
+            </span>
+            <div style={{ width: 6, height: 6, background: '#FF3060', borderRadius: '50%' }} />
+            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>全量配置 + 导出素材</span>
+            <div style={{ flex: 1 }} />
+          </div>
+          {/* 组件完整页内容 */}
+          <main className="flex-1 overflow-y-auto">
+            <Suspense fallback={<Loader />}>
+              {advancedComp === 'slot'   && <SlotPage />}
+              {advancedComp === 'floor'  && <FloorPage />}
+              {advancedComp === 'h-tab'  && <HTabPage />}
+              {advancedComp === 'coupon' && <CouponPage />}
+            </Suspense>
+          </main>
+        </div>
+
+        {/* 手机预览（上下文参照） */}
+        <VenuePhonePreview />
+      </div>
+    )
+  }
+
+  // ── 画布布局模式（默认三列） ────────────────────────────────────────────────
   return (
     <div className="flex flex-col h-screen" style={{ background: 'var(--bg)' }}>
 
-      {/* 顶部工具栏（一行，极简）*/}
-      <div
-        className="flex items-center px-5 shrink-0 gap-3 border-b"
-        style={{ height: 44, background: 'var(--bg)', borderColor: 'var(--border)' }}
-      >
+      {/* 顶部工具栏 */}
+      <div className="flex items-center px-5 shrink-0 gap-3 border-b"
+        style={{ height: 44, background: 'var(--bg)', borderColor: 'var(--border)' }}>
         <span className="text-sm font-semibold" style={{ color: 'var(--text-1)' }}>会场搭建</span>
         <span className="text-[11px] px-2 py-0.5 rounded-full"
           style={{ background: 'rgba(45,120,244,0.1)', color: '#6AA3FF' }}>
-          选中图层 → 右侧实时配置
+          选中图层 → 右侧配置 · 「高级设置」开启完整编辑
         </span>
         <div style={{ flex: 1 }} />
-        {hasExportAll && (
-          <button
-            onClick={triggerExportAll}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-white"
-            style={{ background: 'linear-gradient(90deg,#FF3060,#FF6030)' }}
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            完成设计并下载
-          </button>
-        )}
+
+        {/* 导出会场拼图 */}
+        <button
+          onClick={handleExportVenue}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-85"
+          style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.1)' }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          导出会场拼图
+        </button>
       </div>
 
       {/* 三列主体 */}
       <div className="flex flex-1 overflow-hidden">
-
-        {/* ① 图层面板 */}
         <VenueLayerPanel
           selectedLayer={selectedLayer}
           onSelect={handleSelectLayer}
           onAddNew={handleAddNew}
         />
-
-        {/* ② 画布预览 */}
         <VenueCanvasCenter
           selectedLayer={selectedLayer}
           onSelectLayer={handleSelectLayer}
         />
-
-        {/* ③ 动态属性面板 */}
         <VenueDynamicPanel
           selectedLayer={selectedLayer}
           pendingComp={pendingComp}
           onPendingDone={() => setPendingComp(null)}
+          onAdvanced={handleAdvanced}
         />
-
       </div>
     </div>
   )

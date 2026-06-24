@@ -19,7 +19,8 @@ import { useHTab }   from '@/contexts/HTabContext'
 import { useCoupon } from '@/contexts/CouponContext'
 import { useSlot }   from '@/contexts/SlotContext'
 import { useApp }    from '@/contexts/AppContext'
-import type { ComponentId, VenueHeaderSize, VenueItem } from '@/types'
+import type { ComponentId, VenueHeaderSize, VenueItem, HTabColorKey } from '@/types'
+import { H_TAB_COLORS } from '@/types'
 import {
   drawFloorCanvas, drawHTabCanvas, drawCouponPreview,
   drawSlotBannerCanvas, drawPrizeCanvas, preloadFonts,
@@ -28,7 +29,6 @@ import type { PrizeInfo, XfTransform, BannerConfig } from '@/utils/exportUtils'
 import type { SlotConfig } from '@/types'
 
 const FloorPanel  = lazy(() => import('@/components/panels/FloorPanel'))
-const HTabPanel   = lazy(() => import('@/components/panels/HTabPanel'))
 const CouponPanel = lazy(() => import('@/components/panels/CouponPanel'))
 const SlotPanel   = lazy(() => import('@/components/panels/SlotPanel'))
 
@@ -370,14 +370,104 @@ function SlotRefreshButton({ item }: { item: VenueItem }) {
   )
 }
 
+// ── HTab 内联编辑（颜色 + Tab数量 + Tab文案）─────────────────────────────────
+function HTabInlinePanel({ sourceId }: { sourceId?: string }) {
+  const { config, setColor, items, updateItem } = useHTab()
+  const item = items.find(it => it.id === sourceId) ?? items[0]
+  if (!item) return null
+
+  const tabCount = item.tabs.length
+
+  const setTabCount = (n: number) => {
+    const newTabs = Array.from({ length: n }, (_, i) => item.tabs[i] ?? `Tab ${i + 1}`)
+    updateItem(item.id, { tabs: newTabs })
+  }
+
+  const setTabText = (i: number, v: string) => {
+    const newTabs = [...item.tabs]
+    newTabs[i] = v
+    updateItem(item.id, { tabs: newTabs })
+  }
+
+  return (
+    <div className="py-2 space-y-1">
+      {/* 配色 */}
+      <div className="px-4 pt-3 pb-1">
+        <div className="text-[10px] font-semibold mb-2 uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.3)' }}>配色</div>
+        <div className="grid grid-cols-4 gap-1.5">
+          {(Object.keys(H_TAB_COLORS) as HTabColorKey[]).map(k => {
+            const def = H_TAB_COLORS[k]
+            const active = config.colorKey === k
+            return (
+              <button key={k} onClick={() => setColor(k)}
+                className="flex flex-col items-center gap-1 py-2 rounded-lg transition-all"
+                style={{
+                  border: `1.5px solid ${active ? '#FF5050' : 'rgba(255,255,255,0.07)'}`,
+                  background: active ? 'rgba(255,80,80,0.06)' : 'rgba(255,255,255,0.02)',
+                  cursor: 'pointer',
+                }}>
+                <div style={{ width: 16, height: 16, borderRadius: '50%', background: def.inactiveBg, boxShadow: '0 0 0 1.5px rgba(255,255,255,0.15)' }} />
+                <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)' }}>{def.name}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Tab 数量 */}
+      <div className="px-4 pt-2 pb-1">
+        <div className="text-[10px] font-semibold mb-2 uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.3)' }}>数量</div>
+        <div className="flex gap-1.5">
+          {[2, 3, 4].map(n => (
+            <button key={n} onClick={() => setTabCount(n)}
+              className="flex-1 py-2 text-[11px] rounded-xl transition-all"
+              style={{
+                border: `1px solid ${tabCount === n ? 'rgba(255,80,80,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                background: tabCount === n ? 'rgba(255,80,80,0.1)' : 'rgba(255,255,255,0.03)',
+                color: tabCount === n ? '#FF8080' : 'rgba(255,255,255,0.4)',
+                fontWeight: tabCount === n ? 600 : 400, cursor: 'pointer',
+              }}>
+              {n}个
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Tab 文案 */}
+      <div className="px-4 pt-2 pb-3">
+        <div className="text-[10px] font-semibold mb-2 uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.3)' }}>文案</div>
+        <div className="space-y-1.5">
+          {item.tabs.map((tab, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', width: 16, textAlign: 'center' }}>{i + 1}</span>
+              <input
+                value={tab}
+                onChange={e => setTabText(i, e.target.value)}
+                className="flex-1 px-2 py-1.5 rounded-lg text-[12px] transition-all outline-none"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: 'rgba(255,255,255,0.8)',
+                }}
+                placeholder={`Tab ${i + 1} 文案`}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── 主面板 ────────────────────────────────────────────────────────────────────
 interface Props {
   selectedLayer: 'header' | string | null
   pendingComp:   ComponentId | null
   onPendingDone: () => void
+  onAdvanced:    (compId: ComponentId) => void
 }
 
-export default function VenueDynamicPanel({ selectedLayer, pendingComp, onPendingDone }: Props) {
+export default function VenueDynamicPanel({ selectedLayer, pendingComp, onPendingDone, onAdvanced }: Props) {
   const { items } = useVenue()
 
   const selectedItem = selectedLayer && selectedLayer !== 'header'
@@ -386,6 +476,9 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, onPendin
 
   // 自动同步 floor/htab/coupon 的画布预览
   useAutoSync(selectedItem)
+
+  // 当前活跃的组件 id（pending 优先）
+  const activeCompId: ComponentId | null = pendingComp ?? selectedItem?.componentId ?? null
 
   // 面板标题
   const panelTitle = pendingComp
@@ -404,7 +497,8 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, onPendin
         <span className="text-xs font-semibold flex-1 truncate" style={{ color: 'rgba(255,255,255,0.7)' }}>
           {panelTitle}
         </span>
-        {/* pending 状态：显示取消 */}
+
+        {/* 取消（pending 模式） */}
         {pendingComp && (
           <button onClick={onPendingDone}
             className="text-[10px] px-2 py-0.5 rounded transition-all hover:opacity-70"
@@ -412,9 +506,25 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, onPendin
             取消
           </button>
         )}
-        {/* 老虎机：手动刷新按钮 */}
+
+        {/* 老虎机：手动刷新画布 */}
         {selectedItem?.componentId === 'slot' && (
           <SlotRefreshButton item={selectedItem} />
+        )}
+
+        {/* 高级设置入口（所有组件都有） */}
+        {activeCompId && (
+          <button
+            onClick={() => onAdvanced(activeCompId)}
+            className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-lg transition-all hover:opacity-90 shrink-0"
+            style={{ background: 'rgba(255,120,0,0.12)', color: '#FFA040', border: '1px solid rgba(255,120,0,0.2)', cursor: 'pointer' }}
+          >
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            高级设置
+          </button>
         )}
       </div>
 
@@ -424,11 +534,11 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, onPendin
         {pendingComp && (
           <>
             <div className="px-4 pt-3 pb-2 text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-              配置好后点下方「加入会场」
+              配置好后点下方「加入会场」· 「高级设置」含弹窗/导出
             </div>
             <Suspense fallback={<PLoader />}>
               {pendingComp === 'floor'  && <FloorPanel />}
-              {pendingComp === 'h-tab'  && <HTabPanel />}
+              {pendingComp === 'h-tab'  && <HTabInlinePanel />}
               {pendingComp === 'coupon' && <CouponPanel />}
               {pendingComp === 'slot'   && <SlotPanel />}
             </Suspense>
@@ -437,12 +547,19 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, onPendin
 
         {/* 已在画布的组件配置 */}
         {!pendingComp && selectedItem && (
-          <Suspense fallback={<PLoader />}>
-            {selectedItem.componentId === 'floor'  && <FloorPanel />}
-            {selectedItem.componentId === 'h-tab'  && <HTabPanel />}
-            {selectedItem.componentId === 'coupon' && <CouponPanel />}
-            {selectedItem.componentId === 'slot'   && <SlotPanel />}
-          </Suspense>
+          <>
+            {selectedItem.componentId === 'slot' && (
+              <div className="px-4 pt-3 pb-1 text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                弹窗设置 / 奖品图 / 全量导出 → 点右上角「高级设置」
+              </div>
+            )}
+            <Suspense fallback={<PLoader />}>
+              {selectedItem.componentId === 'floor'  && <FloorPanel />}
+              {selectedItem.componentId === 'h-tab'  && <HTabInlinePanel sourceId={selectedItem.sourceId} />}
+              {selectedItem.componentId === 'coupon' && <CouponPanel />}
+              {selectedItem.componentId === 'slot'   && <SlotPanel />}
+            </Suspense>
+          </>
         )}
 
         {/* 头图配置 */}
