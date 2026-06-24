@@ -32,7 +32,7 @@ function Loader() {
 
 // ── 主组件 ────────────────────────────────────────────────────────────────────
 export default function VenuePage() {
-  const { goDelivery, goHome } = useApp()
+  const { goDelivery } = useApp()
   const { items } = useVenue()
 
   // 画布缩放（由顶栏统一管理，传给 VenueCanvasCenter）
@@ -94,26 +94,10 @@ export default function VenuePage() {
       <div className="flex items-center shrink-0 border-b"
         style={{ height: 48, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)', padding: '0 16px', gap: 0 }}>
 
-        {/* 返回首页 */}
-        <button onClick={goHome}
-          className="flex items-center gap-1.5 text-[12px] transition-opacity hover:opacity-70 shrink-0"
-          style={{ color: 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer', padding: '0 10px 0 0' }}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-            <path d="M15 18l-6-6 6-6"/>
-          </svg>
-          首页
-        </button>
-
-        {/* 分隔线 */}
-        <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)', margin: '0 12px', flexShrink: 0 }} />
-
-        {/* 页面标题 + 组件数 */}
-        <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginRight: 8 }}>会场搭建</span>
-        {items.length > 0 && (
-          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontWeight: 400 }}>
-            {items.length} 个组件
-          </span>
-        )}
+        {/* 页面标题（返回首页已移至左侧面板顶部）*/}
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(235,233,252,0.55)', letterSpacing: '0.01em' }}>
+          画布
+        </span>
 
         {/* 弹性间距 */}
         <div style={{ flex: 1 }} />

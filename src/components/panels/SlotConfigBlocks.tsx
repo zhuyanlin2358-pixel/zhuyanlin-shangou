@@ -2,7 +2,7 @@
  * 老虎机配置子组件（共享）
  * 同时被 SlotPanel（左侧面板）和 SlotPage（行内配置区）使用
  */
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { ChevronDown, RotateCcw } from 'lucide-react'
 import { useSlot, SLOT_PRESETS } from '@/contexts/SlotContext'
 import { useVenue } from '@/contexts/VenueContext'
@@ -200,6 +200,91 @@ const PRIZE_TYPE_OPTS: { value: PrizeType; label: string }[] = [
   { value: 'thanks',         label: '谢谢参与' },
 ]
 
+/* ── 奖品类型弹出选择器（fixed 定位，不被父层 overflow 裁剪）── */
+function TypePopover({ type, onChange }: { type: PrizeType; onChange: (t: PrizeType) => void }) {
+  const [open, setOpen] = useState(false)
+  const [pos, setPos]   = useState({ top: 0, left: 0 })
+  const btnRef = useRef<HTMLButtonElement>(null)
+  const dropRef = useRef<HTMLDivElement>(null)
+  const label = PRIZE_TYPE_OPTS.find(o => o.value === type)?.label ?? type
+
+  const handleToggle = () => {
+    if (!btnRef.current) return
+    const r = btnRef.current.getBoundingClientRect()
+    setPos({ top: r.bottom + 6, left: r.left })
+    setOpen(o => !o)
+  }
+
+  useEffect(() => {
+    if (!open) return
+    const fn = (e: MouseEvent) => {
+      if (dropRef.current?.contains(e.target as Node)) return
+      if (btnRef.current?.contains(e.target as Node)) return
+      setOpen(false)
+    }
+    document.addEventListener('mousedown', fn)
+    return () => document.removeEventListener('mousedown', fn)
+  }, [open])
+
+  return (
+    <>
+      <button ref={btnRef} onClick={handleToggle} style={{
+        display: 'inline-flex', alignItems: 'center', gap: 4,
+        padding: '3px 9px', borderRadius: 6, fontSize: 11, cursor: 'pointer',
+        background: open ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.08)',
+        color: 'rgba(255,255,255,0.65)',
+        border: '1px solid rgba(255,255,255,0.14)',
+        transition: 'background 0.12s',
+      }}>
+        {label}
+        <svg width="8" height="8" viewBox="0 0 16 16" fill="none"
+          stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
+          style={{ opacity: 0.6, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.18s' }}>
+          <path d="M4 6l4 4 4-4"/>
+        </svg>
+      </button>
+
+      {open && (
+        <div ref={dropRef} style={{
+          position: 'fixed', top: pos.top, left: pos.left, zIndex: 9999,
+          padding: 5, borderRadius: 12,
+          background: '#141520',
+          border: '1px solid rgba(255,255,255,0.12)',
+          boxShadow: '0 12px 40px rgba(0,0,0,0.65)',
+          minWidth: 128,
+        }}>
+          {PRIZE_TYPE_OPTS.map(opt => {
+            const active = type === opt.value
+            return (
+              <button key={opt.value}
+                onClick={() => { onChange(opt.value); setOpen(false) }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  width: '100%', textAlign: 'left',
+                  padding: '8px 10px', borderRadius: 8,
+                  fontSize: 12.5, cursor: 'pointer', border: 'none',
+                  background: active ? 'rgba(250,217,0,0.1)' : 'transparent',
+                  color: active ? '#fad900' : 'rgba(255,255,255,0.65)',
+                  fontWeight: active ? 600 : 400,
+                  transition: 'background 0.1s',
+                }}
+                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)' }}
+                onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+              >
+                <span style={{
+                  width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
+                  background: active ? '#fad900' : 'rgba(255,255,255,0.18)',
+                }}/>
+                {opt.label}
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </>
+  )
+}
+
 /* 行内字段标签（比 PF 更轻量）*/
 function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -227,10 +312,13 @@ export function PrizeBlock({ idx, prize, onChange, onImgChange, onDelete }: {
     <div style={{ paddingBottom: 16, marginBottom: 8, borderBottom: '1px solid rgba(255,255,255,0.06)' }}
       className="last:border-b-0 last:pb-0">
 
-      {/* 区块标题（大号，清晰层级）+ 删除按钮 */}
+      {/* 标题行：奖品图 N · [类型下拉] · 删除 */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.85)' }}>
-          奖品图 {idx + 1}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.85)' }}>
+            奖品图 {idx + 1}
+          </div>
+          <TypePopover type={prize.type} onChange={t => onChange({ type: t })} />
         </div>
         {onDelete && (
           <button onClick={onDelete}
@@ -240,36 +328,6 @@ export function PrizeBlock({ idx, prize, onChange, onImgChange, onDelete }: {
           </button>
         )}
       </div>
-
-      {/* 类型：Toggle group（白底深字 = 选中，深底灰字 = 未选中）*/}
-      <FieldRow label="类型">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
-          {PRIZE_TYPE_OPTS.map(opt => {
-            const active = prize.type === opt.value
-            return (
-              <button
-                key={opt.value}
-                onClick={() => onChange({ type: opt.value })}
-                style={{
-                  padding: '7px 6px',
-                  borderRadius: 8,
-                  fontSize: 12,
-                  fontWeight: active ? 700 : 400,
-                  border: 'none',
-                  background: active ? '#ffffff' : 'rgba(255,255,255,0.06)',
-                  color: active ? '#111111' : 'rgba(255,255,255,0.4)',
-                  cursor: 'pointer',
-                  transition: 'all 0.12s',
-                  textAlign: 'center',
-                  boxShadow: active ? '0 1px 4px rgba(0,0,0,0.25)' : 'none',
-                }}
-              >
-                {opt.label}
-              </button>
-            )
-          })}
-        </div>
-      </FieldRow>
 
       {!showThanks && (
         <FieldRow label="顶部标签">
@@ -353,8 +411,8 @@ export function SlotPrizeConfig() {
         </span>
         <button onClick={addPrize}
           className="flex items-center gap-1 px-2.5 py-1 text-[10px] rounded-lg"
-          style={{ background: 'rgba(45,120,244,0.12)', color: '#6AA3FF',
-            border: '1px solid rgba(45,120,244,0.2)', cursor: 'pointer' }}>
+          style={{ background: 'rgba(250,217,0,0.1)', color: '#fad900',
+            border: '1px solid rgba(250,217,0,0.2)', cursor: 'pointer' }}>
           <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <path d="M8 3v10M3 8h10"/>
           </svg>
