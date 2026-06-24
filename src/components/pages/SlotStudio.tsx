@@ -122,8 +122,10 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
         if (selected === 'empty') {
           next.empty = (await drawEmptyStateCanvas(config.emptyImageUrl, config.emptyTransform as XfTransform, config.emptyText)).toDataURL()
         }
-        if (selected === 'drum' || selected === 'prize1' || selected === 'prize2' || selected === 'prize3') {
-          const indices = selected === 'drum' ? [0,1,2] : selected === 'prize1' ? [0] : selected === 'prize2' ? [1] : [2]
+        if (selected === 'drum' || selected?.startsWith('prize')) {
+          const indices = selected === 'drum'
+            ? config.prizes.map((_, i) => i)
+            : [parseInt(selected!.replace('prize', ''), 10) - 1]
           for (const i of indices) {
             if (config.prizes[i]) {
               next[`prize${i}`] = (await drawPrizeCanvas(config.prizes[i] as PrizeInfo, config.prizeTransforms[i] as XfTransform, config.slotStyle)).toDataURL()
@@ -133,7 +135,7 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
         if (selected === 'dialog') {
           // 全部弹窗结果页
           for (const dr of DIALOG_RESULTS) {
-            next[`dr_${dr.state}`] = (await drawDialogResultCanvas(dr.state, config.slotTintFrom, config.slotTintTo, config.titleColor)).toDataURL()
+            next[`dr_${dr.state}`] = drawDialogResultCanvas(dr.state, config.slotTintFrom, config.slotTintTo, config.titleColor).toDataURL()
           }
           // 全部弹窗按钮
           for (const text of DIALOG_BUTTONS) {
@@ -190,8 +192,8 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
         {/* 横排3张预览 */}
         <div className="px-3 pt-3 pb-2">
           <SectionHead label="奖品图素材（横排预览）" />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginBottom: 16 }}>
-            {[0,1,2].map(i => (
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(config.prizes.length, 4)},1fr)`, gap: 8, marginBottom: 16 }}>
+            {config.prizes.map((_, i) => (
               <div key={i} style={{ textAlign: 'center' }}>
                 <div style={{ height: 60, background: 'rgba(255,255,255,0.05)', borderRadius: 8, overflow: 'hidden',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
@@ -217,7 +219,7 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
         </div>
 
         {/* 每张奖品图的配置 */}
-        {[0,1,2].map(idx => (
+        {config.prizes.map((_, idx) => (
           <div key={idx} style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '12px 12px 8px' }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>
               奖品图 {idx+1} · {config.prizes[idx]?.tag || '未设置标签'}
@@ -464,7 +466,7 @@ function StudioCanvas({ bannerUrl, config, onLayerClick }: {
       try {
         await preloadFonts()
         const pcs = await Promise.all(config.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform, config.slotStyle)))
-        const dc = await drawDialogResultCanvas('已中奖', config.slotTintFrom, config.slotTintTo, config.titleColor)
+        const dc = drawDialogResultCanvas('已中奖', config.slotTintFrom, config.slotTintTo, config.titleColor)
         if (!cancelled) { setPrizeUrls(pcs.map(c => c.toDataURL())); setDialogUrl(dc.toDataURL()) }
       } catch {}
     }

@@ -17,11 +17,25 @@ import { useFloor }  from '@/contexts/FloorContext'
 import { useApp }    from '@/contexts/AppContext'
 import {
   preloadFonts,
-  drawSlotBannerCanvas, drawSlotBgCanvas, drawButtonCanvas,
-  drawEmptyStateCanvas, drawPrizeCanvas, drawDialogButtonCanvas,
+  drawSlotBannerCanvas, drawSlotBgCanvas, drawButtonCanvas, drawLinkCanvas,
+  drawEmptyStateCanvas, drawPrizeCanvas, drawDialogButtonCanvas, drawDialogResultCanvas,
   drawCouponBg, drawCouponWaistband, drawCouponButton,
   drawHTabCanvas, drawFloorCanvas,
 } from '@/utils/exportUtils'
+
+// ── 老虎机素材常量（与工作室保持一致）──────────────────────────────────────────
+const SLOT_DIALOG_RESULTS = [
+  { state: '正在抽奖', label: '弹窗_正在抽奖' },
+  { state: '已中奖',   label: '弹窗_已中奖'   },
+  { state: '谢谢参与', label: '弹窗_谢谢参与'  },
+  { state: '已领满',   label: '弹窗_已领满'   },
+  { state: '已使用',   label: '弹窗_已使用'   },
+  { state: '出错了',   label: '弹窗_出错了'   },
+] as const
+
+const SLOT_DIALOG_BUTTONS = [
+  '确认', '领奖品', '查看收货地址', '重新加载', '关闭', '查看详情', '分享给朋友',
+]
 import type { PrizeInfo, XfTransform } from '@/utils/exportUtils'
 import type { VenueHeaderSize } from '@/types'
 
@@ -278,13 +292,32 @@ export default function DeliveryPage() {
 
         if (item.componentId === 'slot') {
           const pcs = await Promise.all(slot.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, slot.prizeTransforms[i] as XfTransform, slot.slotStyle)))
-          const [c1, c2] = await Promise.all([drawSlotBannerCanvas(sc, pcs), drawSlotBgCanvas(slot as any)])
-          f.file('主视觉.png', await canvasToBlob(c1))
-          f.file('背景图.png', await canvasToBlob(c2))
-          for (let i = 0; i < pcs.length; i++) f.file(`奖品图${i+1}.png`, await canvasToBlob(pcs[i]))
-          const fb = zip.folder(`${item.label}/弹窗按钮`) ?? zip
-          for (const text of ['确认','领奖品','查看收货地址'])
+          const [c1, c2, c3, c4a, c4d] = await Promise.all([
+            drawSlotBannerCanvas(sc, pcs), drawSlotBgCanvas(slot as any),
+            drawEmptyStateCanvas(slot.emptyImageUrl, slot.emptyTransform as XfTransform, slot.emptyText),
+            Promise.resolve(drawButtonCanvas('立即抽奖',   slot.btnActiveFrom,   slot.btnActiveTo,   slot.btnTextColor)),
+            Promise.resolve(drawButtonCanvas('活动已结束', slot.btnDisabledFrom, slot.btnDisabledTo, slot.btnTextColor)),
+          ])
+          const c5p = drawLinkCanvas([{ text: '我的奖品' }], slot.linksColor, 186, 44, 45, 2)
+          const c5r = drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], slot.linksColor, 218, 44, 45, 2)
+          f.file('1_主视觉_750x242.png',   await canvasToBlob(c1))
+          f.file('2_背景图_750x242.png',   await canvasToBlob(c2))
+          f.file('3_空态页_854x284.png',   await canvasToBlob(c3))
+          f.file('4_按钮_立即抽奖.png',    await canvasToBlob(c4a))
+          f.file('4_按钮_活动结束.png',    await canvasToBlob(c4d))
+          f.file('5_链接_我的奖品.png',    await canvasToBlob(c5p))
+          f.file('5_链接_抽奖规则.png',    await canvasToBlob(c5r))
+          // 奖品图（动态数量）
+          for (let i = 0; i < pcs.length; i++)
+            f.file(`6_奖品图${i+1}_124x124.png`, await canvasToBlob(pcs[i]))
+          // 弹窗按钮（全部7种）
+          const fb = zip.folder(`${item.label}/7_弹窗按钮`) ?? zip
+          for (const text of SLOT_DIALOG_BUTTONS)
             fb.file(`弹窗按钮_${text}.png`, await canvasToBlob(drawDialogButtonCanvas(text, slot.btnActiveFrom, slot.btnActiveTo, undefined, slot.btnTextColor)))
+          // 弹窗结果页（全部6种）
+          const fr = zip.folder(`${item.label}/8_弹窗结果页`) ?? zip
+          for (const dr of SLOT_DIALOG_RESULTS)
+            fr.file(`${dr.label}.png`, await canvasToBlob(drawDialogResultCanvas(dr.state, slot.slotTintFrom, slot.slotTintTo, slot.titleColor)))
         } else if (item.componentId === 'coupon') {
           const [bg, w, b] = await Promise.all([drawCouponBg(couponCtx.config), drawCouponWaistband(couponCtx.config), drawCouponButton(couponCtx.config)])
           f.file('背景图.png', await canvasToBlob(bg)); f.file('腰封.png', await canvasToBlob(w)); f.file('按钮.png', await canvasToBlob(b))
@@ -316,17 +349,21 @@ export default function DeliveryPage() {
       btnTextColor: slot.btnTextColor, slotStyle: slot.slotStyle }
 
     if (item.componentId === 'slot') {
-      const genBanner = async () => { const pcs = await Promise.all(slot.prizes.map((p, idx) => drawPrizeCanvas(p as PrizeInfo, slot.prizeTransforms[idx] as XfTransform, slot.slotStyle))); return drawSlotBannerCanvas(sc, pcs) }
+      const genBanner = async () => {
+        const pcs = await Promise.all(slot.prizes.map((p, idx) => drawPrizeCanvas(p as PrizeInfo, slot.prizeTransforms[idx] as XfTransform, slot.slotStyle)))
+        return drawSlotBannerCanvas(sc, pcs)
+      }
       const assetList: AssetDef[] = [
         { label: '主视觉（未抽奖状态）', size: '750 × 242 px', generate: genBanner },
         { label: '老虎机背景图', size: '750 × 242 px', generate: () => drawSlotBgCanvas(slot as any) },
         { label: '空态页', size: '854 × 284 px', generate: () => drawEmptyStateCanvas(slot.emptyImageUrl, slot.emptyTransform as XfTransform, slot.emptyText) },
         { label: '按钮 · 立即抽奖', size: '194 × 80 px', generate: () => Promise.resolve(drawButtonCanvas('立即抽奖', slot.btnActiveFrom, slot.btnActiveTo, slot.btnTextColor)) },
         { label: '按钮 · 活动结束', size: '194 × 80 px', generate: () => Promise.resolve(drawButtonCanvas('活动已结束', slot.btnDisabledFrom, slot.btnDisabledTo, slot.btnTextColor)) },
-        { label: '弹窗按钮（确认示例）', size: '276 × 80 px', generate: () => Promise.resolve(drawDialogButtonCanvas('确认领奖', slot.btnActiveFrom, slot.btnActiveTo, undefined, slot.btnTextColor)) },
-        ...slot.prizes.map((p, idx) => ({
-          label: `奖品图 ${idx+1}（${p.tag || '商品图'}）`,
-          size: '124 × 124 px',
+        { label: '链接 · 我的奖品', size: '186 × 44 px', generate: () => Promise.resolve(drawLinkCanvas([{ text: '我的奖品' }], slot.linksColor, 186, 44, 45, 2)) },
+        { label: '链接 · 抽奖规则', size: '218 × 44 px', generate: () => Promise.resolve(drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], slot.linksColor, 218, 44, 45, 2)) },
+        // 奖品图（动态数量）
+        ...slot.prizes.map((p, idx): AssetDef => ({
+          label: `奖品图 ${idx+1}（${p.tag || '商品图'}）`, size: '124 × 124 px',
           generate: () => drawPrizeCanvas(p as PrizeInfo, slot.prizeTransforms[idx] as XfTransform, slot.slotStyle),
           canReplace: p.type === 'product-tag' || p.type === 'product-dashed',
           onReplace: (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -336,14 +373,44 @@ export default function DeliveryPage() {
             reader.readAsDataURL(file)
           },
         })),
+        // 弹窗按钮（全部7种）
+        ...SLOT_DIALOG_BUTTONS.map((text): AssetDef => ({
+          label: `弹窗按钮 · ${text}`, size: '276 × 80 px',
+          generate: () => Promise.resolve(drawDialogButtonCanvas(text, slot.btnActiveFrom, slot.btnActiveTo, undefined, slot.btnTextColor)),
+        })),
+        // 弹窗结果页（全部6种）
+        ...SLOT_DIALOG_RESULTS.map((dr): AssetDef => ({
+          label: dr.label, size: '750 × 612 px',
+          generate: () => Promise.resolve(drawDialogResultCanvas(dr.state, slot.slotTintFrom, slot.slotTintTo, slot.titleColor)),
+        })),
       ]
+
       const downloadAll = async () => {
         await preloadFonts()
-        const pcs = await Promise.all(slot.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, slot.prizeTransforms[i] as XfTransform, slot.slotStyle)))
-        const [c1, c2, c3, c4a, c4d] = await Promise.all([drawSlotBannerCanvas(sc, pcs), drawSlotBgCanvas(slot as any), drawEmptyStateCanvas(slot.emptyImageUrl, slot.emptyTransform as XfTransform, slot.emptyText), Promise.resolve(drawButtonCanvas('立即抽奖', slot.btnActiveFrom, slot.btnActiveTo, slot.btnTextColor)), Promise.resolve(drawButtonCanvas('活动已结束', slot.btnDisabledFrom, slot.btnDisabledTo, slot.btnTextColor))])
         const zip = new JSZip()
-        zip.file('主视觉.png', await canvasToBlob(c1)); zip.file('背景图.png', await canvasToBlob(c2)); zip.file('空态页.png', await canvasToBlob(c3)); zip.file('按钮_立即抽奖.png', await canvasToBlob(c4a)); zip.file('按钮_活动结束.png', await canvasToBlob(c4d))
-        for (let i = 0; i < pcs.length; i++) zip.file(`奖品图${i+1}.png`, await canvasToBlob(pcs[i]))
+        const pcs = await Promise.all(slot.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, slot.prizeTransforms[i] as XfTransform, slot.slotStyle)))
+        const [c1, c2, c3, c4a, c4d] = await Promise.all([
+          drawSlotBannerCanvas(sc, pcs), drawSlotBgCanvas(slot as any),
+          drawEmptyStateCanvas(slot.emptyImageUrl, slot.emptyTransform as XfTransform, slot.emptyText),
+          Promise.resolve(drawButtonCanvas('立即抽奖',   slot.btnActiveFrom,   slot.btnActiveTo,   slot.btnTextColor)),
+          Promise.resolve(drawButtonCanvas('活动已结束', slot.btnDisabledFrom, slot.btnDisabledTo, slot.btnTextColor)),
+        ])
+        const c5p = drawLinkCanvas([{ text: '我的奖品' }], slot.linksColor, 186, 44, 45, 2)
+        const c5r = drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], slot.linksColor, 218, 44, 45, 2)
+        zip.file('1_主视觉_750x242.png',   await canvasToBlob(c1))
+        zip.file('2_背景图_750x242.png',   await canvasToBlob(c2))
+        zip.file('3_空态页_854x284.png',   await canvasToBlob(c3))
+        zip.file('4_按钮_立即抽奖.png',    await canvasToBlob(c4a))
+        zip.file('4_按钮_活动结束.png',    await canvasToBlob(c4d))
+        zip.file('5_链接_我的奖品.png',    await canvasToBlob(c5p))
+        zip.file('5_链接_抽奖规则.png',    await canvasToBlob(c5r))
+        for (let i = 0; i < pcs.length; i++) zip.file(`6_奖品图${i+1}_124x124.png`, await canvasToBlob(pcs[i]))
+        // 弹窗按钮（7种）
+        const fb = zip.folder('7_弹窗按钮') ?? zip
+        for (const text of SLOT_DIALOG_BUTTONS) fb.file(`${text}.png`, await canvasToBlob(drawDialogButtonCanvas(text, slot.btnActiveFrom, slot.btnActiveTo, undefined, slot.btnTextColor)))
+        // 弹窗结果页（6种）
+        const fr = zip.folder('8_弹窗结果页') ?? zip
+        for (const dr of SLOT_DIALOG_RESULTS) fr.file(`${dr.label}.png`, await canvasToBlob(await drawDialogResultCanvas(dr.state, slot.slotTintFrom, slot.slotTintTo, slot.titleColor)))
         downloadBlob(await zip.generateAsync({ type: 'blob' }), '老虎机_切图包.zip')
       }
       return { assetList, downloadAll }
