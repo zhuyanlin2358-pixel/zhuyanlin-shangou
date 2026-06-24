@@ -1,154 +1,45 @@
 /**
- * 高达会场 · 左侧面板
+ * 高达会场 · 左侧图层面板（精致化版本）
  *
- * 上半「页面结构」：活动头图（固定）+ 已加入画布的组件（可选中 / 拖序）
- * 下半「组件工坊」：VENUE_COMP_IDS 常驻列表，随时点击进入配置
- *   ─ 未加入画布的组件：正常显示，点击 → 进入聚焦模式配置
- *   ─ 已加入画布的组件：显示「已加入」角标，点击 → 进入聚焦模式再次编辑
+ * 参考 Linear/animate-ui 风格：
+ * - FileTree 组件驱动，带折叠动画
+ * - 细分区块：页面结构 + 组件工坊
+ * - 统一的 sidebar-item 样式
  */
 import { useVenue } from '@/contexts/VenueContext'
 import { useApp }   from '@/contexts/AppContext'
 import { VENUE_COMP_IDS, findComponent } from '@/types'
 import type { ComponentId } from '@/types'
+import { FileTree, FileItem, TreeSection } from '@/components/ui/FileTree'
 
-// ── 组件图标（SVG 线描） ──────────────────────────────────────────────────────
-function IconHeader() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-      <rect x="3" y="3" width="18" height="18" rx="2"/>
-      <path d="M3 9h18"/><path d="M9 21V9"/>
-    </svg>
-  )
-}
-function IconSlot() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-      <rect x="2" y="4" width="20" height="16" rx="2"/>
-      <path d="M8 4v16M16 4v16"/>
-    </svg>
-  )
-}
-function IconFloor() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-      <path d="M4 6h16M4 12h16M4 18h16"/>
-    </svg>
-  )
-}
-function IconHTab() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-      <rect x="2" y="5" width="6" height="14" rx="1.5"/>
-      <rect x="10" y="5" width="6" height="14" rx="1.5"/>
-      <rect x="18" y="5" width="4" height="14" rx="1.5"/>
-    </svg>
-  )
-}
-function IconCoupon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-      <path d="M20 12V22H4V12"/>
-      <path d="M22 7H2v5h20V7z"/>
-      <path d="M12 22V7"/>
-    </svg>
-  )
-}
-function IconGeneric() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-      <rect x="3" y="3" width="18" height="18" rx="2"/>
-    </svg>
-  )
+// ── SVG 图标（精简线描）────────────────────────────────────────────────────────
+const Ic = (d: string) => (
+  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+    strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+    <path d={d}/>
+  </svg>
+)
+
+const Icons = {
+  header: () => Ic('M2 3h12v10H2zM2 6h12M5 6v7'),
+  slot:   () => Ic('M2 4h12v8H2zM6 4v8M10 4v8'),
+  floor:  () => Ic('M3 5h10M3 8h10M3 11h10'),
+  htab:   () => Ic('M2 4h4v8H2zM8 4h4v8H8'),
+  coupon: () => Ic('M2 6h12v4H2zM2 9h12M8 6v4'),
+  image:  () => Ic('M2 3h12v10H2zM2 9l3-3 2 2 3-4 4 5'),
+  add:    () => Ic('M8 3v10M3 8h10'),
 }
 
 function compIcon(id: ComponentId) {
   switch (id) {
-    case 'slot':   return <IconSlot />
-    case 'floor':  return <IconFloor />
-    case 'h-tab':  return <IconHTab />
-    case 'coupon': return <IconCoupon />
-    default:       return <IconGeneric />
+    case 'slot':   return <Icons.slot />
+    case 'floor':  return <Icons.floor />
+    case 'h-tab':  return <Icons.htab />
+    case 'coupon': return <Icons.coupon />
+    default:       return <Icons.image />
   }
 }
 
-// ── 图层行（页面结构区） ───────────────────────────────────────────────────────
-function LayerRow({
-  icon, label, selected, onClick, order,
-}: {
-  icon: React.ReactNode; label: string; selected: boolean
-  onClick: () => void; order?: number
-}) {
-  return (
-    <div
-      onClick={onClick}
-      className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-all select-none"
-      style={{
-        borderLeft:  selected ? '2px solid #2D78F4' : '2px solid transparent',
-        background:  selected ? 'rgba(45,120,244,0.1)' : 'transparent',
-        color:       selected ? '#6AA3FF' : 'rgba(255,255,255,0.5)',
-      }}
-      onMouseEnter={e => { if (!selected) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)' }}
-      onMouseLeave={e => { if (!selected) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-    >
-      <span style={{ opacity: 0.7, flexShrink: 0 }}>{icon}</span>
-      <span className="flex-1 text-[12px] truncate">{label}</span>
-      {order !== undefined && (
-        <span className="text-[9px] shrink-0 px-1 rounded"
-          style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.2)' }}>
-          {order}
-        </span>
-      )}
-    </div>
-  )
-}
-
-// ── 组件工坊行（常驻） ────────────────────────────────────────────────────────
-function WorkshopRow({
-  compId, label, isAdded, onClick,
-}: {
-  compId: ComponentId; label: string; isAdded: boolean; onClick: () => void
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-full flex items-center gap-2 px-3 py-2.5 text-left transition-all"
-      style={{
-        background: 'transparent',
-        border: 'none',
-        color: 'rgba(255,255,255,0.5)',
-        cursor: 'pointer',
-      }}
-      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'}
-      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
-    >
-      <span style={{ opacity: 0.55, flexShrink: 0 }}>{compIcon(compId)}</span>
-      <span className="flex-1 text-[12px] truncate">{label}</span>
-      {isAdded ? (
-        <span className="text-[9px] shrink-0 px-1.5 py-0.5 rounded"
-          style={{ background: 'rgba(45,120,244,0.15)', color: '#6AA3FF', border: '1px solid rgba(45,120,244,0.25)' }}>
-          已加入
-        </span>
-      ) : (
-        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}
-          style={{ opacity: 0.3, flexShrink: 0 }}>
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
-      )}
-    </button>
-  )
-}
-
-// ── 区块分隔标题 ──────────────────────────────────────────────────────────────
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="px-4 pt-4 pb-1.5 text-[10px] font-semibold tracking-widest uppercase shrink-0"
-      style={{ color: 'rgba(255,255,255,0.18)' }}>
-      {children}
-    </div>
-  )
-}
-
-// ── 主组件 ────────────────────────────────────────────────────────────────────
 interface Props {
   selectedLayer: 'header' | string | null
   onSelect:   (layer: 'header' | string | null) => void
@@ -158,80 +49,103 @@ interface Props {
 export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: Props) {
   const { goHome }  = useApp()
   const { items }   = useVenue()
-
-  // 哪些 componentId 已经加入了画布
-  const addedCompIds = new Set(items.map(it => it.componentId))
+  const addedSet    = new Set(items.map(it => it.componentId))
 
   return (
     <aside
-      className="flex flex-col h-full shrink-0 border-r"
-      style={{ width: 220, background: '#0C111B', borderColor: 'rgba(255,255,255,0.07)' }}
+      style={{
+        width: 220,
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        background: '#0C111B',
+        borderRight: '1px solid rgba(255,255,255,0.06)',
+        flexShrink: 0,
+      }}
     >
       {/* 返回首页 */}
-      <button
-        onClick={goHome}
-        className="flex items-center gap-2 px-4 h-11 text-xs transition-opacity hover:opacity-70 shrink-0"
-        style={{ color: 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer' }}
-      >
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-          <path d="M19 12H5M12 5l-7 7 7 7"/>
-        </svg>
-        返回首页
-      </button>
-      <div style={{ height: 1, background: 'rgba(255,255,255,0.07)' }} />
+      <div style={{ padding: '0 10px' }}>
+        <button
+          onClick={goHome}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            width: '100%', padding: '10px 8px',
+            fontSize: 12, color: 'rgba(255,255,255,0.38)',
+            background: 'none', border: 'none', cursor: 'pointer',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            marginBottom: 4,
+          }}
+        >
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M10 4L6 8l4 4"/>
+          </svg>
+          返回首页
+        </button>
+      </div>
 
-      {/* 上半：页面结构（可滚动） */}
-      <div className="flex-1 overflow-y-auto min-h-0">
-        <SectionLabel>页面结构</SectionLabel>
+      {/* 可滚动主体 */}
+      <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '0 6px' }}>
 
-        {/* 活动头图（固定首位） */}
-        <LayerRow
-          icon={<IconHeader />}
-          label="活动头图"
-          selected={selectedLayer === 'header'}
-          onClick={() => onSelect('header')}
-        />
-
-        {/* 已加入画布的组件 */}
-        {items.length > 0 && (
-          <>
-            <div className="mx-3 my-1" style={{ height: 1, background: 'rgba(255,255,255,0.06)' }} />
+        {/* 页面结构 */}
+        <TreeSection label="页面结构">
+          <FileTree>
+            <FileItem
+              icon={<Icons.header />}
+              label="活动头图"
+              active={selectedLayer === 'header'}
+              sublabel="头图 · 背景色 · 尺寸"
+              onClick={() => onSelect('header')}
+            />
             {items.map((item, idx) => (
-              <LayerRow
+              <FileItem
                 key={item.id}
                 icon={compIcon(item.componentId)}
                 label={item.label}
-                selected={selectedLayer === item.id}
+                sublabel={findComponent(item.componentId)?.desc || ''}
+                active={selectedLayer === item.id}
+                badge={idx + 1}
                 onClick={() => onSelect(item.id)}
-                order={idx + 1}
               />
             ))}
-          </>
-        )}
+            {items.length === 0 && (
+              <div style={{ padding: '8px 12px', fontSize: 11, color: 'rgba(255,255,255,0.2)', lineHeight: 1.5 }}>
+                添加组件后在此显示
+              </div>
+            )}
+          </FileTree>
+        </TreeSection>
 
-        {items.length === 0 && (
-          <p className="px-4 pt-1 pb-3 text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.16)' }}>
-            配置组件后点「加入会场」<br />即可在此预览
-          </p>
-        )}
-      </div>
+        {/* 分隔线 */}
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '4px 4px 8px' }} />
 
-      {/* 下半：组件工坊（最多 220px，超出可滚动） */}
-      <div
-        className="border-t overflow-y-auto"
-        style={{ borderColor: 'rgba(255,255,255,0.07)', maxHeight: 220, flexShrink: 0 }}
-      >
-        <SectionLabel>组件工坊</SectionLabel>
-        {VENUE_COMP_IDS.map(id => (
-          <WorkshopRow
-            key={id}
-            compId={id}
-            label={findComponent(id)?.name ?? id}
-            isAdded={addedCompIds.has(id)}
-            onClick={() => onAddNew(id)}
-          />
-        ))}
-        <div style={{ height: 8 }} />
+        {/* 组件工坊 */}
+        <TreeSection label="组件工坊">
+          <FileTree>
+            {VENUE_COMP_IDS.map(id => {
+              const comp = findComponent(id)
+              const added = addedSet.has(id)
+              return (
+                <FileItem
+                  key={id}
+                  icon={compIcon(id)}
+                  label={comp?.name ?? id}
+                  sublabel={comp?.desc || '点击配置并加入画布'}
+                  badge={added ? '已加入' : undefined}
+                  action={
+                    <div style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: 20, height: 20, borderRadius: 5,
+                      background: 'rgba(45,120,244,0.15)', color: '#6AA3FF',
+                    }}>
+                      <Icons.add />
+                    </div>
+                  }
+                  onClick={() => onAddNew(id)}
+                />
+              )
+            })}
+          </FileTree>
+        </TreeSection>
       </div>
     </aside>
   )

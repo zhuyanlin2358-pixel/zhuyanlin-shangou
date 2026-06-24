@@ -293,3 +293,113 @@ body.dark-mode *:hover,
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Button spin animation ── */
+@keyframes btnSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Linear / Vercel 精致深色系设计 token ── */
+body.dark-mode {
+  /* 背景层次（更细腻的层叠） */
+  --layer-0: #070a10;   /* 最底层 */
+  --layer-1: #0d1117;   /* 主背景 */
+  --layer-2: #111827;   /* 卡片/面板 */
+  --layer-3: #1a2234;   /* 浮层/hover */
+
+  /* 边框精细度 */
+  --border-0: rgba(255,255,255,0.05);  /* 极细 */
+  --border-1: rgba(255,255,255,0.08);  /* 标准 */
+  --border-2: rgba(255,255,255,0.13);  /* 强调 */
+
+  /* 文字层次 */
+  --tx-1: rgba(255,255,255,0.92);  /* 主文字 */
+  --tx-2: rgba(255,255,255,0.62);  /* 次文字 */
+  --tx-3: rgba(255,255,255,0.38);  /* 弱文字 */
+  --tx-4: rgba(255,255,255,0.22);  /* 占位/标签 */
+
+  /* 品牌色 */
+  --accent-blue: #2D78F4;
+  --accent-blue-soft: rgba(45,120,244,0.12);
+  --accent-green: #22c55e;
+  --accent-red: #FF3060;
+
+  /* 圆角 */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+}
+
+/* ── 工具面板通用样式（精致化）── */
+.panel-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.22);
+  padding: 0 14px;
+  margin-bottom: 3px;
+  margin-top: 14px;
+}
+
+/* ── 侧边栏通用样式 ── */
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  color: rgba(255,255,255,0.62);
+  margin-bottom: 1px;
+  user-select: none;
+  position: relative;
+}
+.sidebar-item:hover { background: rgba(255,255,255,0.05); }
+.sidebar-item.active {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.92);
+}
+.sidebar-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 20%; bottom: 20%;
+  width: 2px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 2px;
+}
+
+/* ── 精致分隔线 ── */
+.divider {
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+  margin: 8px 0;
+}
+
+/* ── 面板头部统一高度 ── */
+.panel-header {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+
+/* ── 卡片基础样式 ── */
+.card-dark {
+  background: #111827;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* ── 文字截断 ── */
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
