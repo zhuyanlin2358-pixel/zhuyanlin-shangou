@@ -124,6 +124,8 @@ interface SlotContextValue {
   setConfig: (patch: Partial<SlotConfig>) => void
   applyPreset: (key: string) => void
   setPrize: (idx: number, patch: Partial<import('@/types').PrizeConfig>) => void
+  addPrize: () => void
+  removePrize: (idx: number) => void
   setActiveStep: (n: number) => void
   setSlotBannerUrl: (url: string) => void
   setEmptyTransform: (t: Partial<import('@/types').ImgTransform>) => void
@@ -188,8 +190,22 @@ export function SlotProvider({ children }: { children: ReactNode }) {
       prizeTransforms: prev.prizeTransforms.map((tr, i) => i === idx ? { offsetX: 0, offsetY: 0, scale: 1 } : tr),
     }))
 
+  const addPrize = () =>
+    setConfigState(prev => ({
+      ...prev,
+      prizes: [...prev.prizes, { type: 'product-tag', imageUrl: '', tag: '新奖品', amount: '30', unit: '元', bottomText: '', thanksText: '谢谢参与' }],
+      prizeTransforms: [...prev.prizeTransforms, { offsetX: 0, offsetY: 0, scale: 1 }],
+    }))
+
+  const removePrize = (idx: number) =>
+    setConfigState(prev => ({
+      ...prev,
+      prizes: prev.prizes.filter((_, i) => i !== idx),
+      prizeTransforms: prev.prizeTransforms.filter((_, i) => i !== idx),
+    }))
+
   return (
-    <SlotContext.Provider value={{ config, activePreset, activeStep, slotBannerUrl, setConfig, applyPreset, setPrize, setActiveStep, setSlotBannerUrl, setEmptyTransform, setPrizeTransform, resetEmptyTransform, resetPrizeTransform }}>
+    <SlotContext.Provider value={{ config, activePreset, activeStep, slotBannerUrl, setConfig, applyPreset, setPrize, addPrize, removePrize, setActiveStep, setSlotBannerUrl, setEmptyTransform, setPrizeTransform, resetEmptyTransform, resetPrizeTransform }}>
       {children}
     </SlotContext.Provider>
   )

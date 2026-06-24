@@ -100,7 +100,7 @@ function CanvasRow({ url, label, onDl }: { url: string; label: string; onDl: () 
 
 // ── 右侧：按层级显示素材 + 配置 ───────────────────────────────────────────────
 function RightPanel({ selected }: { selected: LayerId | null }) {
-  const { config, setPrize } = useSlot()
+  const { config, setPrize, addPrize, removePrize } = useSlot()
   const [state, setState] = useState<Record<string, string>>({})
 
   // 生成素材 urls
@@ -191,7 +191,15 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
       <div>
         {/* 横排3张预览 */}
         <div className="px-3 pt-3 pb-2">
-          <SectionHead label="奖品图素材（横排预览）" />
+          <div className="flex items-center justify-between mb-2">
+            <SectionHead label="奖品图素材（横排预览）" />
+            <button onClick={addPrize}
+              className="flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold rounded-lg"
+              style={{ background: 'rgba(45,120,244,0.15)', color: '#6AA3FF', border: '1px solid rgba(45,120,244,0.2)', cursor: 'pointer' }}>
+              <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M8 3v10M3 8h10"/></svg>
+              增加
+            </button>
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(config.prizes.length, 4)},1fr)`, gap: 8, marginBottom: 16 }}>
             {config.prizes.map((_, i) => (
               <div key={i} style={{ textAlign: 'center' }}>
@@ -221,8 +229,16 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
         {/* 每张奖品图的配置 */}
         {config.prizes.map((_, idx) => (
           <div key={idx} style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '12px 12px 8px' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>
-              奖品图 {idx+1} · {config.prizes[idx]?.tag || '未设置标签'}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>
+                奖品图 {idx+1} · {config.prizes[idx]?.tag || '未设置标签'}
+              </div>
+              {config.prizes.length > 1 && (
+                <button onClick={() => removePrize(idx)}
+                  style={{ fontSize: 9, color: 'rgba(239,68,68,0.6)', background: 'rgba(239,68,68,0.08)', border: 'none', borderRadius: 4, padding: '1px 6px', cursor: 'pointer' }}>
+                  删除
+                </button>
+              )}
             </div>
             <PrizeBlock
               idx={idx}

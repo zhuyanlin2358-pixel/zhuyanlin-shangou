@@ -155,6 +155,144 @@ function AssetRow({
   )
 }
 
+// ── 可折叠子分组 ──────────────────────────────────────────────────────────────
+function CollapsibleGroup({
+  label, count, defaultOpen = true, children, extra,
+}: {
+  label: string; count: number; defaultOpen?: boolean
+  children: React.ReactNode; extra?: React.ReactNode
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className="rounded-xl overflow-hidden mb-2"
+      style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center gap-2 px-4 py-2.5 text-left transition-all hover:bg-white/[0.03]"
+        style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+      >
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"
+          strokeLinecap="round" style={{ color: 'rgba(255,255,255,0.25)', transform: open ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s', flexShrink: 0 }}>
+          <path d="M4 6l4 4 4-4"/>
+        </svg>
+        <span className="flex-1 text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.65)' }}>{label}</span>
+        <span className="text-[10px] px-1.5 py-0.5 rounded"
+          style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.3)' }}>
+          {count}
+        </span>
+        {extra}
+      </button>
+      {open && (
+        <div className="px-2 pb-2 space-y-0.5 border-t" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── 老虎机专用分组 Section ────────────────────────────────────────────────────
+function SlotComponentSection({
+  label, icon, assets, onDownloadAll, onPreview, prizeCount, onAddPrize, onRemovePrize,
+}: {
+  label: string; icon: React.ReactNode
+  assets: AssetDef[]; onDownloadAll: () => Promise<void>
+  onPreview: (url: string, label: string, gen: () => Promise<HTMLCanvasElement>) => void
+  prizeCount: number; onAddPrize: () => void; onRemovePrize: (idx: number) => void
+}) {
+  const [dlStatus, setDlStatus] = useState<'idle'|'loading'|'done'>('idle')
+  const handleAll = async () => {
+    setDlStatus('loading')
+    try { await onDownloadAll(); setDlStatus('done') } catch { setDlStatus('idle') }
+    setTimeout(() => setDlStatus('idle'), 3000)
+  }
+
+  // 按类型分组 assets
+  const mainAssets   = assets.filter(a => !a.label.includes('奖品图') && !a.label.includes('弹窗'))
+  const prizeAssets  = assets.filter(a => a.label.startsWith('奖品图'))
+  const dialogBtns   = assets.filter(a => a.label.startsWith('弹窗按钮'))
+  const dialogPages  = assets.filter(a => a.label.startsWith('弹窗_'))
+
+  const ARow = (asset: AssetDef, i: number) => (
+    <AssetRow key={i} {...asset} onPreview={onPreview} />
+  )
+
+  return (
+    <div className="rounded-2xl overflow-hidden mb-4"
+      style={{ border: '1px solid rgba(255,255,255,0.08)', background: '#111827' }}>
+      {/* 标题栏 */}
+      <div className="flex items-center gap-3 px-4 py-3 border-b"
+        style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+        <span style={{ opacity: 0.6 }}>{icon}</span>
+        <span className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.85)' }}>{label}</span>
+        <span className="text-[10px] ml-auto" style={{ color: 'rgba(255,255,255,0.25)' }}>
+          {assets.length} 个素材
+        </span>
+      </div>
+
+      {/* 分组内容 */}
+      <div className="p-3 space-y-0.5">
+        {/* 主视觉 + 按钮 + 链接（平铺） */}
+        {mainAssets.map((a, i) => ARow(a, i))}
+
+        {/* 奖品图（可折叠 + 增加按钮） */}
+        <CollapsibleGroup
+          label="奖品图"
+          count={prizeAssets.length}
+          extra={
+            <button
+              onClick={e => { e.stopPropagation(); onAddPrize() }}
+              className="flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold rounded-lg ml-1 transition-all hover:opacity-80"
+              style={{ background: 'rgba(45,120,244,0.15)', color: '#6AA3FF', border: '1px solid rgba(45,120,244,0.2)', cursor: 'pointer' }}>
+              <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M8 3v10M3 8h10"/></svg>
+              增加奖品图
+            </button>
+          }
+        >
+          {prizeAssets.map((a, i) => (
+            <div key={i} className="flex items-center gap-1">
+              <div className="flex-1"><AssetRow {...a} onPreview={onPreview} /></div>
+              {prizeCount > 1 && (
+                <button
+                  onClick={() => onRemovePrize(i)}
+                  className="px-1.5 py-1 text-[9px] rounded transition-all hover:opacity-80 shrink-0"
+                  style={{ color: 'rgba(239,68,68,0.6)', background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer' }}>
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+        </CollapsibleGroup>
+
+        {/* 弹窗按钮（默认折叠） */}
+        <CollapsibleGroup label="弹窗按钮" count={dialogBtns.length} defaultOpen={false}>
+          {dialogBtns.map((a, i) => ARow(a, i))}
+        </CollapsibleGroup>
+
+        {/* 弹窗结果页（默认折叠） */}
+        <CollapsibleGroup label="弹窗结果页" count={dialogPages.length} defaultOpen={false}>
+          {dialogPages.map((a, i) => ARow(a, i))}
+        </CollapsibleGroup>
+      </div>
+
+      {/* 下载全套 */}
+      <div className="px-3 pb-3">
+        <button onClick={handleAll} disabled={dlStatus === 'loading'}
+          className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-xl transition-all"
+          style={{
+            background: dlStatus === 'done' ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)',
+            color: dlStatus === 'done' ? '#4ade80' : 'rgba(255,255,255,0.5)',
+            border: `1px solid ${dlStatus === 'done' ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.08)'}`,
+            cursor: dlStatus === 'loading' ? 'not-allowed' : 'pointer',
+          }}>
+          <Download size={12} />
+          {dlStatus === 'loading' ? '生成中…' : dlStatus === 'done' ? '✅ 已下载全套' : '下载老虎机全套 ZIP'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ── 组件素材分组 ──────────────────────────────────────────────────────────────
 function ComponentSection({
   label, icon, assets, onDownloadAll, onPreview,
@@ -523,6 +661,21 @@ export default function DeliveryPage() {
             </div>
           ) : items.map(item => {
             const { assetList, downloadAll } = buildAssets(item)
+            if (item.componentId === 'slot') {
+              return (
+                <SlotComponentSection
+                  key={item.id}
+                  label={item.label}
+                  icon={COMP_ICON[item.componentId] ?? <Package size={14} />}
+                  assets={assetList as AssetDef[]}
+                  onDownloadAll={downloadAll}
+                  onPreview={handlePreview}
+                  prizeCount={slotCtx.config.prizes.length}
+                  onAddPrize={slotCtx.addPrize}
+                  onRemovePrize={idx => slotCtx.removePrize(idx)}
+                />
+              )
+            }
             return (
               <ComponentSection
                 key={item.id}
