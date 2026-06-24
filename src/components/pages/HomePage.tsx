@@ -38,8 +38,8 @@ export default function HomePage() {
           <p style={{ margin: '0 0 12px', fontSize: 11, letterSpacing: '3px', color: 'rgba(0,0,0,0.35)', fontWeight: 600 }}>
             美团闪购
           </p>
-          <h1 style={{ margin: '0 0 12px', fontSize: 44, fontWeight: 800, color: '#1a0a00', letterSpacing: '-1.5px', lineHeight: 1.1 }}>
-            设计工作台
+          <h1 style={{ margin: '0 0 12px', fontSize: 36, fontWeight: 800, color: '#1a0a00', letterSpacing: '-1px', lineHeight: 1.15 }}>
+            闪购营销设计工作台
           </h1>
           <p style={{ margin: 0, fontSize: 15, color: 'rgba(0,0,0,0.4)' }}>
             选择你要完成的任务
