@@ -70,8 +70,8 @@ export default function VenueAddButton({
         addItem({ componentId, label: finalLabel, previewUrl, origW, origH, sourceId })
         showToast(`✅ 「${finalLabel}」已加入会场`)
       }}
-      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-white transition-all hover:opacity-90"
-      style={{ background: '#2D78F4' }}
+      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-90"
+      style={{ background: 'var(--sl-primary-grad)', color: 'var(--sl-cta-text)' }}
     >
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
         <path d="M12 5v14M5 12h14"/>

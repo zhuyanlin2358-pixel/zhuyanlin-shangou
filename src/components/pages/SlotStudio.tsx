@@ -73,7 +73,7 @@ function CanvasRow({ url, label, onDl }: { url: string; label: string; onDl: () 
         <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>{label}</span>
         <button onClick={onDl}
           className="flex items-center gap-1 px-2 py-0.5 text-[9px] rounded-lg"
-          style={{ background: 'rgba(45,120,244,0.12)', color: '#6AA3FF', border: '1px solid rgba(45,120,244,0.2)', cursor: 'pointer' }}>
+          style={{ background: 'rgba(250,217,0,0.10)', color: '#fad900', border: '1px solid rgba(250,217,0,0.22)', cursor: 'pointer' }}>
           <Icons.dl /> 下载
         </button>
       </div>
@@ -181,7 +181,7 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
             <SectionHead label="奖品图素材（横排预览）" />
             <button onClick={addPrize}
               className="flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold rounded-lg"
-              style={{ background: 'rgba(45,120,244,0.15)', color: '#6AA3FF', border: '1px solid rgba(45,120,244,0.2)', cursor: 'pointer' }}>
+              style={{ background: 'rgba(250,217,0,0.12)', color: '#fad900', border: '1px solid rgba(250,217,0,0.22)', cursor: 'pointer' }}>
               <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M8 3v10M3 8h10"/></svg>
               增加
             </button>
@@ -202,7 +202,7 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
                     <button onClick={() => dl(Object.assign(document.createElement('canvas'), { width: 1, height: 1 }), '')}
                       style={{ display: 'none' }} />
                     <a href={state[`prize${i}`]} download={`奖品图${i+1}.png`}
-                      style={{ fontSize: 8, color: '#6AA3FF', textDecoration: 'none', background: 'rgba(45,120,244,0.1)', padding: '1px 5px', borderRadius: 3 }}>
+                      style={{ fontSize: 8, color: '#fad900', textDecoration: 'none', background: 'rgba(250,217,0,0.09)', padding: '1px 5px', borderRadius: 3 }}>
                       ↓下载
                     </a>
                   </div>
@@ -255,7 +255,7 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
             <div className="flex items-center justify-between mb-2">
               <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>奖品图 {idx+1} 预览</span>
               <a href={url} download={`奖品图${idx+1}.png`}
-                style={{ fontSize: 9, color: '#6AA3FF', background: 'rgba(45,120,244,0.1)', padding: '2px 7px', borderRadius: 4, textDecoration: 'none' }}>
+                style={{ fontSize: 9, color: '#fad900', background: 'rgba(250,217,0,0.09)', padding: '2px 7px', borderRadius: 4, textDecoration: 'none' }}>
                 ↓ 下载
               </a>
             </div>
@@ -319,7 +319,7 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
             <div className="flex items-center justify-between mb-2">
               <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>空态页预览</span>
               <a href={state.empty} download="空态页.png"
-                style={{ fontSize: 9, color: '#6AA3FF', background: 'rgba(45,120,244,0.1)', padding: '2px 7px', borderRadius: 4, textDecoration: 'none' }}>
+                style={{ fontSize: 9, color: '#fad900', background: 'rgba(250,217,0,0.09)', padding: '2px 7px', borderRadius: 4, textDecoration: 'none' }}>
                 ↓ 下载
               </a>
             </div>
@@ -372,7 +372,7 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
                     <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>{text}</span>
                     {url && (
                       <a href={url} download={`弹窗按钮_${text}.png`}
-                        style={{ fontSize: 8, color: '#6AA3FF', textDecoration: 'none', background: 'rgba(45,120,244,0.1)', padding: '1px 5px', borderRadius: 3 }}>
+                        style={{ fontSize: 8, color: '#fad900', textDecoration: 'none', background: 'rgba(250,217,0,0.09)', padding: '1px 5px', borderRadius: 3 }}>
                         ↓
                       </a>
                     )}
@@ -427,8 +427,8 @@ function LayerItem({ layer, selected, onSelect, depth, expanded, onToggle }: {
           paddingRight: 6,
           borderRadius: 8,
           marginBottom: 1,
-          background: active ? 'rgba(45,120,244,0.13)' : hovered ? 'rgba(255,255,255,0.05)' : 'transparent',
-          color: active ? '#7BB7FF' : hovered ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.58)',
+          background: active ? 'rgba(235,233,252,0.09)' : hovered ? 'rgba(255,255,255,0.05)' : 'transparent',
+          color: active ? '#ebe9fc' : hovered ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.55)',
           transition: 'background 0.12s, color 0.12s',
         }}
       >
@@ -436,7 +436,7 @@ function LayerItem({ layer, selected, onSelect, depth, expanded, onToggle }: {
         {active && (
           <div style={{
             position: 'absolute', left: 0, top: '18%', bottom: '18%',
-            width: 2.5, background: '#4A90FF', borderRadius: 2,
+            width: 2.5, background: 'rgba(235,233,252,0.7)', borderRadius: 2,
           }} />
         )}
 
@@ -581,7 +581,7 @@ function StudioCanvas({ bannerUrl, config, onLayerClick }: {
             style={{ position:'absolute', top:z.top, left:z.left, width:z.w, height:z.h, cursor:'pointer',
               border:'1.5px dashed rgba(255,255,255,0.12)', borderRadius:6, zIndex:2,
               display:'flex', alignItems:'flex-start', padding:'3px 5px' }}
-            onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.border='1.5px solid rgba(45,120,244,0.7)'; el.style.background='rgba(45,120,244,0.08)' }}
+            onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.border='1.5px solid rgba(250,217,0,0.6)'; el.style.background='rgba(250,217,0,0.07)' }}
             onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.border='1.5px dashed rgba(255,255,255,0.12)'; el.style.background='transparent' }}>
             <span style={{ fontSize:8, color:'rgba(255,255,255,0.3)', background:'rgba(0,0,0,0.5)', borderRadius:2, padding:'1px 4px' }}>{z.l}</span>
           </div>

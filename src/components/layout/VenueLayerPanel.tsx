@@ -7,7 +7,6 @@
  * - 删除按钮 hover 渐显
  */
 import { useVenue } from '@/contexts/VenueContext'
-import { useApp }   from '@/contexts/AppContext'
 import { VENUE_COMP_IDS, findComponent } from '@/types'
 import type { ComponentId } from '@/types'
 import { FileTree, FileItem, TreeSection } from '@/components/ui/FileTree'
@@ -84,7 +83,6 @@ interface Props {
 
 export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: Props) {
   const { items, removeItem } = useVenue()
-  const { goHome }  = useApp()
   const addedSet = new Set(items.map(it => it.componentId))
 
   return (
@@ -99,43 +97,7 @@ export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: P
         flexShrink: 0,
       }}
     >
-      {/* ── 侧边栏顶部导航（返回首页 + 页面标题）── */}
-      <div style={{
-        height: 48, display: 'flex', alignItems: 'center',
-        padding: '0 10px', borderBottom: '1px solid var(--sl-border)',
-        flexShrink: 0, gap: 0,
-      }}>
-        <button
-          onClick={goHome}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 4,
-            fontSize: 12, color: 'rgba(235,233,252,0.38)',
-            background: 'none', border: 'none', cursor: 'pointer', padding: '0 6px 0 0',
-            transition: 'color 0.12s',
-          }}
-          onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'rgba(235,233,252,0.65)'}
-          onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'rgba(235,233,252,0.38)'}
-        >
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-            <path d="M15 18l-6-6 6-6"/>
-          </svg>
-          首页
-        </button>
-
-        <div style={{ width: 1, height: 12, background: 'rgba(235,233,252,0.1)', margin: '0 8px', flexShrink: 0 }} />
-
-        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-text-1)', flex: 1, minWidth: 0,
-          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          会场搭建
-        </span>
-        {items.length > 0 && (
-          <span style={{ fontSize: 10, color: 'rgba(235,233,252,0.3)', flexShrink: 0 }}>
-            {items.length}
-          </span>
-        )}
-      </div>
-
-      <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '8px 6px 8px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '10px 6px 8px' }}>
 
         {/* ── 页面结构 ── */}
         <TreeSection label="页面结构">

@@ -32,7 +32,7 @@ function Loader() {
 
 // ── 主组件 ────────────────────────────────────────────────────────────────────
 export default function VenuePage() {
-  const { goDelivery } = useApp()
+  const { goDelivery, goHome } = useApp()
   const { items } = useVenue()
 
   // 画布缩放（由顶栏统一管理，传给 VenueCanvasCenter）
@@ -90,16 +90,43 @@ export default function VenuePage() {
   return (
     <div className="flex flex-col h-screen" style={{ background: 'var(--sl-bg)' }}>
 
-      {/* ── 统一顶栏（单行，所有控件集中对齐）── */}
+      {/* ── 统一顶栏（左220px对齐侧边栏 + 右侧控件区）── */}
       <div className="flex items-center shrink-0 border-b"
-        style={{ height: 48, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)', padding: '0 16px', gap: 0 }}>
+        style={{ height: 48, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)', padding: 0, gap: 0 }}>
 
-        {/* 页面标题（返回首页已移至左侧面板顶部）*/}
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(235,233,252,0.55)', letterSpacing: '0.01em' }}>
-          画布
-        </span>
+        {/* 左段：220px，与侧边栏等宽，包含导航 */}
+        <div style={{
+          width: 220, flexShrink: 0, height: '100%',
+          display: 'flex', alignItems: 'center', gap: 0,
+          padding: '0 10px',
+          borderRight: '1px solid var(--sl-border)',
+        }}>
+          <button onClick={goHome}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 4,
+              fontSize: 12, color: 'rgba(235,233,252,0.38)',
+              background: 'none', border: 'none', cursor: 'pointer',
+              padding: '0 6px 0 0', transition: 'color 0.12s',
+            }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'rgba(235,233,252,0.65)'}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'rgba(235,233,252,0.38)'}
+          >
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+              <path d="M15 18l-6-6 6-6"/>
+            </svg>
+            首页
+          </button>
+          <div style={{ width: 1, height: 12, background: 'rgba(235,233,252,0.1)', margin: '0 8px', flexShrink: 0 }} />
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-text-1)', flex: 1, minWidth: 0,
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            会场搭建
+          </span>
+          {items.length > 0 && (
+            <span style={{ fontSize: 10, color: 'rgba(235,233,252,0.3)', flexShrink: 0 }}>{items.length}</span>
+          )}
+        </div>
 
-        {/* 弹性间距 */}
+        {/* 右段：弹性，缩放 + CTA */}
         <div style={{ flex: 1 }} />
 
         {/* 画布缩放控制（紧凑型，不超过 150px 宽）*/}
@@ -126,7 +153,7 @@ export default function VenuePage() {
         <button
           onClick={goDelivery}
           className="flex items-center gap-2 text-[13px] font-bold rounded-xl transition-all hover:opacity-90 shrink-0"
-          style={{ background: 'var(--sl-primary-grad)', color: 'var(--sl-cta-text)', padding: '7px 16px', border: 'none', cursor: 'pointer' }}
+          style={{ background: 'var(--sl-primary-grad)', color: 'var(--sl-cta-text)', padding: '7px 16px', marginRight: 16, border: 'none', cursor: 'pointer' }}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
