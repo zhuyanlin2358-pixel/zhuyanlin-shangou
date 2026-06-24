@@ -37,14 +37,19 @@ interface Props {
   activeZone?:   string   // 当前激活的配置热区，用于高亮对应区域
 }
 
+// 缩放级别
+const ZOOM_OPTS = [50, 75, 100, 125, 150] as const
+type ZoomOpt = typeof ZOOM_OPTS[number]
+
 export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZoneSelect, activeZone = '' }: Props) {
   const {
     items, moveItem,
     headerUrl, headerSize, bgColor,
   } = useVenue()
 
-  const SCALE   = 0.5
-  const headerH = (HEADER_SIZES.find(s => s.key === headerSize)?.h ?? 424) * SCALE
+  const [zoomPct, setZoomPct] = useState<ZoomOpt>(100)
+  const phoneW  = Math.round(375 * (zoomPct / 100))
+  const headerH = (HEADER_SIZES.find(s => s.key === headerSize)?.h ?? 424) * (zoomPct / 200)
 
   // ── 预览模式 ──────────────────────────────────────────────────────────────
   const [previewMode,   setPreviewMode]   = useState<PreviewMode>('h5')
@@ -130,8 +135,8 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
         className="w-full flex items-center px-5 shrink-0 gap-3"
         style={{ height: 44, borderBottom: '1px solid rgba(255,255,255,0.05)' }}
       >
-        <span className="text-[11px] font-semibold flex-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
-          画布预览 · 375px
+        <span className="text-[11px] font-semibold" style={{ color: 'rgba(255,255,255,0.25)' }}>
+          画布预览 · {phoneW}px
         </span>
 
         {items.length > 0 && (
@@ -139,6 +144,25 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
             {items.length} 组件 · 拖拽排序
           </span>
         )}
+
+        <div style={{ flex: 1 }} />
+
+        {/* 缩放控制 */}
+        <div className="flex items-center gap-1">
+          {ZOOM_OPTS.map(z => (
+            <button key={z} onClick={() => setZoomPct(z)}
+              className="text-[10px] px-1.5 py-0.5 rounded transition-all"
+              style={{
+                background: zoomPct === z ? 'rgba(45,120,244,0.18)' : 'transparent',
+                color: zoomPct === z ? '#6AA3FF' : 'rgba(255,255,255,0.25)',
+                border: `1px solid ${zoomPct === z ? 'rgba(45,120,244,0.3)' : 'transparent'}`,
+                fontWeight: zoomPct === z ? 600 : 400,
+                cursor: 'pointer',
+              }}>
+              {z}%
+            </button>
+          ))}
+        </div>
 
         {/* 预览模式下拉 */}
         <div ref={previewDDRef} style={{ position: 'relative' }}>
@@ -209,10 +233,11 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
         <div
           className="rounded-[24px] overflow-hidden shadow-2xl shrink-0"
           style={{
-            width: 375,
+            width: phoneW,
             background: bgColor,
             border: '2px solid rgba(255,255,255,0.1)',
             boxShadow: '0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05)',
+            transition: 'width 0.2s ease',
           }}
         >
           {/* 状态栏 */}

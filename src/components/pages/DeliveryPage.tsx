@@ -6,7 +6,7 @@
  * 右侧：页面画布预览（手机帧）
  * 底部：一键全部打包 ZIP
  */
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useMemo } from 'react'
 import JSZip from 'jszip'
 import { X, Download, Package, Eye, RefreshCw, ImageIcon } from 'lucide-react'
 import { useVenue }  from '@/contexts/VenueContext'
@@ -86,6 +86,7 @@ function PreviewModal({ url, label, onClose, onDownload }: {
 
 // 素材定义（不含 onPreview，由 ComponentSection 注入）
 interface AssetDef {
+  id: string        // 用于选中状态跟踪：`${itemId}_${label}`
   label: string
   size: string
   generate: () => Promise<HTMLCanvasElement>
@@ -93,11 +94,35 @@ interface AssetDef {
   onReplace?: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
+// ── 圆形复选框（animate-ui radio-group 风格）───────────────────────────────
+function RoundCheck({ checked, indeterminate, onChange }: {
+  checked: boolean; indeterminate?: boolean; onChange: () => void
+}) {
+  return (
+    <div
+      onClick={e => { e.stopPropagation(); onChange() }}
+      style={{
+        width: 15, height: 15, borderRadius: '50%', flexShrink: 0, cursor: 'pointer',
+        border: `1.5px solid ${checked || indeterminate ? '#2D78F4' : 'rgba(255,255,255,0.2)'}`,
+        background: checked ? '#2D78F4' : indeterminate ? 'rgba(45,120,244,0.3)' : 'transparent',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'all 0.12s',
+      }}
+    >
+      {checked    && <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff' }} />}
+      {indeterminate && !checked && <div style={{ width: 6, height: 1.5, background: '#6AA3FF', borderRadius: 1 }} />}
+    </div>
+  )
+}
+
 // ── 单个素材行 ────────────────────────────────────────────────────────────────
 function AssetRow({
-  label, size, generate, onPreview, canReplace, onReplace,
+  id, label, size, generate, onPreview, canReplace, onReplace,
+  checked, onToggle,
 }: AssetDef & {
   onPreview: (url: string, label: string, gen: () => Promise<HTMLCanvasElement>) => void
+  checked?: boolean
+  onToggle?: (id: string) => void
 }) {
   const [dlStatus, setDlStatus] = useState<'idle'|'loading'|'done'>('idle')
   const fileRef = useRef<HTMLInputElement>(null)
@@ -113,13 +138,18 @@ function AssetRow({
   }
 
   const handlePreview = () => onPreview('', label, generate)
+  const isChecked = checked ?? true
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group"
-      style={{ background: 'rgba(255,255,255,0.03)' }}
-      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'}
-      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'}
+    <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl transition-all"
+      style={{ background: isChecked ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.015)', opacity: isChecked ? 1 : 0.5 }}
+      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = isChecked ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.025)'}
+      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = isChecked ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.015)'}
     >
+      {/* 复选框 */}
+      {onToggle && (
+        <RoundCheck checked={isChecked} onChange={() => onToggle(id)} />
+      )}
       <div className="flex-1 min-w-0">
         <div className="text-[12px] font-medium truncate" style={{ color: 'rgba(255,255,255,0.75)' }}>{label}</div>
         <div className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{size}</div>
@@ -155,33 +185,57 @@ function AssetRow({
   )
 }
 
-// ── 可折叠子分组 ──────────────────────────────────────────────────────────────
+// ── 可折叠子分组（含组级复选框）────────────────────────────────────────────
 function CollapsibleGroup({
   label, count, defaultOpen = true, children, extra,
+  groupIds, selectedIds, onToggle,
 }: {
   label: string; count: number; defaultOpen?: boolean
   children: React.ReactNode; extra?: React.ReactNode
+  groupIds?: string[];  selectedIds?: Set<string>
+  onToggle?: (id: string) => void
 }) {
   const [open, setOpen] = useState(defaultOpen)
+
+  // 组级选中状态
+  const allChecked  = groupIds ? groupIds.every(id => selectedIds?.has(id) ?? true)  : true
+  const someChecked = groupIds ? groupIds.some(id  => selectedIds?.has(id) ?? true)  : true
+  const groupToggle = () => {
+    if (!groupIds || !onToggle) return
+    if (allChecked) { groupIds.forEach(onToggle) }      // 全选→全不选
+    else            { groupIds.filter(id => !(selectedIds?.has(id))).forEach(onToggle) } // 补全选
+  }
+
   return (
     <div className="rounded-xl overflow-hidden mb-2"
       style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center gap-2 px-4 py-2.5 text-left transition-all hover:bg-white/[0.03]"
-        style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-      >
-        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"
-          strokeLinecap="round" style={{ color: 'rgba(255,255,255,0.25)', transform: open ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s', flexShrink: 0 }}>
-          <path d="M4 6l4 4 4-4"/>
-        </svg>
-        <span className="flex-1 text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.65)' }}>{label}</span>
-        <span className="text-[10px] px-1.5 py-0.5 rounded"
-          style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.3)' }}>
-          {count}
-        </span>
+      <div className="w-full flex items-center gap-2 px-3 py-2.5">
+        {/* 折叠箭头 */}
+        <button onClick={() => setOpen(o => !o)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}>
+          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"
+            strokeLinecap="round" style={{ color: 'rgba(255,255,255,0.25)', transform: open ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s' }}>
+            <path d="M4 6l4 4 4-4"/>
+          </svg>
+        </button>
+        {/* 组级复选框 */}
+        {groupIds && onToggle && (
+          <RoundCheck
+            checked={allChecked}
+            indeterminate={!allChecked && someChecked}
+            onChange={groupToggle}
+          />
+        )}
+        <button onClick={() => setOpen(o => !o)} className="flex-1 flex items-center gap-2 text-left"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+          <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.65)' }}>{label}</span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded"
+            style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.3)' }}>
+            {count}
+          </span>
+        </button>
         {extra}
-      </button>
+      </div>
       {open && (
         <div className="px-2 pb-2 space-y-0.5 border-t" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
           {children}
@@ -193,21 +247,36 @@ function CollapsibleGroup({
 
 // ── 老虎机专用分组 Section ────────────────────────────────────────────────────
 function SlotComponentSection({
-  label, icon, assets, onDownloadAll, onPreview, prizeCount, onAddPrize, onRemovePrize,
+  label, icon, assets, onPreview, prizeCount, onAddPrize, onRemovePrize,
+  selectedIds, onToggleId,
 }: {
   label: string; icon: React.ReactNode
-  assets: AssetDef[]; onDownloadAll: () => Promise<void>
+  assets: AssetDef[]
   onPreview: (url: string, label: string, gen: () => Promise<HTMLCanvasElement>) => void
   prizeCount: number; onAddPrize: () => void; onRemovePrize: (idx: number) => void
+  selectedIds: Set<string>; onToggleId: (id: string) => void
 }) {
   const [dlStatus, setDlStatus] = useState<'idle'|'loading'|'done'>('idle')
+
+  const sel = assets.filter(a => selectedIds.has(a.id))
+  const selCount = sel.length
+
   const handleAll = async () => {
     setDlStatus('loading')
-    try { await onDownloadAll(); setDlStatus('done') } catch { setDlStatus('idle') }
+    try {
+      await preloadFonts()
+      const zip = new JSZip()
+      for (const asset of sel) {
+        const c = await asset.generate()
+        zip.file(`${asset.label}.png`, await canvasToBlob(c))
+      }
+      downloadBlob(await zip.generateAsync({ type: 'blob' }), '老虎机_切图包.zip')
+      setDlStatus('done')
+    } catch { setDlStatus('idle') }
     setTimeout(() => setDlStatus('idle'), 3000)
   }
 
-  // 按类型分组 assets
+  // 按类型分组
   const coreAssets   = assets.filter(a => a.label.includes('主视觉') || a.label.includes('背景') || a.label.includes('空态'))
   const buttonAssets = assets.filter(a => a.label.startsWith('按钮'))
   const linkAssets   = assets.filter(a => a.label.startsWith('链接'))
@@ -216,7 +285,8 @@ function SlotComponentSection({
   const dialogPages  = assets.filter(a => a.label.startsWith('弹窗_'))
 
   const ARow = (asset: AssetDef, i: number) => (
-    <AssetRow key={i} {...asset} onPreview={onPreview} />
+    <AssetRow key={i} {...asset} onPreview={onPreview}
+      checked={selectedIds.has(asset.id)} onToggle={onToggleId} />
   )
 
   return (
@@ -228,45 +298,44 @@ function SlotComponentSection({
         <span style={{ opacity: 0.6 }}>{icon}</span>
         <span className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.85)' }}>{label}</span>
         <span className="text-[10px] ml-auto" style={{ color: 'rgba(255,255,255,0.25)' }}>
-          {assets.length} 个素材
+          已选 {selCount}/{assets.length}
         </span>
       </div>
 
       {/* 分组内容 */}
       <div className="p-3 space-y-0.5">
-        {/* 核心素材（主视觉/背景/空态，平铺） */}
+        {/* 核心素材 */}
         {coreAssets.map((a, i) => ARow(a, i))}
 
-        {/* 抽奖按钮（可折叠） */}
-        <CollapsibleGroup label="抽奖按钮" count={buttonAssets.length}>
+        {/* 抽奖按钮 */}
+        <CollapsibleGroup label="抽奖按钮" count={buttonAssets.length}
+          groupIds={buttonAssets.map(a => a.id)} selectedIds={selectedIds} onToggle={onToggleId}>
           {buttonAssets.map((a, i) => ARow(a, i))}
         </CollapsibleGroup>
 
-        {/* 链接文字（可折叠） */}
-        <CollapsibleGroup label="链接文字" count={linkAssets.length}>
+        {/* 链接文字 */}
+        <CollapsibleGroup label="链接文字" count={linkAssets.length}
+          groupIds={linkAssets.map(a => a.id)} selectedIds={selectedIds} onToggle={onToggleId}>
           {linkAssets.map((a, i) => ARow(a, i))}
         </CollapsibleGroup>
 
-        {/* 奖品图（可折叠 + 增加按钮） */}
-        <CollapsibleGroup
-          label="奖品图"
-          count={prizeAssets.length}
+        {/* 奖品图 + 增加按钮 */}
+        <CollapsibleGroup label="奖品图" count={prizeAssets.length}
+          groupIds={prizeAssets.map(a => a.id)} selectedIds={selectedIds} onToggle={onToggleId}
           extra={
-            <button
-              onClick={e => { e.stopPropagation(); onAddPrize() }}
+            <button onClick={e => { e.stopPropagation(); onAddPrize() }}
               className="flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold rounded-lg ml-1 transition-all hover:opacity-80"
               style={{ background: 'rgba(45,120,244,0.15)', color: '#6AA3FF', border: '1px solid rgba(45,120,244,0.2)', cursor: 'pointer' }}>
               <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M8 3v10M3 8h10"/></svg>
               增加奖品图
             </button>
-          }
-        >
+          }>
           {prizeAssets.map((a, i) => (
             <div key={i} className="flex items-center gap-1">
-              <div className="flex-1"><AssetRow {...a} onPreview={onPreview} /></div>
+              <div className="flex-1"><AssetRow {...a} onPreview={onPreview}
+                checked={selectedIds.has(a.id)} onToggle={onToggleId} /></div>
               {prizeCount > 1 && (
-                <button
-                  onClick={() => onRemovePrize(i)}
+                <button onClick={() => onRemovePrize(i)}
                   className="px-1.5 py-1 text-[9px] rounded transition-all hover:opacity-80 shrink-0"
                   style={{ color: 'rgba(239,68,68,0.6)', background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer' }}>
                   ✕
@@ -277,47 +346,60 @@ function SlotComponentSection({
         </CollapsibleGroup>
 
         {/* 弹窗按钮（默认折叠） */}
-        <CollapsibleGroup label="弹窗按钮" count={dialogBtns.length} defaultOpen={false}>
+        <CollapsibleGroup label="弹窗按钮" count={dialogBtns.length} defaultOpen={false}
+          groupIds={dialogBtns.map(a => a.id)} selectedIds={selectedIds} onToggle={onToggleId}>
           {dialogBtns.map((a, i) => ARow(a, i))}
         </CollapsibleGroup>
 
         {/* 弹窗结果页（默认折叠） */}
-        <CollapsibleGroup label="弹窗结果页" count={dialogPages.length} defaultOpen={false}>
+        <CollapsibleGroup label="弹窗结果页" count={dialogPages.length} defaultOpen={false}
+          groupIds={dialogPages.map(a => a.id)} selectedIds={selectedIds} onToggle={onToggleId}>
           {dialogPages.map((a, i) => ARow(a, i))}
         </CollapsibleGroup>
       </div>
 
-      {/* 下载全套 */}
+      {/* 下载已选 */}
       <div className="px-3 pb-3">
-        <button onClick={handleAll} disabled={dlStatus === 'loading'}
+        <button onClick={handleAll} disabled={dlStatus === 'loading' || selCount === 0}
           className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-xl transition-all"
           style={{
             background: dlStatus === 'done' ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)',
-            color: dlStatus === 'done' ? '#4ade80' : 'rgba(255,255,255,0.5)',
+            color: dlStatus === 'done' ? '#4ade80' : selCount === 0 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.5)',
             border: `1px solid ${dlStatus === 'done' ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.08)'}`,
-            cursor: dlStatus === 'loading' ? 'not-allowed' : 'pointer',
+            cursor: dlStatus === 'loading' || selCount === 0 ? 'not-allowed' : 'pointer',
           }}>
           <Download size={12} />
-          {dlStatus === 'loading' ? '生成中…' : dlStatus === 'done' ? '✅ 已下载全套' : '下载老虎机全套 ZIP'}
+          {dlStatus === 'loading' ? '生成中…' : dlStatus === 'done' ? '✅ 已下载' : `下载已选 ${selCount} 个 ZIP`}
         </button>
       </div>
     </div>
   )
 }
 
-// ── 组件素材分组 ──────────────────────────────────────────────────────────────
+// ── 通用组件素材分组 ──────────────────────────────────────────────────────────
 function ComponentSection({
-  label, icon, assets, onDownloadAll, onPreview,
+  label, icon, assets, onPreview, selectedIds, onToggleId,
 }: {
   label: string; icon: React.ReactNode
   assets: AssetDef[]
-  onDownloadAll: () => Promise<void>
   onPreview: (url: string, label: string, gen: () => Promise<HTMLCanvasElement>) => void
+  selectedIds: Set<string>; onToggleId: (id: string) => void
 }) {
   const [dlStatus, setDlStatus] = useState<'idle'|'loading'|'done'>('idle')
+  const sel = assets.filter(a => selectedIds.has(a.id))
+
   const handleAll = async () => {
     setDlStatus('loading')
-    try { await onDownloadAll(); setDlStatus('done') } catch { setDlStatus('idle') }
+    try {
+      await preloadFonts()
+      const zip = new JSZip()
+      for (const asset of sel) {
+        const c = await asset.generate()
+        zip.file(`${asset.label}.png`, await canvasToBlob(c))
+      }
+      downloadBlob(await zip.generateAsync({ type: 'blob' }), `${label}.zip`)
+      setDlStatus('done')
+    } catch { setDlStatus('idle') }
     setTimeout(() => setDlStatus('idle'), 3000)
   }
 
@@ -330,27 +412,28 @@ function ComponentSection({
         <span style={{ opacity: 0.6 }}>{icon}</span>
         <span className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.85)' }}>{label}</span>
         <span className="text-[10px] ml-auto" style={{ color: 'rgba(255,255,255,0.25)' }}>
-          {assets.length} 个素材
+          已选 {sel.length}/{assets.length}
         </span>
       </div>
       {/* 素材列表 */}
       <div className="p-3 space-y-1">
         {assets.map((asset, i) => (
-          <AssetRow key={i} {...asset} onPreview={onPreview} />
+          <AssetRow key={i} {...asset} onPreview={onPreview}
+            checked={selectedIds.has(asset.id)} onToggle={onToggleId} />
         ))}
       </div>
-      {/* 下载全套 */}
+      {/* 下载已选 */}
       <div className="px-3 pb-3">
-        <button onClick={handleAll} disabled={dlStatus === 'loading'}
+        <button onClick={handleAll} disabled={dlStatus === 'loading' || sel.length === 0}
           className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-xl transition-all"
           style={{
             background: dlStatus === 'done' ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)',
-            color: dlStatus === 'done' ? '#4ade80' : 'rgba(255,255,255,0.5)',
+            color: dlStatus === 'done' ? '#4ade80' : sel.length === 0 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.5)',
             border: `1px solid ${dlStatus === 'done' ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.08)'}`,
-            cursor: dlStatus === 'loading' ? 'not-allowed' : 'pointer',
+            cursor: dlStatus === 'loading' || sel.length === 0 ? 'not-allowed' : 'pointer',
           }}>
           <Download size={12} />
-          {dlStatus === 'loading' ? '生成中…' : dlStatus === 'done' ? `✅ 已下载 ${label} 全套` : `下载 ${label} 全套 ZIP`}
+          {dlStatus === 'loading' ? '生成中…' : dlStatus === 'done' ? '✅ 已下载' : `下载已选 ${sel.length} 个 ZIP`}
         </button>
       </div>
     </div>
@@ -423,74 +506,55 @@ export default function DeliveryPage() {
     setPreviewLoading(false)
   }, [showToast])
 
-  // 全部打包
+  // ── 选中状态：默认全选，存储未选中的 id（反向集合）──────────────────────────
+  const [deselected, setDeselected] = useState<Set<string>>(new Set())
+  const toggleId = useCallback((id: string) => {
+    setDeselected(prev => {
+      const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next
+    })
+  }, [])
+
+  // 每次 items/配置变化时重算 selectedIds（默认包含所有未被手动取消选中的 id）
+  const selectedIds = useMemo<Set<string>>(() => {
+    const all = new Set<string>()
+    for (const item of items) {
+      const { assetList } = buildAssets(item)
+      assetList.forEach(a => { if (!deselected.has(a.id)) all.add(a.id) })
+    }
+    return all
+  }, [items, deselected, buildAssets])
+
+  const selectedCount = selectedIds.size
+
+  // ── 全部打包（只含已选素材）────────────────────────────────────────────────
   const [allStatus, setAllStatus] = useState<'idle'|'loading'|'done'>('idle')
   const handleDownloadAll = useCallback(async () => {
     if (!items.length) { showToast('没有组件'); return }
+    if (!selectedCount)  { showToast('请先选择要下载的素材'); return }
     setAllStatus('loading'); showToast('正在生成素材…')
     try {
       await preloadFonts()
       const zip = new JSZip()
       for (const item of items) {
-        const f = zip.folder(item.label) ?? zip
-        const slot = slotCtx.config
-        const sc = { slotTintFrom: slot.slotTintFrom, slotTintTo: slot.slotTintTo,
-          slotRect7From: slot.slotRect7From, slotRect7To: slot.slotRect7To,
-          titleText: slot.titleText, titleColor: slot.titleColor, linksColor: slot.linksColor,
-          btnActiveFrom: slot.btnActiveFrom, btnActiveTo: slot.btnActiveTo,
-          btnTextColor: slot.btnTextColor, slotStyle: slot.slotStyle }
-
-        if (item.componentId === 'slot') {
-          const pcs = await Promise.all(slot.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, slot.prizeTransforms[i] as XfTransform, slot.slotStyle)))
-          const [c1, c2, c3, c4a, c4d] = await Promise.all([
-            drawSlotBannerCanvas(sc, pcs), drawSlotBgCanvas(slot as any),
-            drawEmptyStateCanvas(slot.emptyImageUrl, slot.emptyTransform as XfTransform, slot.emptyText),
-            Promise.resolve(drawButtonCanvas('立即抽奖',   slot.btnActiveFrom,   slot.btnActiveTo,   slot.btnTextColor)),
-            Promise.resolve(drawButtonCanvas('活动已结束', slot.btnDisabledFrom, slot.btnDisabledTo, slot.btnTextColor)),
-          ])
-          const c5p = drawLinkCanvas([{ text: '我的奖品' }], slot.linksColor, 186, 44, 45, 2)
-          const c5r = drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], slot.linksColor, 218, 44, 45, 2)
-          f.file('1_主视觉_750x242.png',   await canvasToBlob(c1))
-          f.file('2_背景图_750x242.png',   await canvasToBlob(c2))
-          f.file('3_空态页_854x284.png',   await canvasToBlob(c3))
-          f.file('4_按钮_立即抽奖.png',    await canvasToBlob(c4a))
-          f.file('4_按钮_活动结束.png',    await canvasToBlob(c4d))
-          f.file('5_链接_我的奖品.png',    await canvasToBlob(c5p))
-          f.file('5_链接_抽奖规则.png',    await canvasToBlob(c5r))
-          // 奖品图（动态数量）
-          for (let i = 0; i < pcs.length; i++)
-            f.file(`6_奖品图${i+1}_124x124.png`, await canvasToBlob(pcs[i]))
-          // 弹窗按钮（全部7种）
-          const fb = zip.folder(`${item.label}/7_弹窗按钮`) ?? zip
-          for (const text of SLOT_DIALOG_BUTTONS)
-            fb.file(`弹窗按钮_${text}.png`, await canvasToBlob(drawDialogButtonCanvas(text, slot.btnActiveFrom, slot.btnActiveTo, undefined, slot.btnTextColor)))
-          // 弹窗结果页（全部6种）
-          const fr = zip.folder(`${item.label}/8_弹窗结果页`) ?? zip
-          for (const dr of SLOT_DIALOG_RESULTS)
-            fr.file(`${dr.label}.png`, await canvasToBlob(drawDialogResultCanvas(dr.state, slot.slotTintFrom, slot.slotTintTo, slot.titleColor)))
-        } else if (item.componentId === 'coupon') {
-          const [bg, w, b] = await Promise.all([drawCouponBg(couponCtx.config), drawCouponWaistband(couponCtx.config), drawCouponButton(couponCtx.config)])
-          f.file('背景图.png', await canvasToBlob(bg)); f.file('腰封.png', await canvasToBlob(w)); f.file('按钮.png', await canvasToBlob(b))
-        } else if (item.componentId === 'h-tab') {
-          for (const it of hTabCtx.items) {
-            const c = await drawHTabCanvas({ colorKey: hTabCtx.config.colorKey, tabs: it.tabs, activeIndex: it.activeIndex })
-            f.file(`${it.tabs.join('-')}.png`, await canvasToBlob(c))
-          }
-        } else if (item.componentId === 'floor') {
-          for (const fl of floorCtx.floors) {
-            const c = await drawFloorCanvas({ ...floorCtx.config, text: fl.text })
-            f.file(`${fl.text || '楼层条'}.png`, await canvasToBlob(c))
-          }
+        const { assetList } = buildAssets(item)
+        const sel = assetList.filter(a => selectedIds.has(a.id))
+        if (!sel.length) continue
+        const folder = zip.folder(item.label) ?? zip
+        for (const asset of sel) {
+          const c = await asset.generate()
+          folder.file(`${asset.label}.png`, await canvasToBlob(c))
         }
       }
       downloadBlob(await zip.generateAsync({ type: 'blob' }), '会场素材全包.zip')
-      setAllStatus('done'); showToast('✅ 全部素材已打包！')
+      setAllStatus('done'); showToast(`✅ 已打包 ${selectedCount} 个素材！`)
     } catch { showToast('❌ 打包失败') }
     setTimeout(() => setAllStatus('idle'), 3000)
-  }, [items, slotCtx, couponCtx, hTabCtx, floorCtx, showToast])
+  }, [items, selectedIds, selectedCount, buildAssets, showToast])
 
-  // 为每个 VenueItem 构建素材列表
+  // 为每个 VenueItem 构建素材列表（id = `${item.id}_${label}` 用于选中跟踪）
   const buildAssets = useCallback((item: typeof items[0]) => {
+    const mk = (label: string) => `${item.id}_${label}`  // 生成唯一 id
+
     const slot = slotCtx.config
     const sc = { slotTintFrom: slot.slotTintFrom, slotTintTo: slot.slotTintTo,
       slotRect7From: slot.slotRect7From, slotRect7To: slot.slotRect7To,
@@ -504,15 +568,16 @@ export default function DeliveryPage() {
         return drawSlotBannerCanvas(sc, pcs)
       }
       const assetList: AssetDef[] = [
-        { label: '主视觉（未抽奖状态）', size: '750 × 242 px', generate: genBanner },
-        { label: '老虎机背景图', size: '750 × 242 px', generate: () => drawSlotBgCanvas(slot as any) },
-        { label: '空态页', size: '854 × 284 px', generate: () => drawEmptyStateCanvas(slot.emptyImageUrl, slot.emptyTransform as XfTransform, slot.emptyText) },
-        { label: '按钮 · 立即抽奖', size: '194 × 80 px', generate: () => Promise.resolve(drawButtonCanvas('立即抽奖', slot.btnActiveFrom, slot.btnActiveTo, slot.btnTextColor)) },
-        { label: '按钮 · 活动结束', size: '194 × 80 px', generate: () => Promise.resolve(drawButtonCanvas('活动已结束', slot.btnDisabledFrom, slot.btnDisabledTo, slot.btnTextColor)) },
-        { label: '链接 · 我的奖品', size: '186 × 44 px', generate: () => Promise.resolve(drawLinkCanvas([{ text: '我的奖品' }], slot.linksColor, 186, 44, 45, 2)) },
-        { label: '链接 · 抽奖规则', size: '218 × 44 px', generate: () => Promise.resolve(drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], slot.linksColor, 218, 44, 45, 2)) },
+        { id: mk('主视觉（未抽奖状态）'), label: '主视觉（未抽奖状态）', size: '750 × 242 px', generate: genBanner },
+        { id: mk('老虎机背景图'), label: '老虎机背景图', size: '750 × 242 px', generate: () => drawSlotBgCanvas(slot as any) },
+        { id: mk('空态页'), label: '空态页', size: '854 × 284 px', generate: () => drawEmptyStateCanvas(slot.emptyImageUrl, slot.emptyTransform as XfTransform, slot.emptyText) },
+        { id: mk('按钮 · 立即抽奖'), label: '按钮 · 立即抽奖', size: '194 × 80 px', generate: () => Promise.resolve(drawButtonCanvas('立即抽奖', slot.btnActiveFrom, slot.btnActiveTo, slot.btnTextColor)) },
+        { id: mk('按钮 · 活动结束'), label: '按钮 · 活动结束', size: '194 × 80 px', generate: () => Promise.resolve(drawButtonCanvas('活动已结束', slot.btnDisabledFrom, slot.btnDisabledTo, slot.btnTextColor)) },
+        { id: mk('链接 · 我的奖品'), label: '链接 · 我的奖品', size: '186 × 44 px', generate: () => Promise.resolve(drawLinkCanvas([{ text: '我的奖品' }], slot.linksColor, 186, 44, 45, 2)) },
+        { id: mk('链接 · 抽奖规则'), label: '链接 · 抽奖规则', size: '218 × 44 px', generate: () => Promise.resolve(drawLinkCanvas([{ text: '|', opacity: 0.6 }, { text: '抽奖规则' }], slot.linksColor, 218, 44, 45, 2)) },
         // 奖品图（动态数量）
         ...slot.prizes.map((p, idx): AssetDef => ({
+          id: mk(`奖品图 ${idx+1}（${p.tag || '商品图'}）`),
           label: `奖品图 ${idx+1}（${p.tag || '商品图'}）`, size: '124 × 124 px',
           generate: () => drawPrizeCanvas(p as PrizeInfo, slot.prizeTransforms[idx] as XfTransform, slot.slotStyle),
           canReplace: p.type === 'product-tag' || p.type === 'product-dashed',
@@ -525,11 +590,13 @@ export default function DeliveryPage() {
         })),
         // 弹窗按钮（全部7种）
         ...SLOT_DIALOG_BUTTONS.map((text): AssetDef => ({
+          id: mk(`弹窗按钮 · ${text}`),
           label: `弹窗按钮 · ${text}`, size: '276 × 80 px',
           generate: () => Promise.resolve(drawDialogButtonCanvas(text, slot.btnActiveFrom, slot.btnActiveTo, undefined, slot.btnTextColor)),
         })),
         // 弹窗结果页（全部6种）
         ...SLOT_DIALOG_RESULTS.map((dr): AssetDef => ({
+          id: mk(dr.label),
           label: dr.label, size: '750 × 612 px',
           generate: () => Promise.resolve(drawDialogResultCanvas(dr.state, slot.slotTintFrom, slot.slotTintTo, slot.titleColor)),
         })),
@@ -569,9 +636,9 @@ export default function DeliveryPage() {
     if (item.componentId === 'coupon') {
       const cfg = couponCtx.config
       const assetList: AssetDef[] = [
-        { label: '券包背景', size: '702 × 352 px', generate: () => drawCouponBg(cfg) },
-        { label: '腰封图', size: '702 × 168 px', generate: () => drawCouponWaistband(cfg) },
-        { label: '领取按钮', size: '480 × 80 px', generate: () => drawCouponButton(cfg) },
+        { id: mk('券包背景'), label: '券包背景', size: '702 × 352 px', generate: () => drawCouponBg(cfg) },
+        { id: mk('腰封图'),   label: '腰封图',   size: '702 × 168 px', generate: () => drawCouponWaistband(cfg) },
+        { id: mk('领取按钮'), label: '领取按钮', size: '480 × 80 px',  generate: () => drawCouponButton(cfg) },
       ]
       const downloadAll = async () => {
         await preloadFonts()
@@ -584,6 +651,7 @@ export default function DeliveryPage() {
 
     if (item.componentId === 'h-tab') {
       const assetList: AssetDef[] = hTabCtx.items.map(it => ({
+        id: mk(`横滑 Tab · ${it.tabs.join(' / ')}`),
         label: `横滑 Tab · ${it.tabs.join(' / ')}`,
         size: '750 × 88 px',
         generate: () => drawHTabCanvas({ colorKey: hTabCtx.config.colorKey, tabs: it.tabs, activeIndex: it.activeIndex }),
@@ -599,6 +667,7 @@ export default function DeliveryPage() {
 
     if (item.componentId === 'floor') {
       const assetList: AssetDef[] = floorCtx.floors.map(f => ({
+        id: mk(`楼层条 · ${f.text || '楼层'}`),
         label: `楼层条 · ${f.text || '楼层'}`,
         size: '750 × 60 px',
         generate: () => drawFloorCanvas({ ...floorCtx.config, text: f.text }),
@@ -640,15 +709,22 @@ export default function DeliveryPage() {
           ✅ 素材已就绪
         </span>
         <div style={{ flex: 1 }} />
-        {/* 一键打包 */}
-        <button onClick={handleDownloadAll} disabled={allStatus === 'loading'}
+        {/* 选中计数 */}
+        {selectedCount > 0 && (
+          <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            已选 {selectedCount} 个素材
+          </span>
+        )}
+        {/* 一键打包（只含已选）*/}
+        <button onClick={handleDownloadAll} disabled={allStatus === 'loading' || !selectedCount}
           className="flex items-center gap-2 px-5 py-2 text-sm font-bold rounded-xl text-white transition-all"
           style={{
             background: allStatus === 'done' ? 'rgba(34,197,94,0.8)' : 'linear-gradient(90deg,#FF3060,#FF6030)',
-            cursor: allStatus === 'loading' ? 'not-allowed' : 'pointer', opacity: allStatus === 'loading' ? 0.8 : 1,
+            cursor: allStatus === 'loading' || !selectedCount ? 'not-allowed' : 'pointer',
+            opacity: allStatus === 'loading' || !selectedCount ? 0.6 : 1,
           }}>
           <Package size={14} />
-          {allStatus === 'loading' ? '生成中…' : allStatus === 'done' ? '✅ 全部已下载' : '一键全部打包下载'}
+          {allStatus === 'loading' ? '生成中…' : allStatus === 'done' ? '✅ 已下载' : `打包已选 (${selectedCount})`}
         </button>
       </div>
 
@@ -672,7 +748,7 @@ export default function DeliveryPage() {
               </button>
             </div>
           ) : items.map(item => {
-            const { assetList, downloadAll } = buildAssets(item)
+            const { assetList } = buildAssets(item)
             if (item.componentId === 'slot') {
               return (
                 <SlotComponentSection
@@ -680,11 +756,12 @@ export default function DeliveryPage() {
                   label={item.label}
                   icon={COMP_ICON[item.componentId] ?? <Package size={14} />}
                   assets={assetList as AssetDef[]}
-                  onDownloadAll={downloadAll}
                   onPreview={handlePreview}
                   prizeCount={slotCtx.config.prizes.length}
                   onAddPrize={slotCtx.addPrize}
                   onRemovePrize={idx => slotCtx.removePrize(idx)}
+                  selectedIds={selectedIds}
+                  onToggleId={toggleId}
                 />
               )
             }
@@ -694,8 +771,9 @@ export default function DeliveryPage() {
                 label={item.label}
                 icon={COMP_ICON[item.componentId] ?? <Package size={14} />}
                 assets={assetList as AssetDef[]}
-                onDownloadAll={downloadAll}
                 onPreview={handlePreview}
+                selectedIds={selectedIds}
+                onToggleId={toggleId}
               />
             )
           })}

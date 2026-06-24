@@ -13,40 +13,17 @@
  */
 import { Suspense, lazy, useState } from 'react'
 import { useApp } from '@/contexts/AppContext'
-import { findComponent } from '@/types'
 import type { ComponentId } from '@/types'
 
 import VenueLayerPanel   from '@/components/layout/VenueLayerPanel'
 import VenueCanvasCenter from '@/components/layout/VenueCanvasCenter'
 import VenueDynamicPanel from '@/components/layout/VenueDynamicPanel'
 
-const SlotStudio = lazy(() => import('./SlotStudio'))
-const FloorPage  = lazy(() => import('./FloorPage'))
-const HTabPage   = lazy(() => import('./HTabPage'))
-const CouponPage = lazy(() => import('./CouponPage'))
+const SlotStudio      = lazy(() => import('./SlotStudio'))
+const ComponentStudio = lazy(() => import('./ComponentStudio'))
 
 function Loader() {
   return <div className="flex items-center justify-center h-40 text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>加载中…</div>
-}
-
-// ── 高级设置模式左侧收缩条 ────────────────────────────────────────────────────
-function AdvancedStrip({ label, onBack }: { label: string; onBack: () => void }) {
-  return (
-    <div className="flex flex-col items-center py-3 gap-4 h-full shrink-0 border-r"
-      style={{ width: 44, background: '#0C111B', borderColor: 'rgba(255,255,255,0.07)' }}>
-      <button onClick={onBack} title="返回画布"
-        className="p-2 rounded-lg transition-opacity hover:opacity-70"
-        style={{ color: 'rgba(255,255,255,0.45)', background: 'none', border: 'none', cursor: 'pointer' }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-          <path d="M19 12H5M12 5l-7 7 7 7"/>
-        </svg>
-      </button>
-      {/* 竖排组件名 */}
-      <div style={{ writingMode: 'vertical-rl', fontSize: 10, color: 'rgba(255,255,255,0.2)', letterSpacing: 2 }}>
-        {label}
-      </div>
-    </div>
-  )
 }
 
 // ── 主组件 ────────────────────────────────────────────────────────────────────
@@ -92,35 +69,12 @@ export default function VenuePage() {
     )
   }
 
-  // ── 其他组件：老式高级设置（FloorPage / HTabPage / CouponPage）────────────
+  // ── 其他组件：统一 ComponentStudio（与 SlotStudio 风格一致）────────────────
   if (advancedComp) {
-    const label = findComponent(advancedComp)?.name ?? advancedComp
     return (
-      <div className="flex h-screen" style={{ background: 'var(--bg)' }}>
-        <AdvancedStrip label={label} onBack={exitAdvanced} />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="h-11 flex items-center px-4 border-b shrink-0 gap-3"
-            style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
-            <button onClick={exitAdvanced}
-              className="flex items-center gap-1.5 text-xs transition-opacity hover:opacity-70"
-              style={{ color: 'rgba(255,255,255,0.45)', background: 'none', border: 'none', cursor: 'pointer' }}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                <path d="M19 12H5M12 5l-7 7 7 7"/>
-              </svg>
-              返回画布
-            </button>
-            <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)' }} />
-            <span className="text-sm font-semibold" style={{ color: 'var(--text-1)' }}>{label}</span>
-          </div>
-          <main className="flex-1 overflow-y-auto">
-            <Suspense fallback={<Loader />}>
-              {advancedComp === 'floor'  && <FloorPage />}
-              {advancedComp === 'h-tab'  && <HTabPage />}
-              {advancedComp === 'coupon' && <CouponPage />}
-            </Suspense>
-          </main>
-        </div>
-      </div>
+      <Suspense fallback={<Loader />}>
+        <ComponentStudio compId={advancedComp} onBack={exitAdvanced} />
+      </Suspense>
     )
   }
 
