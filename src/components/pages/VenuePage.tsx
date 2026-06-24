@@ -12,15 +12,13 @@
  *   包含：弹窗、导出、Tab文案、奖品图等深度配置
  */
 import { Suspense, lazy, useState } from 'react'
-import { useApp }   from '@/contexts/AppContext'
-import { useVenue } from '@/contexts/VenueContext'
 import { findComponent } from '@/types'
 import type { ComponentId } from '@/types'
 
 import VenueLayerPanel   from '@/components/layout/VenueLayerPanel'
 import VenueCanvasCenter from '@/components/layout/VenueCanvasCenter'
 import VenueDynamicPanel from '@/components/layout/VenueDynamicPanel'
-import { drawVenueStitch } from '@/utils/venueExport'
+import DeliveryModal from '@/components/ui/DeliveryModal'
 import {
   SlotColorConfig, SlotTextConfig, SlotPrizeConfig,
   SlotDialogBtnConfig, SlotDialogBgConfig, InlineConfigSection,
@@ -124,8 +122,6 @@ function AdvancedStrip({ label, onBack }: { label: string; onBack: () => void })
 
 // ── 主组件 ────────────────────────────────────────────────────────────────────
 export default function VenuePage() {
-  const { showToast }    = useApp()
-  const { items, headerUrl, headerSize, bgColor } = useVenue()
 
   // 画布模式：选中图层
   const [selectedLayer, setSelectedLayer] = useState<'header' | string | null>(null)
@@ -137,6 +133,8 @@ export default function VenuePage() {
   const [advancedComp,  setAdvancedComp]  = useState<ComponentId | null>(null)
   // 高级设置模式：当前选中的配置热区
   const [advZone,       setAdvZone]       = useState('')
+  // 交付中心弹窗
+  const [showDelivery,  setShowDelivery]  = useState(false)
 
   const handleSelectLayer = (layer: 'header' | string | null) => {
     setPendingComp(null)
@@ -159,20 +157,6 @@ export default function VenuePage() {
   }
 
   const exitAdvanced = () => setAdvancedComp(null)
-
-  // 导出会场拼图
-  const handleExportVenue = async () => {
-    if (items.length === 0 && !headerUrl) {
-      showToast('画布上还没有组件，先添加后再导出')
-      return
-    }
-    try {
-      await drawVenueStitch({ items, headerUrl, headerSize, bgColor })
-      showToast('✅ 会场拼图已下载')
-    } catch {
-      showToast('导出失败，请重试')
-    }
-  }
 
   // ── 高级设置模式 ────────────────────────────────────────────────────────────
   if (advancedComp) {
@@ -236,20 +220,23 @@ export default function VenuePage() {
         </span>
         <div style={{ flex: 1 }} />
 
-        {/* 导出会场拼图 */}
+        {/* 完成 · 下载素材（主 CTA） */}
         <button
-          onClick={handleExportVenue}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all hover:opacity-85"
-          style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.1)' }}
+          onClick={() => setShowDelivery(true)}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-xl text-white transition-all hover:opacity-90"
+          style={{ background: 'linear-gradient(90deg, #FF3060, #FF6030)' }}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="7 10 12 15 17 10"/>
             <line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
-          导出会场拼图
+          完成 · 下载素材
         </button>
       </div>
+
+      {/* 交付中心弹窗 */}
+      {showDelivery && <DeliveryModal onClose={() => setShowDelivery(false)} />}
 
       {/* 三列主体 */}
       <div className="flex flex-1 overflow-hidden">
