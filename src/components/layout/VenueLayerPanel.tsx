@@ -150,17 +150,8 @@ export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: P
                   key={id}
                   icon={compIcon(id)}
                   label={comp?.name ?? id}
-                  sublabel={comp?.desc || '点击配置并加入画布'}
+                  sublabel={added ? '点击查看预览 / 再次加入' : '点击查看组件介绍'}
                   badge={added ? '已加入' : undefined}
-                  action={
-                    <div style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      width: 20, height: 20, borderRadius: 5,
-                      background: 'rgba(45,120,244,0.15)', color: '#6AA3FF',
-                    }}>
-                      <Icons.add />
-                    </div>
-                  }
                   onClick={() => onAddNew(id)}
                 />
               )

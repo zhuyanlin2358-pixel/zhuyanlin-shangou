@@ -36,7 +36,6 @@ import {
 
 const FloorPanel  = lazy(() => import('@/components/panels/FloorPanel'))
 const CouponPanel = lazy(() => import('@/components/panels/CouponPanel'))
-const SlotPanel   = lazy(() => import('@/components/panels/SlotPanel'))
 
 function PLoader() {
   return <div className="flex items-center justify-center h-24 text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>加载中…</div>
@@ -376,6 +375,84 @@ function SlotRefreshButton({ item }: { item: VenueItem }) {
   )
 }
 
+// ── 组件预览卡（组件工坊点击后右侧显示，替代配置） ────────────────────────────
+const COMP_PREVIEW_INFO: Record<string, { desc: string; items: string[]; color: string }> = {
+  slot: {
+    desc: '大促活动核心玩法组件，用户点击转盘参与抽奖，增强用户互动和页面趣味性。',
+    items: ['主视觉 750×242', '弹窗结果页 × 6种', '弹窗按钮 × 7种', '奖品图 × 3张'],
+    color: '#FF3060',
+  },
+  floor: {
+    desc: '楼层分隔条，用于区分页面中不同内容区域，提升会场结构感。',
+    items: ['750 × 60 px', '3款风格预设', '自定义配色和装饰'],
+    color: '#F59E0B',
+  },
+  'h-tab': {
+    desc: '横向滑动标签组件，帮助用户快速切换不同商品或活动分类。',
+    items: ['2 / 3 / 4 个 Tab', '7种配色方案', '每个 Tab 单独导出'],
+    color: '#2D78F4',
+  },
+  coupon: {
+    desc: '一键领取优惠券红包，引导用户领券参与活动，提升转化率。',
+    items: ['券包背景 702×352', '腰封图 702×168', '按钮 480×80'],
+    color: '#10B981',
+  },
+}
+
+function ComponentPreviewCard({ compId }: { compId: ComponentId }) {
+  const info = COMP_PREVIEW_INFO[compId]
+  if (!info) return null
+  return (
+    <div className="flex flex-col gap-4 p-4">
+      {/* 组件图标区 */}
+      <div style={{
+        height: 100, borderRadius: 12,
+        background: `linear-gradient(135deg, ${info.color}20, ${info.color}08)`,
+        border: `1px solid ${info.color}25`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <div style={{
+          width: 48, height: 48, borderRadius: 14,
+          background: `${info.color}20`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+            stroke={info.color} strokeWidth={1.8} strokeLinecap="round">
+            {compId === 'slot'   && <><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 4v16M16 4v16"/></>}
+            {compId === 'floor'  && <><path d="M4 6h16M4 12h16M4 18h16"/></>}
+            {compId === 'h-tab'  && <><rect x="2" y="5" width="6" height="14" rx="1.5"/><rect x="10" y="5" width="6" height="14" rx="1.5"/></>}
+            {compId === 'coupon' && <><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/></>}
+          </svg>
+        </div>
+      </div>
+
+      {/* 描述 */}
+      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.65, margin: 0 }}>
+        {info.desc}
+      </p>
+
+      {/* 导出素材清单 */}
+      <div>
+        <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+          包含素材
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+          {info.items.map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'rgba(255,255,255,0.55)' }}>
+              <div style={{ width: 4, height: 4, borderRadius: '50%', background: info.color, opacity: 0.7, flexShrink: 0 }} />
+              {item}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', lineHeight: 1.5 }}>
+        点下方「加入会场」后，可在左侧图层列表选中该组件进行配置。
+      </div>
+    </div>
+  )
+}
+
 // ── HTab 内联编辑（颜色 + Tab数量 + Tab文案）─────────────────────────────────
 function HTabInlinePanel({ sourceId }: { sourceId?: string }) {
   const { config, setColor, items, updateItem } = useHTab()
@@ -493,7 +570,7 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
   }
   // 面板标题
   const panelTitle = pendingComp
-    ? `配置：${COMP_LABEL[pendingComp] ?? pendingComp}`
+    ? (COMP_LABEL[pendingComp] ?? pendingComp)
     : !selectedLayer ? '页面设置'
     : selectedLayer === 'header' ? '活动头图'
     : (selectedItem?.componentId === 'slot' && activeZone)
@@ -538,19 +615,9 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
 
       {/* 内容区 */}
       <div className="flex-1 overflow-y-auto">
-        {/* pending 配置模式 */}
+        {/* pending 模式：只显示组件简介+预览，不显示配置 */}
         {pendingComp && (
-          <>
-            <div className="px-4 pt-3 pb-2 text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-              配置好后点下方「加入会场」· 「高级设置」含弹窗/导出
-            </div>
-            <Suspense fallback={<PLoader />}>
-              {pendingComp === 'floor'  && <FloorPanel />}
-              {pendingComp === 'h-tab'  && <HTabInlinePanel />}
-              {pendingComp === 'coupon' && <CouponPanel />}
-              {pendingComp === 'slot'   && <SlotPanel />}
-            </Suspense>
-          </>
+          <ComponentPreviewCard compId={pendingComp} />
         )}
 
         {/* 已在画布的组件配置 */}
