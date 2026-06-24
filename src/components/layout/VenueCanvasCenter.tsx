@@ -175,54 +175,21 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
             transition: 'width 0.2s ease, height 0.2s ease',
           }}
         >
-          {/* ── iOS 状态栏 ── */}
-          <div style={{
-            height: Math.round(48 * zoomPct / 100), flexShrink: 0,
-            display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
-            padding: `0 ${Math.round(18 * zoomPct / 100)}px ${Math.round(8 * zoomPct / 100)}px`,
-            background: bgColor,
-          }}>
-            <span style={{ fontSize: Math.round(15 * zoomPct / 100), fontWeight: 700, color: barColor, opacity: barAlpha }}>
-              9:41
-            </span>
-            <BarIcons color={barColor} />
-          </div>
-
-          {/* ── 可选导航栏（标题栏）── */}
-          {showNavBar && (
-            <div style={{
-              height: Math.round(44 * zoomPct / 100), flexShrink: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: `0 ${Math.round(16 * zoomPct / 100)}px`,
-              background: bgColor,
-              borderBottom: `1px solid ${isLightBg ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)'}`,
-            }}>
-              {/* 返回按钮 */}
-              <svg width={Math.round(12 * zoomPct / 100)} height={Math.round(22 * zoomPct / 100)} viewBox="0 0 12 22" fill="none" stroke={barColor} strokeWidth="2" strokeLinecap="round">
-                <path d="M10 2L2 11l8 9"/>
-              </svg>
-              {/* 分享按钮 */}
-              <svg width={Math.round(22 * zoomPct / 100)} height={Math.round(22 * zoomPct / 100)} viewBox="0 0 24 24" fill="none" stroke={barColor} strokeWidth="1.8" strokeLinecap="round">
-                <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
-                <polyline points="16 6 12 2 8 6"/>
-                <line x1="12" y1="2" x2="12" y2="15"/>
-              </svg>
-            </div>
-          )}
-
-          {/* ── 可滚动内容区 ── */}
+          {/* ── 可滚动内容区（头图 + 组件）── */}
           <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
 
-          {/* 头图区域 */}
+          {/* 头图区域（状态栏/导航栏叠加其上）*/}
           <div
             onClick={() => onSelectLayer('header')}
-            className="relative cursor-pointer"
+            className="cursor-pointer"
             style={{
+              position: 'relative',
               outline: selectedLayer === 'header' ? '2.5px solid #2D78F4' : '2.5px solid transparent',
               outlineOffset: -1,
               transition: 'outline-color 0.15s',
             }}
           >
+            {/* 头图背景 */}
             {headerUrl ? (
               <img
                 src={headerUrl}
@@ -232,18 +199,56 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
             ) : (
               <div
                 style={{
-                  width: '100%',
-                  height: Math.max(headerH, 48),
-                  background: 'rgba(0,0,0,0.06)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 4,
+                  width: '100%', height: Math.max(headerH, 80),
+                  background: bgColor,
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center', gap: 4,
                 }}
               >
-                <ImageIcon size={16} style={{ color: 'rgba(0,0,0,0.25)' }} />
-                <span style={{ fontSize: 9, color: 'rgba(0,0,0,0.25)' }}>点击选中头图区域</span>
+                <ImageIcon size={16} style={{ color: isLightBg ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)' }} />
+                <span style={{ fontSize: Math.round(9 * zoomPct / 100), color: isLightBg ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)' }}>
+                  点击选中头图区域
+                </span>
+              </div>
+            )}
+
+            {/* ── 状态栏 overlay（叠在头图上，参考 Image #105: 124/750 = 62px@375）── */}
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0,
+              height: Math.round(62 * zoomPct / 100),
+              display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
+              padding: `0 ${Math.round(18 * zoomPct / 100)}px ${Math.round(10 * zoomPct / 100)}px`,
+              pointerEvents: 'none',
+            }}>
+              <span style={{ fontSize: Math.round(15 * zoomPct / 100), fontWeight: 700, color: barColor, opacity: barAlpha }}>
+                9:41
+              </span>
+              <BarIcons color={barColor} />
+            </div>
+
+            {/* ── 导航栏 overlay（叠在头图上，开关控制）── */}
+            {showNavBar && (
+              <div style={{
+                position: 'absolute',
+                top: Math.round(62 * zoomPct / 100),   // 紧跟状态栏
+                left: 0, right: 0,
+                height: Math.round(44 * zoomPct / 100),
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: `0 ${Math.round(16 * zoomPct / 100)}px`,
+                pointerEvents: 'none',
+              }}>
+                {/* 返回箭头 */}
+                <svg width={Math.round(14 * zoomPct / 100)} height={Math.round(24 * zoomPct / 100)}
+                  viewBox="0 0 14 24" fill="none" stroke={barColor} strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M11 2L3 12l8 10"/>
+                </svg>
+                {/* 分享图标 */}
+                <svg width={Math.round(22 * zoomPct / 100)} height={Math.round(22 * zoomPct / 100)}
+                  viewBox="0 0 24 24" fill="none" stroke={barColor} strokeWidth="1.8" strokeLinecap="round">
+                  <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+                  <polyline points="16 6 12 2 8 6"/>
+                  <line x1="12" y1="2" x2="12" y2="15"/>
+                </svg>
               </div>
             )}
 
@@ -251,8 +256,8 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
             {selectedLayer === 'header' && (
               <div
                 style={{
-                  position: 'absolute', top: 4, left: 4,
-                  fontSize: 9, fontWeight: 600, color: '#fff',
+                  position: 'absolute', bottom: 4, left: 4,
+                  fontSize: Math.round(9 * zoomPct / 100), fontWeight: 600, color: '#fff',
                   background: '#2D78F4', borderRadius: 3, padding: '1px 5px',
                   pointerEvents: 'none',
                 }}
