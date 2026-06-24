@@ -329,7 +329,8 @@ export function PrizeBlock({ idx, prize, onChange, onImgChange, onDelete }: {
         )}
       </div>
 
-      {!showThanks && (
+      {/* 顶部标签：产品图（product-dashed）不带标签，其余类型显示 */}
+      {!showThanks && prize.type !== 'product-dashed' && (
         <FieldRow label="顶部标签">
           <PanelInput value={prize.tag} onChange={e => onChange({ tag: e.target.value })} placeholder="如：无门槛优惠券" />
         </FieldRow>

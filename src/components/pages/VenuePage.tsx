@@ -90,14 +90,14 @@ export default function VenuePage() {
   return (
     <div className="flex flex-col h-screen" style={{ background: 'var(--sl-bg)' }}>
 
-      {/* ── 统一顶栏（左220px对齐侧边栏 + 右侧控件区）── */}
+      {/* ── 统一顶栏（Figma风格：左固定 + 中绝对居中 + 右固定）── */}
       <div className="flex items-center shrink-0 border-b"
-        style={{ height: 48, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)', padding: 0, gap: 0 }}>
+        style={{ position: 'relative', height: 48, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)', padding: 0, gap: 0 }}>
 
-        {/* 左段：220px，与侧边栏等宽，包含导航 */}
+        {/* 左段：220px，与侧边栏等宽，← 首页 + 页面结构 */}
         <div style={{
           width: 220, flexShrink: 0, height: '100%',
-          display: 'flex', alignItems: 'center', gap: 0,
+          display: 'flex', alignItems: 'center',
           padding: '0 10px',
           borderRight: '1px solid var(--sl-border)',
         }}>
@@ -106,7 +106,7 @@ export default function VenuePage() {
               display: 'flex', alignItems: 'center', gap: 4,
               fontSize: 12, color: 'rgba(235,233,252,0.38)',
               background: 'none', border: 'none', cursor: 'pointer',
-              padding: '0 6px 0 0', transition: 'color 0.12s',
+              padding: '0 6px 0 0', transition: 'color 0.12s', flexShrink: 0,
             }}
             onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'rgba(235,233,252,0.65)'}
             onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'rgba(235,233,252,0.38)'}
@@ -117,20 +117,34 @@ export default function VenuePage() {
             首页
           </button>
           <div style={{ width: 1, height: 12, background: 'rgba(235,233,252,0.1)', margin: '0 8px', flexShrink: 0 }} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sl-text-1)', flex: 1, minWidth: 0,
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(235,233,252,0.4)', letterSpacing: '0.05em' }}>
+            页面结构
+          </span>
+        </div>
+
+        {/* 中央标题：绝对居中，不影响两端布局 */}
+        <div style={{
+          position: 'absolute', left: '50%', top: '50%',
+          transform: 'translate(-50%, -50%)',
+          display: 'flex', alignItems: 'center', gap: 8,
+          pointerEvents: 'none',
+        }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--sl-text-1)', whiteSpace: 'nowrap' }}>
             会场搭建
           </span>
           {items.length > 0 && (
-            <span style={{ fontSize: 10, color: 'rgba(235,233,252,0.3)', flexShrink: 0 }}>{items.length}</span>
+            <span style={{
+              fontSize: 10, fontWeight: 600, color: 'rgba(235,233,252,0.45)',
+              background: 'rgba(235,233,252,0.08)', borderRadius: 4,
+              padding: '1px 6px',
+            }}>
+              {items.length} 个组件
+            </span>
           )}
         </div>
 
-        {/* 右段：弹性，缩放 + CTA */}
-        <div style={{ flex: 1 }} />
-
-        {/* 画布缩放控制（紧凑型，不超过 150px 宽）*/}
-        <div className="flex items-center" style={{ gap: 2, marginRight: 12 }}>
+        {/* 中段：flex-1，缩放控制居中（对应画布区域）*/}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
           {ZOOM_OPTS.map(z => (
             <button key={z} onClick={() => setZoomPct(z)}
               style={{
@@ -146,22 +160,26 @@ export default function VenuePage() {
           ))}
         </div>
 
-        {/* 分隔线 */}
-        <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)', margin: '0 14px 0 2px', flexShrink: 0 }} />
-
-        {/* 完成 · 下载素材（主 CTA）*/}
-        <button
-          onClick={goDelivery}
-          className="flex items-center gap-2 text-[13px] font-bold rounded-xl transition-all hover:opacity-90 shrink-0"
-          style={{ background: 'var(--sl-primary-grad)', color: 'var(--sl-cta-text)', padding: '7px 16px', marginRight: 16, border: 'none', cursor: 'pointer' }}
-        >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          完成 · 下载素材
-        </button>
+        {/* 右段：280px，与右侧配置面板等宽，包含 CTA */}
+        <div style={{
+          width: 280, flexShrink: 0, height: '100%',
+          display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+          padding: '0 16px',
+          borderLeft: '1px solid var(--sl-border)',
+        }}>
+          <button
+            onClick={goDelivery}
+            className="flex items-center gap-2 text-[13px] font-bold rounded-xl transition-all hover:opacity-90"
+            style={{ background: 'var(--sl-primary-grad)', color: 'var(--sl-cta-text)', padding: '7px 16px', border: 'none', cursor: 'pointer' }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            完成 · 下载素材
+          </button>
+        </div>
       </div>
 
       {/* 三列主体 */}

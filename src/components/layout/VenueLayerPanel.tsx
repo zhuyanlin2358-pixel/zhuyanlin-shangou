@@ -99,9 +99,8 @@ export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: P
     >
       <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '10px 6px 8px' }}>
 
-        {/* ── 页面结构 ── */}
-        <TreeSection label="页面结构">
-          <FileTree>
+        {/* 页面结构（标签已移至顶栏左段）*/}
+        <FileTree>
             {/* 活动头图 */}
             <FileItem
               icon={<Icons.header />}
@@ -141,8 +140,7 @@ export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: P
                 添加组件后在此显示
               </div>
             )}
-          </FileTree>
-        </TreeSection>
+        </FileTree>
 
         {/* 分隔线 */}
         <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '0 4px 10px' }} />
