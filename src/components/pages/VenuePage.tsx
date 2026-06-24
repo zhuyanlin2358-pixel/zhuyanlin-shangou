@@ -20,7 +20,6 @@ import type { ComponentId } from '@/types'
 import VenueLayerPanel   from '@/components/layout/VenueLayerPanel'
 import VenueCanvasCenter from '@/components/layout/VenueCanvasCenter'
 import VenueDynamicPanel from '@/components/layout/VenueDynamicPanel'
-import VenuePhonePreview from './VenuePhonePreview'
 import { drawVenueStitch } from '@/utils/venueExport'
 
 const SlotPage   = lazy(() => import('./SlotPage'))
@@ -102,8 +101,8 @@ export default function VenuePage() {
         {/* 收缩条 */}
         <AdvancedStrip label={label} onBack={exitAdvanced} />
 
-        {/* 组件完整配置页 */}
-        <div className="flex-1 flex flex-col overflow-hidden" style={{ marginRight: 380 }}>
+        {/* 组件完整配置页（全宽，不显示右侧手机预览） */}
+        <div className="flex-1 flex flex-col overflow-hidden">
           {/* 顶栏 */}
           <div className="h-11 flex items-center px-4 border-b shrink-0 gap-3"
             style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
@@ -134,8 +133,6 @@ export default function VenuePage() {
           </main>
         </div>
 
-        {/* 手机预览（上下文参照） */}
-        <VenuePhonePreview />
       </div>
     )
   }

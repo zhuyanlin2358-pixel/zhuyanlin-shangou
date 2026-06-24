@@ -289,6 +289,40 @@ export function PrizeCardFull({
   )
 }
 
+/* ── 预览热区：悬浮高亮 + 点击跳到配置 ── */
+function ClickZone({ top, left, w, h, label, onClick }: {
+  top: string; left: string; w: string; h: string; label: string; onClick: () => void
+}) {
+  const [hover, setHover] = useState(false)
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      title={`点击 → ${label}`}
+      style={{
+        position: 'absolute', top, left, width: w, height: h,
+        cursor: 'pointer', borderRadius: 6, zIndex: 2,
+        border: hover ? '2px solid rgba(255,200,0,0.9)' : '2px solid transparent',
+        background: hover ? 'rgba(255,200,0,0.12)' : 'transparent',
+        transition: 'all 0.15s',
+        display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-start',
+      }}
+    >
+      {hover && (
+        <span style={{
+          fontSize: 9, fontWeight: 600, color: '#fff',
+          background: 'rgba(200,140,0,0.85)',
+          borderRadius: 3, padding: '1px 5px', margin: 3,
+          pointerEvents: 'none', whiteSpace: 'nowrap',
+        }}>
+          ↓ {label}
+        </span>
+      )}
+    </div>
+  )
+}
+
 /* ── ExportCard (Spotlight + hover) ── */
 function ExportCard({ children, label, sub, onExport, onPreview }: {
   children: React.ReactNode; label: string; sub: string
@@ -465,6 +499,11 @@ export default function SlotPage() {
   const { config, activePreset, setEmptyTransform, setSlotBannerUrl } = useSlot()
   const { showToast, registerExportAll, page } = useApp()
   const inVenue = page === 'venue'  // 会场模式：隐藏无用的「预览」按钮
+
+  // 点击预览热区 → 平滑滚动到对应配置区
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   // 字体预加载（确保 Canvas 绘制时自定义字体可用）
   useEffect(() => { preloadFonts() }, [])
@@ -694,13 +733,22 @@ export default function SlotPage() {
         {/* ── 1 未抽奖状态 ── */}
         <div id="slot-section-1">
           <SectionTitle num={1} label="老虎机未抽奖状态" sub="含标题 + 奖品图 + 按钮 · 750 × 242 px" badge="素材 1" />
-          <ExportCard label="老虎机 — 未抽奖状态" sub="750 × 242 px · PNG"
+          <ExportCard label="老虎机 — 未抽奖状态" sub="750 × 242 px · PNG · 点击预览区块跳到对应配置"
             onExport={() => exportOne('s1', 'slot_1_未抽奖状态_750x242', async () => drawSlotBannerCanvas(config, await Promise.all(config.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform, config.slotStyle)))))}
             onPreview={inVenue ? undefined : () => { buildBanner(); showToast('已同步到手机预览') }}>
-            {previews.s1
-              ? <img src={previews.s1} style={{ width: 495, height: 160, borderRadius: 13, display: 'block', flexShrink: 0 }} />
-              : <div style={{ width: 495, height: 160, borderRadius: 13, background: `linear-gradient(120deg,${config.slotTintFrom},${config.slotTintTo})`, flexShrink: 0 }} />
-            }
+            {/* 预览图 + 点击热区 */}
+            <div style={{ position: 'relative', width: 495, height: 160, borderRadius: 13, overflow: 'hidden', flexShrink: 0 }}>
+              {previews.s1
+                ? <img src={previews.s1} style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover' }} draggable={false} />
+                : <div style={{ width: '100%', height: '100%', background: `linear-gradient(120deg,${config.slotTintFrom},${config.slotTintTo})` }} />
+              }
+              {/* ── 热区：标题文案 ── */}
+              <ClickZone top="4%" left="3%" w="27%" h="24%" label="文案设置" onClick={() => scrollTo('slot-cfg-text')} />
+              {/* ── 热区：奖品图区域 ── */}
+              <ClickZone top="30%" left="5%" w="57%" h="58%" label="奖品图设置" onClick={() => scrollTo('slot-cfg-prize')} />
+              {/* ── 热区：按钮 ── */}
+              <ClickZone top="42%" left="66%" w="27%" h="32%" label="配色/按钮" onClick={() => scrollTo('slot-cfg-color')} />
+            </div>
           </ExportCard>
           {/* 加入会场（仅在会场页显示）*/}
           {previews.s1 && (
@@ -708,9 +756,11 @@ export default function SlotPage() {
               <VenueAddButton componentId="slot" label="老虎机" previewUrl={previews.s1} origW={750} origH={242} />
             </div>
           )}
-          <InlineConfigSection label="配色预设" badge="素材 1–5">
-            <SlotColorConfig />
-          </InlineConfigSection>
+          <div id="slot-cfg-color">
+            <InlineConfigSection label="配色预设" badge="素材 1–5">
+              <SlotColorConfig />
+            </InlineConfigSection>
+          </div>
         </div>
 
         {/* ── 2 背景 ── */}
@@ -723,9 +773,11 @@ export default function SlotPage() {
               : <div style={{ width: 495, height: 160, borderRadius: 13, background: `linear-gradient(120deg,${config.slotTintFrom},${config.slotTintTo})`, flexShrink: 0 }} />
             }
           </ExportCard>
-          <InlineConfigSection label="文案设置" badge="素材 2">
-            <SlotTextConfig />
-          </InlineConfigSection>
+          <div id="slot-cfg-text">
+            <InlineConfigSection label="文案设置" badge="素材 2">
+              <SlotTextConfig />
+            </InlineConfigSection>
+          </div>
         </div>
 
         {/* ── 3 空态页 ── */}
@@ -806,9 +858,11 @@ export default function SlotPage() {
               />
             ))}
           </div>
-          <InlineConfigSection label="奖品图设置" badge="素材 6">
-            <SlotPrizeConfig />
-          </InlineConfigSection>
+          <div id="slot-cfg-prize">
+            <InlineConfigSection label="奖品图设置" badge="素材 6">
+              <SlotPrizeConfig />
+            </InlineConfigSection>
+          </div>
         </div>
 
         {/* ── 分隔线：弹窗部分 ── */}
