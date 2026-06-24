@@ -17,6 +17,10 @@ cp "$MEMORY/project_shangou.md" "$VAULT/wiki/记忆/项目状态.md"
 cp "$MEMORY/feedback.md"        "$VAULT/wiki/记忆/代码偏好与踩坑.md"
 cp "/Users/zhuyanlin/.cursorrules" "$VAULT/wiki/记忆/cursorrules快捷记忆.md"
 
+# 产品设计文档（docs/ → wiki/概念/）
+mkdir -p "$VAULT/wiki/概念"
+cp "$PROJECT/docs/产品设计逻辑与汇报.md" "$VAULT/wiki/概念/产品设计逻辑与汇报.md"
+
 echo "📦 提交并推送到 GitHub..."
 cd "$VAULT"
 git add -A
