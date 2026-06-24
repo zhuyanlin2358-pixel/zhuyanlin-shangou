@@ -14,9 +14,9 @@ import {
 } from '@/utils/exportUtils'
 import type { PrizeInfo, XfTransform } from '@/utils/exportUtils'
 import {
-  SlotColorConfig, SlotTextConfig, SlotDialogBtnConfig, InlineConfigSection,
+  SlotColorConfig, SlotTextConfig, SlotDialogBtnConfig,
 } from '@/components/panels/SlotConfigBlocks'
-import { ColorField, PanelInput, PF } from '@/components/ui/PanelField'
+import { PanelInput, PF } from '@/components/ui/PanelField'
 
 // 可点击区域（基于 750×242 坐标系的百分比）
 const CLICK_ZONES = {
@@ -25,14 +25,14 @@ const CLICK_ZONES = {
   button: { left: '66.5%', top: '43%',  width: '26%', height: '33%' },
 }
 
-type AttrMode = 'default' | 'title' | 'button' | 'prize'
+type AttrMode = 'default' | 'title' | 'button' | 'prize' | 'cards'
 
 interface Props {
   onEnterStudio: () => void
 }
 
 export default function SlotCanvasView({ onEnterStudio }: Props) {
-  const { config, setConfig, activePreset } = useSlot()
+  const { config, setConfig } = useSlot()
   const { enterComp, currentComp } = useApp()
 
   const [previewUrl, setPreviewUrl] = useState('')

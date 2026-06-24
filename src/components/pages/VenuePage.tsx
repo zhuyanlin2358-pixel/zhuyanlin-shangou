@@ -1,25 +1,25 @@
 /**
- * 高达会场统一工作区
+ * 高达会场统一工作区（重构版）
  *
- * 老虎机路由（新架构）：
- *   studioMode = false → SlotCanvasView（三列画布：组件库 | 画布预览 | 属性面板）
- *   studioMode = true  → SlotPage（设计工作室：步骤导航 + 精细配置 + 导出）
+ * 两种模式：
  *
- * 其他组件：保持原有四列布局
- *   currentComp = null   → VenueManager（会场搭建）
- *   currentComp = floor  → FloorPage + FloorPanel
- *   currentComp = h-tab  → HTabPage + HTabPanel
- *   currentComp = coupon → CouponPage + CouponPanel
+ * ① 页面布局模式（默认）
+ *   [图层面板 220px] | [画布预览 flex-1] | [动态属性面板 280px]
+ *
+ * ② 组件聚焦模式（深入编辑）
+ *   [收缩条 40px] | [组件全屏编辑器 flex-1] | [手机预览 380px]
+ *   —— 对应亦仁/刘小排方案B：点击「深入编辑」放大画布，专注配置单个组件
  */
-import { Suspense, lazy, useState, useEffect } from 'react'
-import { useApp } from '@/contexts/AppContext'
-import { findComponent, DONE_COMP_IDS, VENUE_COMP_IDS } from '@/types'
-import VenueHeaderEditor from './VenueHeaderEditor'
+import { Suspense, lazy, useState } from 'react'
+import { useApp }   from '@/contexts/AppContext'
+import { useVenue } from '@/contexts/VenueContext'
+import { findComponent } from '@/types'
+import type { ComponentId } from '@/types'
+
+import VenueLayerPanel   from '@/components/layout/VenueLayerPanel'
+import VenueCanvasCenter from '@/components/layout/VenueCanvasCenter'
+import VenueDynamicPanel from '@/components/layout/VenueDynamicPanel'
 import VenuePhonePreview from './VenuePhonePreview'
-import SlotCanvasView    from './SlotCanvasView'
-import FloorPanel  from '@/components/panels/FloorPanel'
-import HTabPanel   from '@/components/panels/HTabPanel'
-import CouponPanel from '@/components/panels/CouponPanel'
 
 const SlotPage   = lazy(() => import('./SlotPage'))
 const FloorPage  = lazy(() => import('./FloorPage'))
@@ -28,53 +28,108 @@ const CouponPage = lazy(() => import('./CouponPage'))
 
 function Loader() {
   return (
-    <div className="flex items-center justify-center h-40 text-xs" style={{ color: 'var(--text-3)' }}>
+    <div className="flex items-center justify-center h-40 text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>
       加载中…
     </div>
   )
 }
 
+// ── 聚焦模式左侧收缩条 ────────────────────────────────────────────────────────
+function FocusStrip({ onBack }: { onBack: () => void }) {
+  return (
+    <div
+      className="flex flex-col items-center py-3 gap-3 h-screen shrink-0 border-r"
+      style={{ width: 40, background: '#0C111B', borderColor: 'rgba(255,255,255,0.07)' }}
+    >
+      <button
+        onClick={onBack}
+        title="返回画布"
+        className="p-2 rounded-lg transition-opacity hover:opacity-70"
+        style={{ color: 'rgba(255,255,255,0.4)', background: 'none', border: 'none', cursor: 'pointer' }}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+    </div>
+  )
+}
+
+// ── 主组件 ────────────────────────────────────────────────────────────────────
 export default function VenuePage() {
-  const { currentComp, goHome, goVenue, enterComp, hasExportAll, triggerExportAll } = useApp()
+  const { hasExportAll, triggerExportAll } = useApp()
+  const { items } = useVenue()
 
-  // 老虎机专属：画布模式 ↔ 设计工作室模式
-  const [studioMode, setStudioMode] = useState(false)
+  // 当前选中的图层：null = 页面设置，'header' = 头图，string = VenueItem.id
+  const [selectedLayer, setSelectedLayer] = useState<'header' | string | null>(null)
 
-  // 切换组件时重置 studio 模式
-  useEffect(() => {
-    setStudioMode(false)
-  }, [currentComp])
+  // 聚焦模式：哪个组件正在全屏深入编辑
+  const [focusComp, setFocusComp] = useState<ComponentId | null>(null)
 
-  // ── 老虎机：全屏接管（两种子模式）──────────────────────────────────────
-  if (currentComp === 'slot') {
-    if (!studioMode) {
-      // 画布模式：三列布局，不显示 VenuePhonePreview
-      return (
-        <div className="flex flex-col h-screen" style={{ background: 'var(--bg)' }}>
-          {/* 顶部标题栏 */}
+  const enterFocus = (compId: ComponentId) => setFocusComp(compId)
+  const exitFocus  = () => setFocusComp(null)
+
+  // 添加新组件：进入聚焦模式（先配置，再「加入会场」）
+  const handleAddNew = (compId: ComponentId) => {
+    setFocusComp(compId)
+    setSelectedLayer(null)
+  }
+
+  // 聚焦模式下，找到对应图层名称
+  const focusLabel = focusComp ? (findComponent(focusComp)?.name ?? focusComp) : ''
+  const focusItem  = focusComp
+    ? items.find(it => it.componentId === focusComp)
+    : null
+
+  // ── 组件聚焦模式 ──────────────────────────────────────────────────────────
+  if (focusComp) {
+    return (
+      <div className="flex h-screen" style={{ background: 'var(--bg)' }}>
+        {/* 收缩条 */}
+        <FocusStrip onBack={exitFocus} />
+
+        {/* 组件全屏编辑器 */}
+        <div className="flex-1 flex flex-col overflow-hidden" style={{ marginRight: 380 }}>
+          {/* 聚焦顶栏 */}
           <div
             className="h-11 flex items-center px-4 border-b shrink-0 gap-3"
             style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}
           >
             <button
-              onClick={goHome}
+              onClick={exitFocus}
               className="flex items-center gap-1.5 text-xs transition-opacity hover:opacity-70 shrink-0"
-              style={{ color: 'rgba(255,255,255,0.35)' }}
+              style={{ color: 'rgba(255,255,255,0.5)', background: 'none', border: 'none', cursor: 'pointer' }}
             >
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                 <path d="M19 12H5M12 5l-7 7 7 7"/>
               </svg>
-              返回首页
+              返回画布
             </button>
-            <span className="text-sm font-semibold" style={{ color: 'var(--text-1)' }}>老虎机</span>
-            <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(45,120,244,0.12)', color: '#6AA3FF' }}>
-              点击元素直接配置
+
+            <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)' }} />
+
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-1)' }}>
+              {focusItem ? `编辑中：${focusLabel}` : `配置：${focusLabel}`}
             </span>
+
+            {!focusItem && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(45,120,244,0.12)', color: '#6AA3FF' }}>
+                配置后点「加入会场」即可添加到画布
+              </span>
+            )}
+            {focusItem && (
+              <>
+                <div style={{ width: 6, height: 6, background: '#FF3060', borderRadius: '50%' }} />
+                <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>改动实时同步</span>
+              </>
+            )}
+
             <div style={{ flex: 1 }} />
+
             {hasExportAll && (
               <button
                 onClick={triggerExportAll}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-white"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-white transition-all hover:opacity-90"
                 style={{ background: 'linear-gradient(90deg,#FF3060,#FF6030)' }}
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
@@ -87,195 +142,46 @@ export default function VenuePage() {
             )}
           </div>
 
-          {/* 三列画布内容 */}
-          <div className="flex-1 overflow-hidden">
-            <Suspense fallback={<Loader />}>
-              <SlotCanvasView onEnterStudio={() => setStudioMode(true)} />
-            </Suspense>
-          </div>
-        </div>
-      )
-    }
-
-    // 设计工作室模式：SlotPage 接管全屏 + 右侧保留 VenuePhonePreview
-    return (
-      <div className="flex h-screen" style={{ background: 'var(--bg)' }}>
-        <div className="flex-1 flex flex-col overflow-hidden" style={{ marginRight: 380 }}>
-          {/* 工作室顶部 */}
-          <div
-            className="h-11 flex items-center px-4 border-b shrink-0 gap-3"
-            style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}
-          >
-            <button
-              onClick={() => setStudioMode(false)}
-              className="flex items-center gap-1.5 text-xs transition-opacity hover:opacity-70 shrink-0"
-              style={{ color: 'rgba(255,255,255,0.5)' }}
-            >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                <path d="M19 12H5M12 5l-7 7 7 7"/>
-              </svg>
-              返回画布
-            </button>
-            <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)' }} />
-            <span className="text-sm font-semibold" style={{ color: 'var(--text-1)' }}>
-              正在设计：老虎机
-            </span>
-            <div style={{ width: 6, height: 6, background: '#FF3060', borderRadius: '50%' }} />
-            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-              所有改动实时同步
-            </span>
-            <div style={{ flex: 1 }} />
-            {hasExportAll && (
-              <button
-                onClick={triggerExportAll}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-white"
-                style={{ background: 'linear-gradient(90deg,#FF3060,#FF6030)' }}
-              >
-                完成设计并下载
-              </button>
-            )}
-          </div>
+          {/* 组件页内容 */}
           <main className="flex-1 overflow-y-auto">
             <Suspense fallback={<Loader />}>
-              <SlotPage />
+              {focusComp === 'slot'   && <SlotPage />}
+              {focusComp === 'floor'  && <FloorPage />}
+              {focusComp === 'h-tab'  && <HTabPage />}
+              {focusComp === 'coupon' && <CouponPage />}
             </Suspense>
           </main>
         </div>
+
+        {/* 右侧手机预览（聚焦时保留上下文） */}
         <VenuePhonePreview />
       </div>
     )
   }
 
-  // ── 其他组件：原有四列布局 ────────────────────────────────────────────
-  const configPanel = (() => {
-    switch (currentComp) {
-      case 'floor':  return <div className="h-full overflow-y-auto"><FloorPanel /></div>
-      case 'h-tab':  return <div className="h-full overflow-y-auto"><HTabPanel /></div>
-      case 'coupon': return <div className="h-full overflow-y-auto"><CouponPanel /></div>
-      default:       return null
-    }
-  })()
-
-  const centerContent = currentComp ? (
-    <Suspense fallback={<Loader />}>
-      {currentComp === 'floor'  && <FloorPage  />}
-      {currentComp === 'h-tab'  && <HTabPage   />}
-      {currentComp === 'coupon' && <CouponPage />}
-    </Suspense>
-  ) : <VenueHeaderEditor />
-
+  // ── 页面布局模式（默认）────────────────────────────────────────────────────
   return (
     <div className="flex h-screen" style={{ background: 'var(--bg)' }}>
 
-      {/* ① 文字导航 */}
-      <aside
-        className="flex flex-col shrink-0 border-r h-screen"
-        style={{ width: 140, background: '#0C111B', borderColor: 'rgba(255,255,255,0.07)' }}
-      >
-        <button
-          onClick={goHome}
-          className="flex items-center gap-2 px-4 h-11 border-b hover:opacity-70 transition-opacity shrink-0 text-xs"
-          style={{ borderColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.35)' }}
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
-          </svg>
-          返回首页
-        </button>
+      {/* ① 图层结构面板 */}
+      <VenueLayerPanel
+        selectedLayer={selectedLayer}
+        onSelect={setSelectedLayer}
+        onAddNew={handleAddNew}
+      />
 
-        <nav className="flex-1 py-2">
-          <TextNavBtn active={!currentComp} onClick={goVenue}>活动头图</TextNavBtn>
-          <div className="mx-4 my-2 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }} />
-          {VENUE_COMP_IDS.map(id => {
-            const comp   = findComponent(id)
-            const isDone = DONE_COMP_IDS.includes(id)
-            return (
-              <TextNavBtn
-                key={id}
-                active={currentComp === id}
-                disabled={!isDone}
-                onClick={() => isDone && enterComp(id)}
-              >
-                {comp?.name ?? id}
-              </TextNavBtn>
-            )
-          })}
-        </nav>
-      </aside>
+      {/* ② 画布预览（中间） */}
+      <VenueCanvasCenter
+        selectedLayer={selectedLayer}
+        onSelectLayer={setSelectedLayer}
+      />
 
-      {/* ② 组件配置面板 */}
-      {configPanel && (
-        <div
-          className="flex flex-col shrink-0 border-r h-screen"
-          style={{ width: 260, background: 'var(--sidebar-bg)', borderColor: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}
-        >
-          <div
-            className="h-11 flex items-center px-4 border-b shrink-0 text-xs font-semibold"
-            style={{ borderColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.7)' }}
-          >
-            {findComponent(currentComp!)?.name}
-          </div>
-          <div className="flex-1 overflow-y-auto">{configPanel}</div>
-        </div>
-      )}
+      {/* ③ 动态属性面板 */}
+      <VenueDynamicPanel
+        selectedLayer={selectedLayer}
+        onEnterFocus={enterFocus}
+      />
 
-      {/* ③ 主内容区 */}
-      <div className="flex-1 flex flex-col overflow-hidden" style={{ marginRight: 380 }}>
-        <div
-          className="h-11 flex items-center px-5 border-b shrink-0 gap-3"
-          style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}
-        >
-          <span className="text-sm font-semibold" style={{ color: 'var(--text-1)' }}>
-            {currentComp ? (findComponent(currentComp)?.name ?? currentComp) : '活动头图'}
-          </span>
-          {currentComp && (
-            <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(45,120,244,0.12)', color: '#6AA3FF' }}>
-              配置完成后点「加入会场」↗
-            </span>
-          )}
-          {hasExportAll && (
-            <button
-              onClick={triggerExportAll}
-              className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-white"
-              style={{ background: 'linear-gradient(90deg,#FF3060,#FF6030)' }}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-              完成设计并下载
-            </button>
-          )}
-        </div>
-        <main className="flex-1 overflow-y-auto">{centerContent}</main>
-      </div>
-
-      {/* ④ 右侧画布预览 */}
-      <VenuePhonePreview />
     </div>
-  )
-}
-
-function TextNavBtn({
-  active, disabled, onClick, children,
-}: {
-  active: boolean; disabled?: boolean; onClick: () => void; children: React.ReactNode
-}) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className="w-full px-4 py-2 text-left text-xs transition-all"
-      style={{
-        color:      active ? '#FF8080' : disabled ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.55)',
-        background: active ? 'rgba(255,80,80,0.1)' : 'transparent',
-        borderLeft: active ? '2px solid #FF5050' : '2px solid transparent',
-        cursor:     disabled ? 'not-allowed' : 'pointer',
-        fontWeight: active ? 500 : 400,
-      }}
-    >
-      {children}
-    </button>
   )
 }

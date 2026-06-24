@@ -16,7 +16,7 @@ const HEADER_SIZES: { key: VenueHeaderSize; label: string; desc: string }[] = [
 ]
 
 export default function VenueHeaderEditor() {
-  const { headerUrl, setHeaderUrl, headerSize, setHeaderSize, bgColor, setBgColor, items, removeItem, moveItem, setSpacing } = useVenue()
+  const { headerUrl, setHeaderUrl, headerSize, setHeaderSize, bgColor, setBgColor, items, removeItem, moveItem } = useVenue()
   const { showToast } = useApp()
   const fileRef = useRef<HTMLInputElement>(null)
 

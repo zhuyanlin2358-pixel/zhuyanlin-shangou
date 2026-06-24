@@ -93,7 +93,6 @@ function MainContent() {
   }
 
   const pageContent = (() => {
-    if (page === 'home') return <div className="page-enter"><HomePage /></div>
     if (page === 'assets') return <div className="page-enter"><Suspense fallback={<PageLoader />}><AssetsPage /></Suspense></div>
     if (page === 'review') return <div className="page-enter"><Suspense fallback={<PageLoader />}><ReviewPage /></Suspense></div>
     if (page === 'comp') {
@@ -127,10 +126,10 @@ function MainContent() {
         className="flex-1 flex flex-col overflow-hidden"
         style={{ marginLeft: 260, marginRight: hasPreview ? 360 : 0 }}
       >
-        {page !== 'home' && <TopBar />}
+        <TopBar />
         <main
           className="flex-1 overflow-y-auto"
-          style={{ marginTop: page !== 'home' ? 56 : 0 }}
+          style={{ marginTop: 56 }}
         >
           {pageContent}
         </main>

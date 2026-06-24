@@ -3,9 +3,6 @@
  * 配置逻辑主体已移至 SlotConfigBlocks.tsx，被 SlotPage 行内使用
  * 此面板保留作备用入口（目前 VenuePage 对 slot 隐藏此列）
  */
-import { useState } from 'react'
-import { useSlot, SLOT_PRESETS } from '@/contexts/SlotContext'
-import { useVenue } from '@/contexts/VenueContext'
 import {
   SlotColorConfig, SlotTextConfig, SlotEmptyConfig,
   SlotPrizeConfig, SlotDialogBtnConfig, SlotDialogBgConfig,

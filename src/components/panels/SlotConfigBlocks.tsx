@@ -240,7 +240,6 @@ export function PrizeBlock({ idx, prize, onChange, onImgChange }: {
 /* ── 奖品图配置整体（Section 6 下方）── */
 export function SlotPrizeConfig() {
   const { config, setPrize } = useSlot()
-  const fileInputRefs = useRef<(HTMLInputElement|null)[]>([])
 
   const handlePrizeImg = (idx: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return
