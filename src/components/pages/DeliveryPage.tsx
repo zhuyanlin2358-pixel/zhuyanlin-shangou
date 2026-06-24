@@ -6,7 +6,7 @@
  * 右侧：页面画布预览（手机帧）
  * 底部：一键全部打包 ZIP
  */
-import { useState, useCallback, useRef, useMemo } from 'react'
+import { useState, useCallback, useRef, useMemo, useEffect } from 'react'
 import JSZip from 'jszip'
 import { X, Download, Package, Eye, RefreshCw } from 'lucide-react'
 import { useVenue }  from '@/contexts/VenueContext'
