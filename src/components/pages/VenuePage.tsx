@@ -117,7 +117,7 @@ export default function VenuePage() {
             首页
           </button>
           <div style={{ width: 1, height: 12, background: 'rgba(235,233,252,0.1)', margin: '0 8px', flexShrink: 0 }} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(235,233,252,0.4)', letterSpacing: '0.05em' }}>
+          <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(235,233,252,0.4)' }}>
             页面结构
           </span>
         </div>
@@ -125,22 +125,22 @@ export default function VenuePage() {
         {/* 中央标题：绝对居中，不影响两端布局 */}
         {/* 中段：flex-1，标题左 + 缩放右，不重叠 */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '0 20px', gap: 12 }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--sl-text-1)', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--sl-text-1)', whiteSpace: 'nowrap' }}>
             会场搭建
           </span>
           {items.length > 0 && (
             <span style={{
-              fontSize: 10, fontWeight: 600, color: 'rgba(235,233,252,0.4)',
-              background: 'rgba(235,233,252,0.07)', borderRadius: 4, padding: '1px 6px',
+              fontSize: 10, fontWeight: 500, color: 'rgba(235,233,252,0.35)',
+              background: 'rgba(235,233,252,0.07)', borderRadius: 4, padding: '1px 5px',
             }}>
-              {items.length} 个组件
+              {items.length}
             </span>
           )}
           <div style={{ flex: 1 }} />
           {ZOOM_OPTS.map(z => (
             <button key={z} onClick={() => setZoomPct(z)}
               style={{
-                padding: '3px 7px', fontSize: 10, borderRadius: 6, cursor: 'pointer',
+                padding: '3px 7px', fontSize: 12, borderRadius: 6, cursor: 'pointer',
                 background: zoomPct === z ? 'rgba(255,255,255,0.12)' : 'transparent',
                 color: zoomPct === z ? '#fff' : 'rgba(255,255,255,0.3)',
                 border: `1px solid ${zoomPct === z ? 'rgba(255,255,255,0.18)' : 'transparent'}`,
@@ -161,7 +161,7 @@ export default function VenuePage() {
         }}>
           <button
             onClick={goDelivery}
-            className="flex items-center gap-2 text-[13px] font-bold rounded-xl transition-all hover:opacity-90"
+            className="flex items-center gap-2 text-[12px] font-bold rounded-xl transition-all hover:opacity-90"
             style={{ background: 'var(--sl-primary-grad)', color: 'var(--sl-cta-text)', padding: '7px 16px', border: 'none', cursor: 'pointer' }}
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>

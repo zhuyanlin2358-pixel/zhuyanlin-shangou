@@ -340,8 +340,9 @@ function AddToCanvasButton({ compId, onDone }: { compId: ComponentId; onDone: ()
       disabled={loading}
       className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-semibold rounded-xl transition-all"
       style={{
-        background: loading ? 'rgba(45,120,244,0.3)' : 'linear-gradient(90deg,#2D78F4,#4A90FF)',
-        color: '#fff', border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
+        background: loading ? 'rgba(250,217,0,0.2)' : 'var(--sl-primary-grad)',
+        color: loading ? 'rgba(235,233,252,0.4)' : 'var(--sl-cta-text)',
+        border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
       }}
     >
       {loading ? '生成预览中…' : isAdded ? '再次加入会场' : '加入会场'}
