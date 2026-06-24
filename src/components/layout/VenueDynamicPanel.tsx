@@ -376,78 +376,98 @@ function SlotRefreshButton({ item }: { item: VenueItem }) {
 }
 
 // ── 组件预览卡（组件工坊点击后右侧显示，替代配置） ────────────────────────────
-const COMP_PREVIEW_INFO: Record<string, { desc: string; items: string[]; color: string }> = {
-  slot: {
-    desc: '大促活动核心玩法组件，用户点击转盘参与抽奖，增强用户互动和页面趣味性。',
-    items: ['主视觉 750×242', '弹窗结果页 × 6种', '弹窗按钮 × 7种', '奖品图 × 3张'],
-    color: '#FF3060',
-  },
-  floor: {
-    desc: '楼层分隔条，用于区分页面中不同内容区域，提升会场结构感。',
-    items: ['750 × 60 px', '3款风格预设', '自定义配色和装饰'],
-    color: '#F59E0B',
-  },
-  'h-tab': {
-    desc: '横向滑动标签组件，帮助用户快速切换不同商品或活动分类。',
-    items: ['2 / 3 / 4 个 Tab', '7种配色方案', '每个 Tab 单独导出'],
-    color: '#2D78F4',
-  },
-  coupon: {
-    desc: '一键领取优惠券红包，引导用户领券参与活动，提升转化率。',
-    items: ['券包背景 702×352', '腰封图 702×168', '按钮 480×80'],
-    color: '#10B981',
-  },
+const COMP_PREVIEW_META: Record<string, { desc: string; items: string[] }> = {
+  slot:    { desc: '大促核心玩法，用户点击转盘抽奖，增强互动。', items: ['主视觉 750×242', '弹窗结果页 × 6种', '弹窗按钮 × 7种', '奖品图（动态数量）'] },
+  floor:   { desc: '楼层分隔条，区分页面不同内容区域。',       items: ['750 × 60 px', '3款预设', '自定义配色'] },
+  'h-tab': { desc: '横向滑动标签，快速切换商品或活动分类。',   items: ['2 / 3 / 4 个 Tab', '7种配色', '每个 Tab 单独切图'] },
+  coupon:  { desc: '一键领取优惠券红包，引导领券提升转化。',   items: ['背景 702×352', '腰封 702×168', '按钮 480×80'] },
 }
 
 function ComponentPreviewCard({ compId }: { compId: ComponentId }) {
-  const info = COMP_PREVIEW_INFO[compId]
-  if (!info) return null
+  const meta    = COMP_PREVIEW_META[compId]
+  const slotCtx = useSlot()
+  const coupon  = useCoupon()
+  const htab    = useHTab()
+  const floor   = useFloor()
+  const [previewUrl, setPreviewUrl] = useState('')
+  const [loading, setLoading]       = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    const generate = async () => {
+      setLoading(true)
+      try {
+        await preloadFonts()
+        let canvas: HTMLCanvasElement | null = null
+        const slot = slotCtx.config
+        const sc: BannerConfig = {
+          slotTintFrom: slot.slotTintFrom, slotTintTo: slot.slotTintTo,
+          slotRect7From: slot.slotRect7From, slotRect7To: slot.slotRect7To,
+          titleText: slot.titleText, titleColor: slot.titleColor, linksColor: slot.linksColor,
+          btnActiveFrom: slot.btnActiveFrom, btnActiveTo: slot.btnActiveTo,
+          btnTextColor: slot.btnTextColor, slotStyle: slot.slotStyle,
+        }
+        if (compId === 'slot') {
+          const pcs = await Promise.all(slot.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, slot.prizeTransforms[i] as XfTransform, slot.slotStyle)))
+          canvas = await drawSlotBannerCanvas(sc, pcs)
+        } else if (compId === 'coupon') {
+          canvas = await drawCouponPreview(coupon.config)
+        } else if (compId === 'h-tab') {
+          const it = htab.items[0]
+          canvas = await drawHTabCanvas({ colorKey: htab.config.colorKey, tabs: it?.tabs ?? ['Tab 1', 'Tab 2'], activeIndex: 0 })
+        } else if (compId === 'floor') {
+          canvas = await drawFloorCanvas({ ...floor.config, text: floor.floors[0]?.text ?? '领好店券 下单更优惠' })
+        }
+        if (!cancelled && canvas) setPreviewUrl(canvas.toDataURL())
+      } catch {}
+      if (!cancelled) setLoading(false)
+    }
+    generate()
+    return () => { cancelled = true }
+  }, [compId])
+
+  if (!meta) return null
+
   return (
     <div className="flex flex-col gap-4 p-4">
-      {/* 组件图标区 */}
+      {/* 实际渲染预览图 */}
       <div style={{
-        height: 100, borderRadius: 12,
-        background: `linear-gradient(135deg, ${info.color}20, ${info.color}08)`,
-        border: `1px solid ${info.color}25`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        borderRadius: 12, overflow: 'hidden',
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        minHeight: 80, display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <div style={{
-          width: 48, height: 48, borderRadius: 14,
-          background: `${info.color}20`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-            stroke={info.color} strokeWidth={1.8} strokeLinecap="round">
-            {compId === 'slot'   && <><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 4v16M16 4v16"/></>}
-            {compId === 'floor'  && <><path d="M4 6h16M4 12h16M4 18h16"/></>}
-            {compId === 'h-tab'  && <><rect x="2" y="5" width="6" height="14" rx="1.5"/><rect x="10" y="5" width="6" height="14" rx="1.5"/></>}
-            {compId === 'coupon' && <><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/></>}
-          </svg>
-        </div>
+        {loading ? (
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', padding: 16 }}>渲染中…</div>
+        ) : previewUrl ? (
+          <img src={previewUrl} alt={compId} style={{ width: '100%', height: 'auto', display: 'block' }} />
+        ) : (
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', padding: 16 }}>预览暂不可用</div>
+        )}
       </div>
 
       {/* 描述 */}
-      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.65, margin: 0 }}>
-        {info.desc}
+      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', lineHeight: 1.65, margin: 0 }}>
+        {meta.desc}
       </p>
 
-      {/* 导出素材清单 */}
+      {/* 素材清单 */}
       <div>
-        <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+        <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.22)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
           包含素材
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-          {info.items.map((item, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'rgba(255,255,255,0.55)' }}>
-              <div style={{ width: 4, height: 4, borderRadius: '50%', background: info.color, opacity: 0.7, flexShrink: 0 }} />
+          {meta.items.map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
+              <div style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
               {item}
             </div>
           ))}
         </div>
       </div>
 
-      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', lineHeight: 1.5 }}>
-        点下方「加入会场」后，可在左侧图层列表选中该组件进行配置。
+      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', lineHeight: 1.55 }}>
+        加入会场后，点击左侧图层列表选中该组件即可配置。
       </div>
     </div>
   )

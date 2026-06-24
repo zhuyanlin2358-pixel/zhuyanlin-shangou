@@ -8,7 +8,7 @@ import { useSlot, SLOT_PRESETS } from '@/contexts/SlotContext'
 import { useVenue } from '@/contexts/VenueContext'
 import type { PrizeType, PrizeConfig } from '@/types'
 import {
-  PF, PanelInput, PanelSection,
+  PF, PanelInput,
   ColorField,
 } from '@/components/ui/PanelField'
 import { SLOT_STYLE_LIST } from '@/utils/slotStyles'
@@ -193,13 +193,24 @@ export function SlotDialogBgConfig() {
 }
 
 /* ── 奖品图设置（Section 6 下方）── */
-// 类型选择 pill 标签（分段选择器）
-const PRIZE_TYPE_PILLS: { value: PrizeType; label: string }[] = [
+const PRIZE_TYPE_OPTS: { value: PrizeType; label: string }[] = [
   { value: 'product-tag',    label: '产品+标签' },
   { value: 'product-dashed', label: '产品图'   },
   { value: 'amount',         label: '金额券'   },
   { value: 'thanks',         label: '谢谢参与' },
 ]
+
+/* 行内字段标签（比 PF 更轻量）*/
+function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: 5 }}>
+        {label}
+      </div>
+      {children}
+    </div>
+  )
+}
 
 export function PrizeBlock({ idx, prize, onChange, onImgChange }: {
   idx: number; prize: PrizeConfig
@@ -212,28 +223,35 @@ export function PrizeBlock({ idx, prize, onChange, onImgChange }: {
   const showThanks = prize.type === 'thanks'
 
   return (
-    <PanelSection legend={`奖品图 ${idx+1}`} className="pb-4 border-b border-white/[0.07] last:border-b-0 last:pb-0">
+    <div style={{ paddingBottom: 16, marginBottom: 8, borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+      className="last:border-b-0 last:pb-0">
 
-      {/* ── 类型：2×2 pill 分段选择器 ── */}
-      <PF label="类型">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
-          {PRIZE_TYPE_PILLS.map(opt => {
+      {/* 区块标题（大号，清晰层级）*/}
+      <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.85)', marginBottom: 12 }}>
+        奖品图 {idx + 1}
+      </div>
+
+      {/* 类型：Toggle group（白底深字 = 选中，深底灰字 = 未选中）*/}
+      <FieldRow label="类型">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+          {PRIZE_TYPE_OPTS.map(opt => {
             const active = prize.type === opt.value
             return (
               <button
                 key={opt.value}
                 onClick={() => onChange({ type: opt.value })}
                 style={{
-                  padding: '5px 8px',
-                  borderRadius: 7,
-                  fontSize: 11,
-                  fontWeight: active ? 600 : 400,
-                  border: active ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(255,255,255,0.07)',
-                  background: active ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.03)',
-                  color: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.45)',
+                  padding: '7px 6px',
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontWeight: active ? 700 : 400,
+                  border: 'none',
+                  background: active ? '#ffffff' : 'rgba(255,255,255,0.06)',
+                  color: active ? '#111111' : 'rgba(255,255,255,0.4)',
                   cursor: 'pointer',
                   transition: 'all 0.12s',
                   textAlign: 'center',
+                  boxShadow: active ? '0 1px 4px rgba(0,0,0,0.25)' : 'none',
                 }}
               >
                 {opt.label}
@@ -241,75 +259,67 @@ export function PrizeBlock({ idx, prize, onChange, onImgChange }: {
             )
           })}
         </div>
-      </PF>
+      </FieldRow>
 
       {!showThanks && (
-        <PF label="顶部标签">
+        <FieldRow label="顶部标签">
           <PanelInput value={prize.tag} onChange={e => onChange({ tag: e.target.value })} placeholder="如：无门槛优惠券" />
-        </PF>
+        </FieldRow>
       )}
 
-      {/* ── 产品图：缩略图 + 紧凑短按钮 ── */}
+      {/* 产品图：缩略图 + 白底黑字上传按钮 */}
       {showImg && (
-        <PF label="产品图" desc="建议使用透明底 PNG">
+        <FieldRow label="产品图">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {/* 缩略图（有图才显示） */}
-            {prize.imageUrl && (
-              <div style={{
-                width: 36, height: 36, borderRadius: 8, overflow: 'hidden',
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <img src={prize.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-              </div>
-            )}
-            {/* 上传短按钮 */}
+            {/* 缩略图 */}
+            <div style={{
+              width: 40, height: 40, borderRadius: 8, overflow: 'hidden', flexShrink: 0,
+              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {prize.imageUrl
+                ? <img src={prize.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth={1.5}><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9l5-5 4 4 3-3 6 6"/></svg>
+              }
+            </div>
+            {/* 白底黑字上传按钮 */}
             <button
               onClick={() => fileRef.current?.click()}
               style={{
-                padding: '5px 12px',
-                borderRadius: 7,
-                fontSize: 11,
-                fontWeight: 500,
-                border: '1px solid rgba(255,255,255,0.18)',
-                background: 'rgba(255,255,255,0.07)',
-                color: 'rgba(255,255,255,0.75)',
-                cursor: 'pointer',
-                transition: 'all 0.12s',
-                whiteSpace: 'nowrap',
+                padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                background: '#ffffff', color: '#111111', border: 'none',
+                cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
               }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.12)'}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#f0f0f0'}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = '#ffffff'}
             >
               {prize.imageUrl ? '更换图片' : '↑ 上传图片'}
             </button>
-            {/* 已上传提示 */}
             {prize.imageUrl && (
-              <span style={{ fontSize: 10, color: 'rgba(34,197,94,0.8)' }}>✓ 已上传</span>
+              <span style={{ fontSize: 10, color: 'rgba(34,197,94,0.9)', fontWeight: 600 }}>✓</span>
             )}
           </div>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onImgChange} />
-        </PF>
+        </FieldRow>
       )}
 
       {showAmount && (
-        <div className="grid grid-cols-2 gap-2">
-          <PF label="金额"><PanelInput value={prize.amount} onChange={e => onChange({ amount: e.target.value })} placeholder="30" /></PF>
-          <PF label="单位"><PanelInput value={prize.unit}   onChange={e => onChange({ unit:   e.target.value })} placeholder="元" /></PF>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <FieldRow label="金额"><PanelInput value={prize.amount} onChange={e => onChange({ amount: e.target.value })} placeholder="30" /></FieldRow>
+          <FieldRow label="单位"><PanelInput value={prize.unit}   onChange={e => onChange({ unit:   e.target.value })} placeholder="元" /></FieldRow>
         </div>
       )}
       {showThanks && (
-        <PF label="大字文案">
+        <FieldRow label="大字文案">
           <PanelInput value={prize.thanksText} onChange={e => onChange({ thanksText: e.target.value })} placeholder="谢谢参与" />
-        </PF>
+        </FieldRow>
       )}
       {!showThanks && (
-        <PF label="底部文字">
+        <FieldRow label="底部文字">
           <PanelInput value={prize.bottomText} onChange={e => onChange({ bottomText: e.target.value })} placeholder="如：迪奥口红免单券" />
-        </PF>
+        </FieldRow>
       )}
-    </PanelSection>
+    </div>
   )
 }
 
