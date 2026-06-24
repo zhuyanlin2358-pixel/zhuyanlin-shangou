@@ -262,6 +262,7 @@ export default function VenuePage() {
           selectedLayer={selectedLayer}
           onSelectLayer={handleSelectLayer}
           onZoneSelect={handleZoneSelect}
+          activeZone={activeZone}
         />
         <VenueDynamicPanel
           selectedLayer={selectedLayer}

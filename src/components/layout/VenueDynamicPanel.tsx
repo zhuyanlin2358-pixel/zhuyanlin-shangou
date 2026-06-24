@@ -487,12 +487,17 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
   // 当前活跃的组件 id（pending 优先）
   const activeCompId: ComponentId | null = pendingComp ?? selectedItem?.componentId ?? null
 
+  const ZONE_LABEL: Record<string, string> = {
+    text: '文案设置', prize: '奖品图设置', color: '配色 / 背景'
+  }
   // 面板标题
   const panelTitle = pendingComp
     ? `配置：${COMP_LABEL[pendingComp] ?? pendingComp}`
     : !selectedLayer ? '页面设置'
     : selectedLayer === 'header' ? '活动头图'
-    : selectedItem?.label ?? '组件配置'
+    : (selectedItem?.componentId === 'slot' && activeZone)
+      ? ZONE_LABEL[activeZone] ?? '组件配置'
+      : selectedItem?.label ?? '组件配置'
 
   return (
     <div className="flex flex-col h-full shrink-0 border-l"
@@ -514,8 +519,17 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
           </button>
         )}
 
-        {/* 老虎机：手动刷新画布 */}
-        {selectedItem?.componentId === 'slot' && (
+        {/* 热区模式：返回全部配置 */}
+        {selectedItem?.componentId === 'slot' && activeZone && (
+          <button onClick={onZoneClear}
+            className="text-[10px] px-2 py-0.5 rounded transition-all hover:opacity-70"
+            style={{ color: 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer' }}>
+            ← 全部
+          </button>
+        )}
+
+        {/* 老虎机：手动刷新画布（非热区模式才显示） */}
+        {selectedItem?.componentId === 'slot' && !activeZone && (
           <SlotRefreshButton item={selectedItem} />
         )}
 
@@ -557,17 +571,7 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
           <>
             {/* slot + 热区激活 → 只显示对应配置，顶部加面包屑 */}
             {selectedItem.componentId === 'slot' && activeZone ? (
-              <div>
-                <div className="flex items-center gap-2 px-4 pt-3 pb-2">
-                  <button onClick={onZoneClear}
-                    className="text-[10px] transition-opacity hover:opacity-70"
-                    style={{ color: '#6AA3FF', background: 'none', border: 'none', cursor: 'pointer' }}>
-                    ← 全部配置
-                  </button>
-                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>
-                    / {activeZone === 'text' ? '文案' : activeZone === 'prize' ? '奖品图' : '配色/按钮'}
-                  </span>
-                </div>
+              <div className="pt-2">
                 <div className="px-3">
                   {activeZone === 'text'  && <InlineSlotTextConfig />}
                   {activeZone === 'prize' && <InlineSlotPrizeConfig />}

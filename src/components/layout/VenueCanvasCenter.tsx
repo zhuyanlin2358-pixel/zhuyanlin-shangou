@@ -35,9 +35,10 @@ interface Props {
   selectedLayer: 'header' | string | null
   onSelectLayer: (layer: 'header' | string | null) => void
   onZoneSelect?: (itemId: string, zone: string) => void
+  activeZone?:   string   // 当前激活的配置热区，用于高亮对应区域
 }
 
-export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZoneSelect }: Props) {
+export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZoneSelect, activeZone = '' }: Props) {
   const {
     items, moveItem,
     headerUrl, headerSize, bgColor,
@@ -300,10 +301,25 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
                 onPointerUp={handlePointerUp}
                 onDoubleClick={e => {
                   e.stopPropagation()
-                  if (isSlot) {
-                    setDblClickId(isDblActive ? null : item.id)
-                    onSelectLayer(item.id)
-                  }
+                  if (!isSlot) return
+
+                  // 根据双击位置检测热区，直接切换右侧配置
+                  const imgEl = (e.currentTarget as HTMLElement).querySelector('img')
+                  const rect  = imgEl ? imgEl.getBoundingClientRect()
+                                      : e.currentTarget.getBoundingClientRect()
+                  const xPct = ((e.clientX - rect.left) / rect.width)  * 100
+                  const yPct = ((e.clientY - rect.top)  / rect.height) * 100
+
+                  // 对应 750×242 坐标系的区域判断
+                  let zone = 'color' // 其余区域（背景）→ 配色
+                  if (xPct >= 3  && xPct <= 30 && yPct >= 4  && yPct <= 28) zone = 'text'
+                  else if (xPct >= 5  && xPct <= 62 && yPct >= 30 && yPct <= 90) zone = 'prize'
+                  else if (xPct >= 66 && xPct <= 93 && yPct >= 42 && yPct <= 76) zone = 'color'
+                  // 其余（背景区）→ 'color'（配色预设）
+
+                  setDblClickId(item.id)          // 激活黄色框 + 热区 overlay
+                  onSelectLayer(item.id)           // 选中图层
+                  onZoneSelect?.(item.id, zone)    // 立刻切换右侧面板
                 }}
                 className="relative"
                 style={{
@@ -336,59 +352,52 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
                     {/* slot 双击后显示热区 overlay */}
                     {isSlot && isDblActive && (
                       <>
-                        {/* 遮罩提示 */}
-                        <div style={{
-                          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                          pointerEvents: 'none',
-                          background: 'rgba(0,0,0,0.15)',
-                          borderRadius: r,
-                        }} />
-                        {SLOT_ZONES.map(z => (
-                          <div
-                            key={z.id}
-                            onClick={e => {
-                              e.stopPropagation()
-                              onZoneSelect?.(item.id, z.id)
-                              setDblClickId(null)
-                            }}
-                            title={z.label}
-                            style={{
-                              position: 'absolute',
-                              top: z.top, left: z.left, width: z.w, height: z.h,
-                              cursor: 'pointer',
-                              border: '2px solid rgba(255,200,0,0.8)',
-                              borderRadius: 4,
-                              background: 'rgba(255,200,0,0.08)',
-                              zIndex: 10,
-                              display: 'flex',
-                              alignItems: 'flex-end',
-                              paddingBottom: 3,
-                              paddingLeft: 3,
-                              transition: 'background 0.12s',
-                            }}
-                            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,200,0,0.2)'}
-                            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,200,0,0.08)'}
-                          >
-                            <span style={{
-                              fontSize: 8, fontWeight: 700, color: '#fff',
-                              background: 'rgba(180,120,0,0.85)',
-                              borderRadius: 2, padding: '1px 4px',
-                              lineHeight: 1.4,
-                            }}>
-                              {z.label} →
-                            </span>
-                          </div>
-                        ))}
-                        {/* 关闭提示 */}
-                        <div style={{
-                          position: 'absolute', top: 3, right: 3,
-                          fontSize: 8, color: '#fff',
-                          background: 'rgba(0,0,0,0.5)',
-                          borderRadius: 3, padding: '1px 4px',
-                          pointerEvents: 'none',
-                        }}>
-                          点击热区选配置 · 再次双击关闭
-                        </div>
+                        {SLOT_ZONES.map(z => {
+                          const isActive = activeZone === z.id
+                          return (
+                            <div
+                              key={z.id}
+                              onClick={e => {
+                                e.stopPropagation()
+                                onZoneSelect?.(item.id, z.id)
+                              }}
+                              title={z.label}
+                              style={{
+                                position: 'absolute',
+                                top: z.top, left: z.left, width: z.w, height: z.h,
+                                cursor: 'pointer',
+                                border: isActive
+                                  ? '2px solid rgba(255,200,0,1)'
+                                  : '1.5px dashed rgba(255,200,0,0.4)',
+                                borderRadius: 4,
+                                background: isActive ? 'rgba(255,200,0,0.18)' : 'transparent',
+                                zIndex: 10,
+                                display: 'flex',
+                                alignItems: 'flex-end',
+                                paddingBottom: 3,
+                                paddingLeft: 3,
+                                transition: 'all 0.12s',
+                              }}
+                              onMouseEnter={e => {
+                                if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255,200,0,0.1)'
+                              }}
+                              onMouseLeave={e => {
+                                if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent'
+                              }}
+                            >
+                              {isActive && (
+                                <span style={{
+                                  fontSize: 8, fontWeight: 700, color: '#1a0a00',
+                                  background: 'rgba(255,200,0,0.9)',
+                                  borderRadius: 2, padding: '1px 4px',
+                                  lineHeight: 1.5,
+                                }}>
+                                  {z.label} ✓
+                                </span>
+                              )}
+                            </div>
+                          )
+                        })}
                       </>
                     )}
                   </div>
