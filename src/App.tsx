@@ -26,6 +26,7 @@ const HTabPage    = lazy(() => import('@/components/pages/HTabPage'))
 const CouponPage  = lazy(() => import('@/components/pages/CouponPage'))
 const VenuePage          = lazy(() => import('@/components/pages/VenuePage'))
 const MaterialStudioPage = lazy(() => import('@/components/pages/MaterialStudioPage'))
+const DeliveryPage       = lazy(() => import('@/components/pages/DeliveryPage'))
 const YituosiPage        = lazy(() => import('@/components/pages/YituosiPage'))
 const GenericPage = lazy(() => import('@/components/pages/GenericPage'))
 const AssetsPage  = lazy(() => import('@/components/pages/AssetsPage'))
@@ -89,6 +90,16 @@ function MainContent() {
             {toast}
           </div>
         )}
+      </>
+    )
+  }
+
+  // 交付中心：全屏独立布局
+  if (page === 'delivery') {
+    return (
+      <>
+        <Suspense fallback={<PageLoader />}><DeliveryPage /></Suspense>
+        {toast && <div className="fixed bottom-6 left-1/2 -translate-x-1/2 text-sm px-4 py-2 rounded-full shadow-lg z-50" style={{ background: '#1a1a1a', color: '#fff', whiteSpace: 'nowrap' }}>{toast}</div>}
       </>
     )
   }

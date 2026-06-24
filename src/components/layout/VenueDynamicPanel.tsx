@@ -534,20 +534,6 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
           <SlotRefreshButton item={selectedItem} />
         )}
 
-        {/* 高级设置入口（所有组件都有） */}
-        {activeCompId && (
-          <button
-            onClick={() => onAdvanced(activeCompId)}
-            className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-lg transition-all hover:opacity-90 shrink-0"
-            style={{ background: 'rgba(255,120,0,0.12)', color: '#FFA040', border: '1px solid rgba(255,120,0,0.2)', cursor: 'pointer' }}
-          >
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-              <circle cx="12" cy="12" r="3"/>
-            </svg>
-            高级设置
-          </button>
-        )}
       </div>
 
       {/* 内容区 */}
@@ -615,6 +601,28 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
         {/* 页面设置 */}
         {!pendingComp && !selectedLayer && <PageSettings />}
       </div>
+
+      {/* 底部：「进入工作室」（已选组件，藏得较深的深度编辑入口）*/}
+      {!pendingComp && activeCompId && (
+        <div className="shrink-0 px-3 pb-3 pt-2 border-t" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+          <button
+            onClick={() => onAdvanced(activeCompId)}
+            className="w-full flex items-center justify-center gap-2 py-2 text-xs font-medium rounded-xl transition-all hover:opacity-90"
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              color: 'rgba(255,255,255,0.45)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              cursor: 'pointer',
+            }}
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            进入工作室（深度编辑）
+          </button>
+        </div>
+      )}
 
       {/* 底部：「加入会场」（pending 模式）*/}
       {pendingComp && (

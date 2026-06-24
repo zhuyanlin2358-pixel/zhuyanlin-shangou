@@ -12,13 +12,13 @@
  *   包含：弹窗、导出、Tab文案、奖品图等深度配置
  */
 import { Suspense, lazy, useState } from 'react'
+import { useApp } from '@/contexts/AppContext'
 import { findComponent } from '@/types'
 import type { ComponentId } from '@/types'
 
 import VenueLayerPanel   from '@/components/layout/VenueLayerPanel'
 import VenueCanvasCenter from '@/components/layout/VenueCanvasCenter'
 import VenueDynamicPanel from '@/components/layout/VenueDynamicPanel'
-import DeliveryModal from '@/components/ui/DeliveryModal'
 import {
   SlotColorConfig, SlotTextConfig, SlotPrizeConfig,
   SlotDialogBtnConfig, SlotDialogBgConfig, InlineConfigSection,
@@ -122,6 +122,7 @@ function AdvancedStrip({ label, onBack }: { label: string; onBack: () => void })
 
 // ── 主组件 ────────────────────────────────────────────────────────────────────
 export default function VenuePage() {
+  const { goDelivery } = useApp()
 
   // 画布模式：选中图层
   const [selectedLayer, setSelectedLayer] = useState<'header' | string | null>(null)
@@ -133,9 +134,6 @@ export default function VenuePage() {
   const [advancedComp,  setAdvancedComp]  = useState<ComponentId | null>(null)
   // 高级设置模式：当前选中的配置热区
   const [advZone,       setAdvZone]       = useState('')
-  // 交付中心弹窗
-  const [showDelivery,  setShowDelivery]  = useState(false)
-
   const handleSelectLayer = (layer: 'header' | string | null) => {
     setPendingComp(null)
     setSelectedLayer(layer)
@@ -222,7 +220,7 @@ export default function VenuePage() {
 
         {/* 完成 · 下载素材（主 CTA） */}
         <button
-          onClick={() => setShowDelivery(true)}
+          onClick={goDelivery}
           className="flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-xl text-white transition-all hover:opacity-90"
           style={{ background: 'linear-gradient(90deg, #FF3060, #FF6030)' }}
         >
@@ -234,9 +232,6 @@ export default function VenuePage() {
           完成 · 下载素材
         </button>
       </div>
-
-      {/* 交付中心弹窗 */}
-      {showDelivery && <DeliveryModal onClose={() => setShowDelivery(false)} />}
 
       {/* 三列主体 */}
       <div className="flex flex-1 overflow-hidden">

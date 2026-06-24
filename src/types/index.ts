@@ -1,5 +1,5 @@
 export type ComponentStatus = 'done' | 'coming'
-export type PageId = 'home' | 'comp' | 'assets' | 'review' | 'venue' | 'studio'
+export type PageId = 'home' | 'comp' | 'assets' | 'review' | 'venue' | 'studio' | 'delivery'
 
 export type ComponentId =
   | 'yituosi' | 'n4' | 'n2' | 'yituoer' | 'diaotong' | 'xin-zujian'
