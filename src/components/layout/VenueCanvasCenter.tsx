@@ -5,10 +5,18 @@
  * 点击头图/组件 → 选中对应图层，右侧属性面板同步切换。
  * 支持 pointer 拖拽排序。
  */
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { ImageIcon } from 'lucide-react'
 import { useVenue } from '@/contexts/VenueContext'
 import type { VenueHeaderSize } from '@/types'
+
+// 预览模式选项
+const PREVIEW_MODES = [
+  { id: 'h5',   label: 'H5 效果预览',    desc: '手机模拟器 · 375px', active: true },
+  { id: 'admin',label: '系统后台预览',   desc: '用于审核上线', active: false },
+  { id: 'shop', label: '店铺预览效果',   desc: '店铺内页视角', active: false },
+] as const
+type PreviewMode = (typeof PREVIEW_MODES)[number]['id']
 
 const HEADER_SIZES: { key: VenueHeaderSize; h: number }[] = [
   { key: '424', h: 424 },
@@ -29,6 +37,24 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer }: Prop
 
   const SCALE   = 0.5
   const headerH = (HEADER_SIZES.find(s => s.key === headerSize)?.h ?? 424) * SCALE
+
+  // ── 预览模式 ──────────────────────────────────────────────────────────────
+  const [previewMode,   setPreviewMode]   = useState<PreviewMode>('h5')
+  const [showPreviewDD, setShowPreviewDD] = useState(false)
+  const previewDDRef = useRef<HTMLDivElement>(null)
+
+  // 点击外部关闭下拉
+  useEffect(() => {
+    if (!showPreviewDD) return
+    const close = (e: MouseEvent) => {
+      if (previewDDRef.current && !previewDDRef.current.contains(e.target as Node))
+        setShowPreviewDD(false)
+    }
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
+  }, [showPreviewDD])
+
+  const currentMode = PREVIEW_MODES.find(m => m.id === previewMode)!
 
   // ── 拖拽排序 ──────────────────────────────────────────────────────────────
   const draggedId    = useRef<string | null>(null)
@@ -91,17 +117,81 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer }: Prop
     >
       {/* 顶部信息栏 */}
       <div
-        className="w-full flex items-center justify-between px-6 py-3 shrink-0"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+        className="w-full flex items-center px-5 shrink-0 gap-3"
+        style={{ height: 44, borderBottom: '1px solid rgba(255,255,255,0.05)' }}
       >
-        <span className="text-[11px] font-semibold" style={{ color: 'rgba(255,255,255,0.25)' }}>
+        <span className="text-[11px] font-semibold flex-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
           画布预览 · 375px
         </span>
+
         {items.length > 0 && (
           <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.15)' }}>
             {items.length} 组件 · 拖拽排序
           </span>
         )}
+
+        {/* 预览模式下拉 */}
+        <div ref={previewDDRef} style={{ position: 'relative' }}>
+          <button
+            onClick={() => setShowPreviewDD(v => !v)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-lg transition-all"
+            style={{
+              background: showPreviewDD ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.06)',
+              color: 'rgba(255,255,255,0.55)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              cursor: 'pointer',
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            {currentMode.label}
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}
+              style={{ opacity: 0.5, transform: showPreviewDD ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
+
+          {showPreviewDD && (
+            <div
+              style={{
+                position: 'absolute', top: '100%', right: 0, marginTop: 6,
+                width: 200, borderRadius: 10, overflow: 'hidden',
+                background: '#1A2030', border: '1px solid rgba(255,255,255,0.1)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                zIndex: 100,
+              }}
+            >
+              {PREVIEW_MODES.map(mode => (
+                <button
+                  key={mode.id}
+                  onClick={() => { setPreviewMode(mode.id); setShowPreviewDD(false) }}
+                  disabled={!mode.active}
+                  className="w-full flex flex-col items-start px-4 py-2.5 transition-all text-left"
+                  style={{
+                    background: previewMode === mode.id ? 'rgba(45,120,244,0.12)' : 'transparent',
+                    color: !mode.active ? 'rgba(255,255,255,0.25)' : previewMode === mode.id ? '#6AA3FF' : 'rgba(255,255,255,0.7)',
+                    border: 'none',
+                    cursor: mode.active ? 'pointer' : 'not-allowed',
+                  }}
+                  onMouseEnter={e => { if (mode.active && previewMode !== mode.id) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)' }}
+                  onMouseLeave={e => { if (previewMode !== mode.id) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span style={{ fontSize: 12, fontWeight: 500 }}>{mode.label}</span>
+                    {!mode.active && (
+                      <span style={{ fontSize: 9, color: 'rgba(255,180,0,0.5)', background: 'rgba(255,180,0,0.08)', border: '1px solid rgba(255,180,0,0.15)', borderRadius: 3, padding: '1px 5px' }}>
+                        待开发
+                      </span>
+                    )}
+                  </div>
+                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>{mode.desc}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 手机帧 */}

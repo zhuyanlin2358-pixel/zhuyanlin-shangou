@@ -24,8 +24,9 @@ const N2Page      = lazy(() => import('@/components/pages/N2Page'))
 const FloorPage   = lazy(() => import('@/components/pages/FloorPage'))
 const HTabPage    = lazy(() => import('@/components/pages/HTabPage'))
 const CouponPage  = lazy(() => import('@/components/pages/CouponPage'))
-const VenuePage   = lazy(() => import('@/components/pages/VenuePage'))
-const YituosiPage = lazy(() => import('@/components/pages/YituosiPage'))
+const VenuePage          = lazy(() => import('@/components/pages/VenuePage'))
+const MaterialStudioPage = lazy(() => import('@/components/pages/MaterialStudioPage'))
+const YituosiPage        = lazy(() => import('@/components/pages/YituosiPage'))
 const GenericPage = lazy(() => import('@/components/pages/GenericPage'))
 const AssetsPage  = lazy(() => import('@/components/pages/AssetsPage'))
 const ReviewPage  = lazy(() => import('@/components/pages/ReviewPage'))
@@ -82,6 +83,21 @@ function MainContent() {
     return (
       <>
         <Suspense fallback={<PageLoader />}><VenuePage /></Suspense>
+        {toast && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 text-sm px-4 py-2 rounded-full shadow-lg z-50"
+            style={{ background: '#1a1a1a', color: '#fff', whiteSpace: 'nowrap' }}>
+            {toast}
+          </div>
+        )}
+      </>
+    )
+  }
+
+  // 素材设计工作室：全屏独立布局，跳过 Sidebar + TopBar
+  if (page === 'studio') {
+    return (
+      <>
+        <Suspense fallback={<PageLoader />}><MaterialStudioPage /></Suspense>
         {toast && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 text-sm px-4 py-2 rounded-full shadow-lg z-50"
             style={{ background: '#1a1a1a', color: '#fff', whiteSpace: 'nowrap' }}>

@@ -14,6 +14,7 @@ interface AppContextValue {
   goAssets: () => void
   goReview: () => void
   goVenue: () => void
+  goStudio: () => void
   toast: string
   showToast: (msg: string) => void
   // 当前组件页注册的导出全部回调
@@ -37,7 +38,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('theme', darkMode ? 'dark' : 'light')
     // 组件页面所有面板都用 text-white/* 写死白色文字，必须强制深色模式；
     // 非组件页面按用户偏好切换。
-    const forceDark = page === 'comp' || page === 'venue'
+    const forceDark = page === 'comp' || page === 'venue' || page === 'studio'
     document.body.classList.toggle('dark-mode', forceDark || darkMode)
   }, [darkMode, page])
 
@@ -83,6 +84,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setHasPreview(false)
   }
 
+  const goStudio = () => {
+    setPage('studio')
+    setCurrentComp(null)
+    setHasPreview(false)
+  }
+
   const showToast = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(''), 2500)
@@ -100,7 +107,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       darkMode, toggleDarkMode,
       hasPreview, setHasPreview,
       page, currentComp,
-      goHome, enterComp, goAssets, goReview, goVenue,
+      goHome, enterComp, goAssets, goReview, goVenue, goStudio,
       toast, showToast,
       registerExportAll, triggerExportAll, hasExportAll,
     }}>
