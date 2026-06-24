@@ -715,18 +715,7 @@ export default function DeliveryPage() {
     })
   }, [])
 
-  // 获取当前所有素材 ID
-  const getAllIds = useCallback((): string[] => {
-    const ids: string[] = []
-    for (const item of items) {
-      const { assetList } = buildAssets(item)
-      assetList.forEach(a => ids.push(a.id))
-    }
-    return ids
-  }, [items, buildAssets])
-
-  const selectAll  = useCallback(() => setSelected(new Set(getAllIds())), [getAllIds])
-  const selectNone = useCallback(() => setSelected(new Set()),           [])
+  const selectNone = useCallback(() => setSelected(new Set()), [])
 
   // 批量选择/取消一组 id
   const selectGroup = useCallback((ids: string[], on: boolean) => {
@@ -741,12 +730,32 @@ export default function DeliveryPage() {
   const selectedIds   = selected
   const selectedCount = selected.size
 
+  // 全部素材 ID 列表（用于「全选/全不选」判断，避免在 JSX 里调用 getAllIds()）
+  const allAssetIds = useMemo<string[]>(() => {
+    const ids: string[] = []
+    for (const item of items) {
+      try {
+        const { assetList } = buildAssets(item)
+        assetList.forEach((a: AssetDef) => ids.push(a.id))
+      } catch {}
+    }
+    return ids
+  }, [items, buildAssets])
+
+  const totalAssetCount = allAssetIds.length
+  const allSelected     = selectedCount > 0 && selectedCount >= totalAssetCount
+
+  // 全选：用预计算的 ID 列表
+  const selectAll = useCallback(() => setSelected(new Set(allAssetIds)), [allAssetIds])
+
   // 已选素材列表（给右侧预览用）
   const selectedAssets = useMemo<AssetDef[]>(() => {
     const result: AssetDef[] = []
     for (const item of items) {
-      const { assetList } = buildAssets(item)
-      assetList.forEach(a => { if (selected.has(a.id)) result.push(a) })
+      try {
+        const { assetList } = buildAssets(item)
+        assetList.forEach((a: AssetDef) => { if (selected.has(a.id)) result.push(a) })
+      } catch {}
     }
     return result
   }, [items, selected, buildAssets])
@@ -802,11 +811,11 @@ export default function DeliveryPage() {
         </span>
         <div style={{ flex: 1 }} />
         {/* 全选 / 全不选 */}
-        <button onClick={selectedCount === getAllIds().length ? selectNone : selectAll}
+        <button onClick={allSelected ? selectNone : selectAll}
           className="text-[11px] px-3 py-1.5 rounded-lg transition-all hover:opacity-80"
           style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)',
             border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}>
-          {selectedCount === getAllIds().length && selectedCount > 0 ? '全不选' : '全选'}
+          {allSelected ? '全不选' : `全选 (${totalAssetCount})`}
         </button>
         {/* 选中计数 */}
         {selectedCount > 0 && (
