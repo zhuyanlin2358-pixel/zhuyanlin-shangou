@@ -212,10 +212,11 @@ function FieldRow({ label, children }: { label: string; children: React.ReactNod
   )
 }
 
-export function PrizeBlock({ idx, prize, onChange, onImgChange }: {
+export function PrizeBlock({ idx, prize, onChange, onImgChange, onDelete }: {
   idx: number; prize: PrizeConfig
   onChange: (p: Partial<PrizeConfig>) => void
   onImgChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onDelete?: () => void
 }) {
   const fileRef = useRef<HTMLInputElement>(null)
   const showImg    = prize.type === 'product-tag' || prize.type === 'product-dashed'
@@ -226,9 +227,18 @@ export function PrizeBlock({ idx, prize, onChange, onImgChange }: {
     <div style={{ paddingBottom: 16, marginBottom: 8, borderBottom: '1px solid rgba(255,255,255,0.06)' }}
       className="last:border-b-0 last:pb-0">
 
-      {/* 区块标题（大号，清晰层级）*/}
-      <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.85)', marginBottom: 12 }}>
-        奖品图 {idx + 1}
+      {/* 区块标题（大号，清晰层级）+ 删除按钮 */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.85)' }}>
+          奖品图 {idx + 1}
+        </div>
+        {onDelete && (
+          <button onClick={onDelete}
+            style={{ fontSize: 10, color: 'rgba(239,68,68,0.7)', background: 'rgba(239,68,68,0.08)',
+              border: 'none', borderRadius: 4, padding: '2px 9px', cursor: 'pointer' }}>
+            删除
+          </button>
+        )}
       </div>
 
       {/* 类型：Toggle group（白底深字 = 选中，深底灰字 = 未选中）*/}
@@ -323,9 +333,9 @@ export function PrizeBlock({ idx, prize, onChange, onImgChange }: {
   )
 }
 
-/* ── 奖品图配置整体（Section 6 下方）── */
+/* ── 奖品图配置整体（Section 6 下方 / 会场面板奖品区）── */
 export function SlotPrizeConfig() {
-  const { config, setPrize } = useSlot()
+  const { config, setPrize, addPrize, removePrize } = useSlot()
 
   const handlePrizeImg = (idx: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return
@@ -335,13 +345,32 @@ export function SlotPrizeConfig() {
   }
 
   return (
-    <div className="space-y-4">
-      {config.prizes.map((prize, idx) => (
-        <PrizeBlock key={idx} idx={idx} prize={prize}
-          onChange={patch => setPrize(idx, patch)}
-          onImgChange={handlePrizeImg(idx)}
-        />
-      ))}
+    <div>
+      {/* 顶部：数量 + 增加 */}
+      <div className="flex items-center justify-between mb-3">
+        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>
+          共 {config.prizes.length} 张奖品图
+        </span>
+        <button onClick={addPrize}
+          className="flex items-center gap-1 px-2.5 py-1 text-[10px] rounded-lg"
+          style={{ background: 'rgba(45,120,244,0.12)', color: '#6AA3FF',
+            border: '1px solid rgba(45,120,244,0.2)', cursor: 'pointer' }}>
+          <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M8 3v10M3 8h10"/>
+          </svg>
+          增加奖品图
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        {config.prizes.map((prize, idx) => (
+          <PrizeBlock key={idx} idx={idx} prize={prize}
+            onChange={patch => setPrize(idx, patch)}
+            onImgChange={handlePrizeImg(idx)}
+            onDelete={config.prizes.length > 1 ? () => removePrize(idx) : undefined}
+          />
+        ))}
+      </div>
     </div>
   )
 }

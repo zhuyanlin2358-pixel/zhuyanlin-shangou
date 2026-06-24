@@ -2,7 +2,7 @@
  * 老虎机工作室（专业深度编辑）
  * 布局：20% 结构树 | 40% 预览+演示 | 40% 素材预览+配置
  */
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useSlot } from '@/contexts/SlotContext'
 import {
   drawSlotBannerCanvas, drawPrizeCanvas, drawButtonCanvas,
@@ -60,23 +60,8 @@ const Icons = {
 }
 
 // ── 层级定义 ───────────────────────────────────────────────────────────────────
-type LayerId = 'bg'|'title'|'drum'|'prize1'|'prize2'|'prize3'|'button'|'links'|'empty'|'dialog'
-interface Layer { id: LayerId; label: string; sub: string; icon: ()=>JSX.Element; children?: Layer[] }
-
-const LAYERS: Layer[] = [
-  { id:'bg',     label:'背景层',   sub:'渐变配色',       icon: Icons.bg     },
-  { id:'title',  label:'主标题',   sub:'文案 · 字色',    icon: Icons.title  },
-  { id:'drum',   label:'转盘区',   sub:'奖品图 · 滚轮',  icon: Icons.drum,
-    children: [
-      { id:'prize1', label:'奖品图 1', sub:'商品图标', icon: Icons.image },
-      { id:'prize2', label:'奖品图 2', sub:'商品图标', icon: Icons.image },
-      { id:'prize3', label:'奖品图 3', sub:'谢谢参与', icon: Icons.image },
-    ]},
-  { id:'button', label:'抽奖按钮', sub:'文案 · 渐变色', icon: Icons.button },
-  { id:'links',  label:'链接文字', sub:'奖品 · 规则',   icon: Icons.link   },
-  { id:'empty',  label:'空态页',   sub:'插图 · 文案',   icon: Icons.empty  },
-  { id:'dialog', label:'弹窗层',   sub:'结果页 · 按钮', icon: Icons.dialog },
-]
+type LayerId = string   // 支持动态 prize1/prize2/... 任意数量
+interface Layer { id: string; label: string; sub: string; icon: ()=>JSX.Element; children?: Layer[] }
 
 
 // ── 画布行（预览图 + 名称 + 下载）─────────────────────────────────────────────
@@ -257,9 +242,10 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
     )
   }
 
-  // ── 单个奖品图 ──
-  if (selected === 'prize1' || selected === 'prize2' || selected === 'prize3') {
-    const idx = selected === 'prize1' ? 0 : selected === 'prize2' ? 1 : 2
+  // ── 单个奖品图（支持任意数量）──
+  if (selected && /^prize\d+$/.test(selected)) {
+    const idx = parseInt(selected.replace('prize', ''), 10) - 1
+    if (idx < 0 || idx >= config.prizes.length) return null
     const url = state[`prize${idx}`]
     return (
       <div>
@@ -579,8 +565,26 @@ function StudioCanvas({ bannerUrl, config, onLayerClick }: {
 export default function SlotStudio({ onBack }: { onBack: () => void }) {
   const { config } = useSlot()
   const [selected, setSelected] = useState<LayerId | null>(null)
-  const [expanded, setExpanded] = useState<Set<LayerId>>(new Set(['drum']))
+  const [expanded, setExpanded] = useState<Set<string>>(new Set(['drum']))
   const [bannerUrl, setBannerUrl] = useState('')
+
+  // 动态图层树（奖品子节点随 prizes 数量变化）
+  const layers = useMemo<Layer[]>(() => [
+    { id:'bg',     label:'背景层',   sub:'渐变配色',       icon: Icons.bg     },
+    { id:'title',  label:'主标题',   sub:'文案 · 字色',    icon: Icons.title  },
+    { id:'drum',   label:'转盘区',   sub:`奖品图 × ${config.prizes.length}`, icon: Icons.drum,
+      children: config.prizes.map((p, i) => ({
+        id: `prize${i + 1}`,
+        label: `奖品图 ${i + 1}`,
+        sub: p.tag || (p.type === 'thanks' ? '谢谢参与' : '商品图标'),
+        icon: Icons.image,
+      }))
+    },
+    { id:'button', label:'抽奖按钮', sub:'文案 · 渐变色', icon: Icons.button },
+    { id:'links',  label:'链接文字', sub:'奖品 · 规则',   icon: Icons.link   },
+    { id:'empty',  label:'空态页',   sub:'插图 · 文案',   icon: Icons.empty  },
+    { id:'dialog', label:'弹窗层',   sub:'结果页 · 按钮', icon: Icons.dialog },
+  ], [config.prizes])
 
   const buildBanner = useCallback(async () => {
     try {
@@ -603,7 +607,7 @@ export default function SlotStudio({ onBack }: { onBack: () => void }) {
     setExpanded(p => { const s = new Set(p); s.has(id) ? s.delete(id) : s.add(id); return s })
 
   const currentLabel = selected
-    ? LAYERS.flatMap(l => l.children ? [l,...l.children] : [l]).find(l => l.id === selected)?.label
+    ? layers.flatMap(l => l.children ? [l,...l.children] : [l]).find(l => l.id === selected)?.label
     : '属性面板'
 
   return (
@@ -640,7 +644,7 @@ export default function SlotStudio({ onBack }: { onBack: () => void }) {
             组件结构
           </div>
           <div className="flex-1 px-1 pb-4">
-            <LayerTree layers={LAYERS} selected={selected} onSelect={setSelected}
+            <LayerTree layers={layers} selected={selected} onSelect={setSelected}
               expanded={expanded} onToggle={handleToggle} />
           </div>
         </div>
