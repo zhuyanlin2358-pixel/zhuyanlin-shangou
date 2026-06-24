@@ -24,12 +24,20 @@ const HEADER_SIZES: { key: VenueHeaderSize; h: number }[] = [
   { key: '274', h: 274 },
 ]
 
+// slot 预览热区配置（百分比，基于 750×242 坐标系）
+const SLOT_ZONES: { id: string; label: string; top: string; left: string; w: string; h: string }[] = [
+  { id: 'text',  label: '文案',   top: '4%',  left: '3%',   w: '29%', h: '26%' },
+  { id: 'prize', label: '奖品图', top: '30%', left: '5.5%', w: '57%', h: '59%' },
+  { id: 'color', label: '配色/按钮', top: '42%', left: '66%', w: '27%', h: '33%' },
+]
+
 interface Props {
   selectedLayer: 'header' | string | null
   onSelectLayer: (layer: 'header' | string | null) => void
+  onZoneSelect?: (itemId: string, zone: string) => void
 }
 
-export default function VenueCanvasCenter({ selectedLayer, onSelectLayer }: Props) {
+export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZoneSelect }: Props) {
   const {
     items, moveItem,
     headerUrl, headerSize, bgColor,
@@ -63,6 +71,8 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer }: Prop
   const latestItems  = useRef(items)
   latestItems.current = items
   const [dragOver, setDragOver] = useState<string | null>(null)
+  // 双击激活的 item（显示热区 overlay）
+  const [dblClickId, setDblClickId] = useState<string | null>(null)
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>, id: string) => {
     e.currentTarget.setPointerCapture(e.pointerId)
@@ -274,65 +284,140 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer }: Prop
             </div>
           )}
 
-          {items.map(item => (
-            <div
-              key={item.id}
-              ref={el => { itemRefs.current[item.id] = el }}
-              onPointerDown={e => handlePointerDown(e, item.id)}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              className="relative"
-              style={{
-                cursor: draggedId.current === item.id ? 'grabbing' : 'pointer',
-                touchAction: 'none',
-                userSelect: 'none',
-                marginTop: 4,
-              }}
-            >
-              {item.spacingAbove > 0 && (
-                <div style={{ height: Math.round(item.spacingAbove * SCALE), background: bgColor }} />
-              )}
+          {items.map(item => {
+            const isSlot    = item.componentId === 'slot'
+            const isCoupon  = item.componentId === 'coupon'
+            const isDblActive = dblClickId === item.id
+            const pad = isCoupon ? 20 : 8
+            const r   = isCoupon ? 10 : 0
+
+            return (
               <div
+                key={item.id}
+                ref={el => { itemRefs.current[item.id] = el }}
+                onPointerDown={e => handlePointerDown(e, item.id)}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onDoubleClick={e => {
+                  e.stopPropagation()
+                  if (isSlot) {
+                    setDblClickId(isDblActive ? null : item.id)
+                    onSelectLayer(item.id)
+                  }
+                }}
+                className="relative"
                 style={{
-                  outline: (selectedLayer === item.id || dragOver === item.id)
-                    ? '2.5px solid #2D78F4'
-                    : '2.5px solid transparent',
-                  outlineOffset: -1,
-                  transition: 'outline-color 0.12s',
-                  position: 'relative',
+                  cursor: draggedId.current === item.id ? 'grabbing' : 'pointer',
+                  touchAction: 'none',
+                  userSelect: 'none',
+                  marginTop: 4,
                 }}
               >
-                {(() => {
-                  const isCoupon = item.componentId === 'coupon'
-                  const pad = isCoupon ? 20 : 8
-                  const r   = isCoupon ? 10 : 0
-                  return (
-                    <div style={{ padding: `0 ${pad}px`, background: bgColor }}>
-                      <img
-                        src={item.previewUrl} alt={item.label}
-                        draggable={false}
-                        style={{ width: '100%', height: 'auto', display: 'block', borderRadius: r }}
-                      />
-                    </div>
-                  )
-                })()}
+                {item.spacingAbove > 0 && (
+                  <div style={{ height: Math.round(item.spacingAbove * SCALE), background: bgColor }} />
+                )}
+                <div
+                  style={{
+                    outline: (selectedLayer === item.id || dragOver === item.id)
+                      ? `2.5px solid ${isDblActive ? '#FFB800' : '#2D78F4'}`
+                      : '2.5px solid transparent',
+                    outlineOffset: -1,
+                    transition: 'outline-color 0.12s',
+                    position: 'relative',
+                  }}
+                >
+                  <div style={{ padding: `0 ${pad}px`, background: bgColor, position: 'relative' }}>
+                    <img
+                      src={item.previewUrl} alt={item.label}
+                      draggable={false}
+                      style={{ width: '100%', height: 'auto', display: 'block', borderRadius: r }}
+                    />
 
-                {/* 选中标签 */}
-                {selectedLayer === item.id && (
-                  <div
-                    style={{
-                      position: 'absolute', top: 4, left: isCoupon(item.componentId) ? 24 : 12,
+                    {/* slot 双击后显示热区 overlay */}
+                    {isSlot && isDblActive && (
+                      <>
+                        {/* 遮罩提示 */}
+                        <div style={{
+                          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                          pointerEvents: 'none',
+                          background: 'rgba(0,0,0,0.15)',
+                          borderRadius: r,
+                        }} />
+                        {SLOT_ZONES.map(z => (
+                          <div
+                            key={z.id}
+                            onClick={e => {
+                              e.stopPropagation()
+                              onZoneSelect?.(item.id, z.id)
+                              setDblClickId(null)
+                            }}
+                            title={z.label}
+                            style={{
+                              position: 'absolute',
+                              top: z.top, left: z.left, width: z.w, height: z.h,
+                              cursor: 'pointer',
+                              border: '2px solid rgba(255,200,0,0.8)',
+                              borderRadius: 4,
+                              background: 'rgba(255,200,0,0.08)',
+                              zIndex: 10,
+                              display: 'flex',
+                              alignItems: 'flex-end',
+                              paddingBottom: 3,
+                              paddingLeft: 3,
+                              transition: 'background 0.12s',
+                            }}
+                            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,200,0,0.2)'}
+                            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,200,0,0.08)'}
+                          >
+                            <span style={{
+                              fontSize: 8, fontWeight: 700, color: '#fff',
+                              background: 'rgba(180,120,0,0.85)',
+                              borderRadius: 2, padding: '1px 4px',
+                              lineHeight: 1.4,
+                            }}>
+                              {z.label} →
+                            </span>
+                          </div>
+                        ))}
+                        {/* 关闭提示 */}
+                        <div style={{
+                          position: 'absolute', top: 3, right: 3,
+                          fontSize: 8, color: '#fff',
+                          background: 'rgba(0,0,0,0.5)',
+                          borderRadius: 3, padding: '1px 4px',
+                          pointerEvents: 'none',
+                        }}>
+                          点击热区选配置 · 再次双击关闭
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* 选中标签（单击蓝色，双击黄色） */}
+                  {selectedLayer === item.id && !isDblActive && (
+                    <div style={{
+                      position: 'absolute', top: 4, left: isCoupon ? 24 : 12,
                       fontSize: 9, fontWeight: 600, color: '#fff',
                       background: '#2D78F4', borderRadius: 3, padding: '1px 5px',
                       pointerEvents: 'none',
-                    }}
-                  >
-                    {item.label}
-                  </div>
-                )}
+                    }}>
+                      {item.label}
+                    </div>
+                  )}
+                  {isDblActive && (
+                    <div style={{
+                      position: 'absolute', top: 4, left: isCoupon ? 24 : 12,
+                      fontSize: 9, fontWeight: 600, color: '#1a0a00',
+                      background: '#FFB800', borderRadius: 3, padding: '1px 5px',
+                      pointerEvents: 'none',
+                    }}>
+                      双击选中 · 点热区配置
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
 
           <div style={{ height: 12, background: bgColor }} />
         </div>
@@ -341,4 +426,3 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer }: Prop
   )
 }
 
-function isCoupon(compId: string) { return compId === 'coupon' }

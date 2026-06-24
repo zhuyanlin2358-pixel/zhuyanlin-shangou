@@ -27,6 +27,11 @@ import {
 } from '@/utils/exportUtils'
 import type { PrizeInfo, XfTransform, BannerConfig } from '@/utils/exportUtils'
 import type { SlotConfig } from '@/types'
+import {
+  SlotColorConfig as InlineSlotColorConfig,
+  SlotTextConfig  as InlineSlotTextConfig,
+  SlotPrizeConfig as InlineSlotPrizeConfig,
+} from '@/components/panels/SlotConfigBlocks'
 
 const FloorPanel  = lazy(() => import('@/components/panels/FloorPanel'))
 const CouponPanel = lazy(() => import('@/components/panels/CouponPanel'))
@@ -463,11 +468,13 @@ function HTabInlinePanel({ sourceId }: { sourceId?: string }) {
 interface Props {
   selectedLayer: 'header' | string | null
   pendingComp:   ComponentId | null
+  activeZone:    string           // 双击热区选中的配置区域（'text'|'prize'|'color'|''）
+  onZoneClear:   () => void       // 清空热区选中
   onPendingDone: () => void
   onAdvanced:    (compId: ComponentId) => void
 }
 
-export default function VenueDynamicPanel({ selectedLayer, pendingComp, onPendingDone, onAdvanced }: Props) {
+export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZone, onZoneClear, onPendingDone, onAdvanced }: Props) {
   const { items } = useVenue()
 
   const selectedItem = selectedLayer && selectedLayer !== 'header'
@@ -548,17 +555,40 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, onPendin
         {/* 已在画布的组件配置 */}
         {!pendingComp && selectedItem && (
           <>
-            {selectedItem.componentId === 'slot' && (
-              <div className="px-4 pt-3 pb-1 text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                弹窗设置 / 奖品图 / 全量导出 → 点右上角「高级设置」
+            {/* slot + 热区激活 → 只显示对应配置，顶部加面包屑 */}
+            {selectedItem.componentId === 'slot' && activeZone ? (
+              <div>
+                <div className="flex items-center gap-2 px-4 pt-3 pb-2">
+                  <button onClick={onZoneClear}
+                    className="text-[10px] transition-opacity hover:opacity-70"
+                    style={{ color: '#6AA3FF', background: 'none', border: 'none', cursor: 'pointer' }}>
+                    ← 全部配置
+                  </button>
+                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>
+                    / {activeZone === 'text' ? '文案' : activeZone === 'prize' ? '奖品图' : '配色/按钮'}
+                  </span>
+                </div>
+                <div className="px-3">
+                  {activeZone === 'text'  && <InlineSlotTextConfig />}
+                  {activeZone === 'prize' && <InlineSlotPrizeConfig />}
+                  {activeZone === 'color' && <InlineSlotColorConfig />}
+                </div>
               </div>
+            ) : (
+              <>
+                {selectedItem.componentId === 'slot' && (
+                  <div className="px-4 pt-3 pb-1 text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                    双击画布预览 → 选热区可快速定位配置 · 「高级设置」含弹窗/导出
+                  </div>
+                )}
+                <Suspense fallback={<PLoader />}>
+                  {selectedItem.componentId === 'floor'  && <FloorPanel />}
+                  {selectedItem.componentId === 'h-tab'  && <HTabInlinePanel sourceId={selectedItem.sourceId} />}
+                  {selectedItem.componentId === 'coupon' && <CouponPanel />}
+                  {selectedItem.componentId === 'slot'   && <SlotPanel />}
+                </Suspense>
+              </>
             )}
-            <Suspense fallback={<PLoader />}>
-              {selectedItem.componentId === 'floor'  && <FloorPanel />}
-              {selectedItem.componentId === 'h-tab'  && <HTabInlinePanel sourceId={selectedItem.sourceId} />}
-              {selectedItem.componentId === 'coupon' && <CouponPanel />}
-              {selectedItem.componentId === 'slot'   && <SlotPanel />}
-            </Suspense>
           </>
         )}
 

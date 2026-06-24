@@ -495,14 +495,15 @@ const DIALOG_RESULTS = [
 ] as const
 
 /* ── 主页面 ── */
-export default function SlotPage() {
+export default function SlotPage({ onZoneClick }: { onZoneClick?: (zone: string) => void } = {}) {
   const { config, activePreset, setEmptyTransform, setSlotBannerUrl } = useSlot()
   const { showToast, registerExportAll, page } = useApp()
   const inVenue = page === 'venue'  // 会场模式：隐藏无用的「预览」按钮
 
-  // 点击预览热区 → 平滑滚动到对应配置区
-  const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  // 热区点击：有 onZoneClick 时切换右侧面板，否则滚动到锚点
+  const handleZone = (zone: string, anchorId: string) => {
+    if (onZoneClick) { onZoneClick(zone) }
+    else { document.getElementById(anchorId)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }
   }
 
   // 字体预加载（确保 Canvas 绘制时自定义字体可用）
@@ -743,11 +744,11 @@ export default function SlotPage() {
                 : <div style={{ width: '100%', height: '100%', background: `linear-gradient(120deg,${config.slotTintFrom},${config.slotTintTo})` }} />
               }
               {/* ── 热区：标题文案 ── */}
-              <ClickZone top="4%" left="3%" w="27%" h="24%" label="文案设置" onClick={() => scrollTo('slot-cfg-text')} />
+              <ClickZone top="4%" left="3%" w="27%" h="24%" label="文案设置" onClick={() => handleZone('text', 'slot-cfg-text')} />
               {/* ── 热区：奖品图区域 ── */}
-              <ClickZone top="30%" left="5%" w="57%" h="58%" label="奖品图设置" onClick={() => scrollTo('slot-cfg-prize')} />
+              <ClickZone top="30%" left="5%" w="57%" h="58%" label="奖品图设置" onClick={() => handleZone('prize', 'slot-cfg-prize')} />
               {/* ── 热区：按钮 ── */}
-              <ClickZone top="42%" left="66%" w="27%" h="32%" label="配色/按钮" onClick={() => scrollTo('slot-cfg-color')} />
+              <ClickZone top="42%" left="66%" w="27%" h="32%" label="配色/按钮" onClick={() => handleZone('color', 'slot-cfg-color')} />
             </div>
           </ExportCard>
           {/* 加入会场（仅在会场页显示）*/}
