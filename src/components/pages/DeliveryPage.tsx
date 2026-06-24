@@ -8,7 +8,7 @@
  */
 import { useState, useCallback, useRef, useMemo } from 'react'
 import JSZip from 'jszip'
-import { X, Download, Package, Eye, RefreshCw, ImageIcon } from 'lucide-react'
+import { X, Download, Package, Eye, RefreshCw } from 'lucide-react'
 import { useVenue }  from '@/contexts/VenueContext'
 import { useSlot }   from '@/contexts/SlotContext'
 import { useCoupon } from '@/contexts/CouponContext'
@@ -37,7 +37,6 @@ const SLOT_DIALOG_BUTTONS = [
   '确认', '领奖品', '查看收货地址', '重新加载', '关闭', '查看详情', '分享给朋友',
 ]
 import type { PrizeInfo, XfTransform } from '@/utils/exportUtils'
-import type { VenueHeaderSize } from '@/types'
 
 // ── 工具 ──────────────────────────────────────────────────────────────────────
 function canvasToBlob(c: HTMLCanvasElement): Promise<Blob> {
@@ -197,13 +196,13 @@ function CollapsibleGroup({
 }) {
   const [open, setOpen] = useState(defaultOpen)
 
-  // 组级选中状态
-  const allChecked  = groupIds ? groupIds.every(id => selectedIds?.has(id) ?? true)  : true
-  const someChecked = groupIds ? groupIds.some(id  => selectedIds?.has(id) ?? true)  : true
+  // 组级选中状态（正向集合：空=未选中）
+  const allChecked  = groupIds ? groupIds.length > 0 && groupIds.every(id => selectedIds?.has(id) ?? false) : false
+  const someChecked = groupIds ? groupIds.some(id  => selectedIds?.has(id) ?? false) : false
   const groupToggle = () => {
     if (!groupIds || !onToggle) return
-    if (allChecked) { groupIds.forEach(onToggle) }      // 全选→全不选
-    else            { groupIds.filter(id => !(selectedIds?.has(id))).forEach(onToggle) } // 补全选
+    if (allChecked) groupIds.forEach(onToggle)   // 全选→全不选
+    else groupIds.filter(id => !selectedIds?.has(id)).forEach(onToggle) // 补全选
   }
 
   return (
@@ -248,13 +247,14 @@ function CollapsibleGroup({
 // ── 老虎机专用分组 Section ────────────────────────────────────────────────────
 function SlotComponentSection({
   label, icon, assets, onPreview, prizeCount, onAddPrize, onRemovePrize,
-  selectedIds, onToggleId,
+  selectedIds, onToggleId, onSelectGroup,
 }: {
   label: string; icon: React.ReactNode
   assets: AssetDef[]
   onPreview: (url: string, label: string, gen: () => Promise<HTMLCanvasElement>) => void
   prizeCount: number; onAddPrize: () => void; onRemovePrize: (idx: number) => void
   selectedIds: Set<string>; onToggleId: (id: string) => void
+  onSelectGroup: (ids: string[], on: boolean) => void
 }) {
   const [dlStatus, setDlStatus] = useState<'idle'|'loading'|'done'>('idle')
 
@@ -297,9 +297,15 @@ function SlotComponentSection({
         style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
         <span style={{ opacity: 0.6 }}>{icon}</span>
         <span className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.85)' }}>{label}</span>
-        <span className="text-[10px] ml-auto" style={{ color: 'rgba(255,255,255,0.25)' }}>
-          已选 {selCount}/{assets.length}
-        </span>
+        <div className="flex items-center gap-2 ml-auto">
+          <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.25)' }}>已选 {selCount}/{assets.length}</span>
+          <button
+            onClick={() => onSelectGroup(assets.map(a => a.id), selCount < assets.length)}
+            className="text-[9px] px-2 py-0.5 rounded-lg transition-all hover:opacity-80"
+            style={{ background: 'rgba(45,120,244,0.12)', color: '#6AA3FF', border: '1px solid rgba(45,120,244,0.2)', cursor: 'pointer' }}>
+            {selCount === assets.length ? '全不选' : '全选'}
+          </button>
+        </div>
       </div>
 
       {/* 分组内容 */}
@@ -378,12 +384,13 @@ function SlotComponentSection({
 
 // ── 通用组件素材分组 ──────────────────────────────────────────────────────────
 function ComponentSection({
-  label, icon, assets, onPreview, selectedIds, onToggleId,
+  label, icon, assets, onPreview, selectedIds, onToggleId, onSelectGroup,
 }: {
   label: string; icon: React.ReactNode
   assets: AssetDef[]
   onPreview: (url: string, label: string, gen: () => Promise<HTMLCanvasElement>) => void
   selectedIds: Set<string>; onToggleId: (id: string) => void
+  onSelectGroup: (ids: string[], on: boolean) => void
 }) {
   const [dlStatus, setDlStatus] = useState<'idle'|'loading'|'done'>('idle')
   const sel = assets.filter(a => selectedIds.has(a.id))
@@ -411,9 +418,15 @@ function ComponentSection({
         style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
         <span style={{ opacity: 0.6 }}>{icon}</span>
         <span className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.85)' }}>{label}</span>
-        <span className="text-[10px] ml-auto" style={{ color: 'rgba(255,255,255,0.25)' }}>
-          已选 {sel.length}/{assets.length}
-        </span>
+        <div className="flex items-center gap-2 ml-auto">
+          <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.25)' }}>已选 {sel.length}/{assets.length}</span>
+          <button
+            onClick={() => onSelectGroup(assets.map(a => a.id), sel.length < assets.length)}
+            className="text-[9px] px-2 py-0.5 rounded-lg transition-all hover:opacity-80"
+            style={{ background: 'rgba(45,120,244,0.12)', color: '#6AA3FF', border: '1px solid rgba(45,120,244,0.2)', cursor: 'pointer' }}>
+            {sel.length === assets.length ? '全不选' : '全选'}
+          </button>
+        </div>
       </div>
       {/* 素材列表 */}
       <div className="p-3 space-y-1">
@@ -440,39 +453,93 @@ function ComponentSection({
   )
 }
 
-// ── 页面右侧：手机预览（精简版）────────────────────────────────────────────────
-const HEADER_H: Record<VenueHeaderSize, number> = { '424': 212, '624': 312, '274': 137 }
+// ── 右侧：已选素材切图预览 ───────────────────────────────────────────────────
+function AssetGallery({ assets }: { assets: AssetDef[] }) {
+  // 逐条生成预览，不重置已有缓存
+  const [cache, setCache] = useState<Record<string, string>>({})
+  const runRef = useRef(0)
 
-function PhonePreview() {
-  const { items, headerUrl, headerSize, bgColor } = useVenue()
-  const h = HEADER_H[headerSize]
-  return (
-    <div className="flex flex-col items-center overflow-y-auto py-6 px-4 flex-1">
-      <div className="text-[11px] mb-4 font-semibold" style={{ color: 'rgba(255,255,255,0.25)' }}>页面预览 · 375px</div>
-      <div className="rounded-[22px] overflow-hidden shadow-2xl"
-        style={{ width: 320, background: bgColor, border: '2px solid rgba(255,255,255,0.1)' }}>
-        <div className="flex items-center justify-between px-4" style={{ height: 22, background: bgColor }}>
-          <span style={{ fontSize: 9, fontWeight: 700, color: '#333' }}>9:41</span>
+  useEffect(() => {
+    const run = ++runRef.current
+    const missing = assets.filter(a => !cache[a.id])
+    if (!missing.length) return
+    ;(async () => {
+      await preloadFonts()
+      for (const asset of missing) {
+        if (runRef.current !== run) break
+        try {
+          const c = await asset.generate()
+          if (runRef.current === run)
+            setCache(prev => ({ ...prev, [asset.id]: c.toDataURL() }))
+        } catch {}
+      }
+    })()
+  }, [assets.map(a => a.id).join('|')])
+
+  if (assets.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center flex-1 gap-3">
+        <div style={{ fontSize: 32, opacity: 0.2 }}>🖼</div>
+        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', textAlign: 'center', lineHeight: 1.6 }}>
+          在左侧勾选素材<br/>右侧显示切图预览
         </div>
-        {headerUrl ? (
-          <img src={headerUrl} style={{ width: '100%', height: h, objectFit: 'cover', display: 'block' }} />
-        ) : (
-          <div style={{ width: '100%', height: Math.max(h, 40), background: 'rgba(0,0,0,0.06)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <ImageIcon size={16} style={{ color: 'rgba(0,0,0,0.2)' }} />
-          </div>
-        )}
-        {items.map(item => {
-          const isCoupon = item.componentId === 'coupon'
-          return (
-            <div key={item.id} style={{ padding: `0 ${isCoupon ? 16 : 6}px`, background: bgColor, marginTop: 3 }}>
-              <img src={item.previewUrl} alt={item.label} draggable={false}
-                style={{ width: '100%', height: 'auto', display: 'block', borderRadius: isCoupon ? 8 : 0 }} />
-            </div>
-          )
-        })}
-        <div style={{ height: 10, background: bgColor }} />
       </div>
+    )
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto p-3 space-y-2">
+      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', padding: '2px 4px 6px' }}>
+        已选 {assets.length} 个素材
+      </div>
+      {assets.map(asset => (
+        <div key={asset.id}
+          style={{
+            borderRadius: 10, overflow: 'hidden',
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.07)',
+          }}>
+          {/* 图像区 */}
+          <div style={{
+            padding: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            minHeight: 56, background: 'rgba(255,255,255,0.02)',
+          }}>
+            {cache[asset.id]
+              ? <img src={cache[asset.id]} alt={asset.label}
+                  style={{ maxWidth: '100%', maxHeight: 130, objectFit: 'contain', display: 'block', borderRadius: 4 }} />
+              : <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
+                    style={{ animation: 'btnSpin 1s linear infinite' }}>
+                    <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeOpacity={.3}/>
+                    <path d="M21 12a9 9 0 00-9-9"/>
+                  </svg>
+                  生成中…
+                </div>
+            }
+          </div>
+          {/* 信息栏 */}
+          <div style={{
+            padding: '5px 10px', borderTop: '1px solid rgba(255,255,255,0.05)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+          }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.7)',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{asset.label}</div>
+              <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>{asset.size}</div>
+            </div>
+            {cache[asset.id] && (
+              <a href={cache[asset.id]} download={`${asset.label}.png`}
+                style={{
+                  flexShrink: 0, fontSize: 10, color: '#6AA3FF',
+                  textDecoration: 'none', background: 'rgba(45,120,244,0.12)',
+                  padding: '2px 7px', borderRadius: 4, border: '1px solid rgba(45,120,244,0.2)',
+                }}>
+                ↓
+              </a>
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
@@ -639,25 +706,50 @@ export default function DeliveryPage() {
     return { assetList: [] as Parameters<typeof AssetRow>[], downloadAll: async () => {} }
   }, [slotCtx, couponCtx, hTabCtx, floorCtx])
 
-  // ── 选中状态：默认全选，存储未选中的 id（反向集合）──────────────────────────
-  const [deselected, setDeselected] = useState<Set<string>>(new Set())
+  // ── 选中状态：正向集合，默认空（用户手动选择）────────────────────────────────
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+
   const toggleId = useCallback((id: string) => {
-    setDeselected(prev => {
+    setSelected(prev => {
       const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next
     })
   }, [])
 
-  // 每次 items/deselected/buildAssets 变化时重算 selectedIds
-  const selectedIds = useMemo<Set<string>>(() => {
-    const all = new Set<string>()
+  // 获取当前所有素材 ID
+  const getAllIds = useCallback((): string[] => {
+    const ids: string[] = []
     for (const item of items) {
       const { assetList } = buildAssets(item)
-      assetList.forEach(a => { if (!deselected.has(a.id)) all.add(a.id) })
+      assetList.forEach(a => ids.push(a.id))
     }
-    return all
-  }, [items, deselected, buildAssets])
+    return ids
+  }, [items, buildAssets])
 
-  const selectedCount = selectedIds.size
+  const selectAll  = useCallback(() => setSelected(new Set(getAllIds())), [getAllIds])
+  const selectNone = useCallback(() => setSelected(new Set()),           [])
+
+  // 批量选择/取消一组 id
+  const selectGroup = useCallback((ids: string[], on: boolean) => {
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (on) ids.forEach(id => next.add(id))
+      else    ids.forEach(id => next.delete(id))
+      return next
+    })
+  }, [])
+
+  const selectedIds   = selected
+  const selectedCount = selected.size
+
+  // 已选素材列表（给右侧预览用）
+  const selectedAssets = useMemo<AssetDef[]>(() => {
+    const result: AssetDef[] = []
+    for (const item of items) {
+      const { assetList } = buildAssets(item)
+      assetList.forEach(a => { if (selected.has(a.id)) result.push(a) })
+    }
+    return result
+  }, [items, selected, buildAssets])
 
   // ── 全部打包（只含已选素材）────────────────────────────────────────────────
   const [allStatus, setAllStatus] = useState<'idle'|'loading'|'done'>('idle')
@@ -709,10 +801,17 @@ export default function DeliveryPage() {
           ✅ 素材已就绪
         </span>
         <div style={{ flex: 1 }} />
+        {/* 全选 / 全不选 */}
+        <button onClick={selectedCount === getAllIds().length ? selectNone : selectAll}
+          className="text-[11px] px-3 py-1.5 rounded-lg transition-all hover:opacity-80"
+          style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)',
+            border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}>
+          {selectedCount === getAllIds().length && selectedCount > 0 ? '全不选' : '全选'}
+        </button>
         {/* 选中计数 */}
         {selectedCount > 0 && (
           <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-            已选 {selectedCount} 个素材
+            已选 {selectedCount} 个
           </span>
         )}
         {/* 一键打包（只含已选）*/}
@@ -762,6 +861,7 @@ export default function DeliveryPage() {
                   onRemovePrize={idx => slotCtx.removePrize(idx)}
                   selectedIds={selectedIds}
                   onToggleId={toggleId}
+                  onSelectGroup={selectGroup}
                 />
               )
             }
@@ -774,19 +874,27 @@ export default function DeliveryPage() {
                 onPreview={handlePreview}
                 selectedIds={selectedIds}
                 onToggleId={toggleId}
+                onSelectGroup={selectGroup}
               />
             )
           })}
         </div>
 
-        {/* 右侧：页面预览 */}
+        {/* 右侧：已选素材切图预览 */}
         <div className="flex flex-col shrink-0 border-l overflow-hidden"
           style={{ width: 360, borderColor: 'rgba(255,255,255,0.07)', background: '#0A0E18' }}>
-          <div className="px-4 py-3 border-b shrink-0 text-[11px] font-semibold"
-            style={{ borderColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.25)' }}>
-            页面预览
+          <div className="px-4 py-3 border-b shrink-0 flex items-center justify-between"
+            style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.25)' }}>
+              素材预览
+            </span>
+            {selectedCount > 0 && (
+              <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)' }}>
+                {selectedCount} 张
+              </span>
+            )}
           </div>
-          <PhonePreview />
+          <AssetGallery assets={selectedAssets} />
         </div>
       </div>
 
