@@ -384,6 +384,7 @@ export type CouponColorKey = 'teal' | 'blue' | 'green' | 'gold1' | 'gold2' | 'pi
 
 export interface CouponColorDef {
   name: string
+  dotColor: string     // 配色选择器圆点色（高饱和，对齐老虎机 PRESET_DOTS 风格）
   cardBgFrom: string   // 券卡渐变起色（179°）
   cardBgTo: string     // 券卡渐变终色
   btnFrom: string      // 按钮渐变起色（90°）
@@ -393,13 +394,13 @@ export interface CouponColorDef {
 
 export const COUPON_COLORS: Record<CouponColorKey, CouponColorDef> = {
   // Figma 精确色值（2026-06-25 更新，来源：一键领券红包组件 Figma file）
-  teal:  { name: '青色',  cardBgFrom: '#CFFAF6', cardBgTo: '#A7F4ED', btnFrom: '#0BC371', btnTo: '#2DC983', textColor: '#099A59' },
-  blue:  { name: '蓝色',  cardBgFrom: '#C8E2FB', cardBgTo: '#A7D2FF', btnFrom: '#3181E6', btnTo: '#57A6FF', textColor: '#3B657C' },
-  green: { name: '绿色',  cardBgFrom: '#DBF7BD', cardBgTo: '#D7F5B1', btnFrom: '#36C945', btnTo: '#13D224', textColor: '#00A611' },
-  gold1: { name: '金色',  cardBgFrom: '#FBE7C0', cardBgTo: '#FADFB0', btnFrom: '#FF3E58', btnTo: '#FF1838', textColor: '#950E0F' },
-  gold2: { name: '金色深', cardBgFrom: '#FFEDD8', cardBgTo: '#F6D4AA', btnFrom: '#A55725', btnTo: '#CA7537', textColor: '#950E0F' },
-  pink:  { name: '粉色',  cardBgFrom: '#FDDCFF', cardBgTo: '#FFBCE0', btnFrom: '#FF1F43', btnTo: '#FF008E', textColor: '#950E0F' },
-  red:   { name: '红色',  cardBgFrom: '#FFDCE5', cardBgTo: '#FFD4D4', btnFrom: '#FF3E58', btnTo: '#FF1838', textColor: '#950E0F' },
+  teal:  { name: '青色',  dotColor: '#0BC371', cardBgFrom: '#CFFAF6', cardBgTo: '#A7F4ED', btnFrom: '#0BC371', btnTo: '#2DC983', textColor: '#099A59' },
+  blue:  { name: '蓝色',  dotColor: '#3181E6', cardBgFrom: '#C8E2FB', cardBgTo: '#A7D2FF', btnFrom: '#3181E6', btnTo: '#57A6FF', textColor: '#3B657C' },
+  green: { name: '绿色',  dotColor: '#36C945', cardBgFrom: '#DBF7BD', cardBgTo: '#D7F5B1', btnFrom: '#36C945', btnTo: '#13D224', textColor: '#00A611' },
+  gold1: { name: '金色',  dotColor: '#FFAD00', cardBgFrom: '#FBE7C0', cardBgTo: '#FADFB0', btnFrom: '#FF3E58', btnTo: '#FF1838', textColor: '#950E0F' },
+  gold2: { name: '金色深', dotColor: '#D97A35', cardBgFrom: '#FFEDD8', cardBgTo: '#F6D4AA', btnFrom: '#A55725', btnTo: '#CA7537', textColor: '#950E0F' },
+  pink:  { name: '粉色',  dotColor: '#FF6EB4', cardBgFrom: '#FDDCFF', cardBgTo: '#FFBCE0', btnFrom: '#FF1F43', btnTo: '#FF008E', textColor: '#950E0F' },
+  red:   { name: '红色',  dotColor: '#FF3E58', cardBgFrom: '#FFDCE5', cardBgTo: '#FFD4D4', btnFrom: '#FF3E58', btnTo: '#FF1838', textColor: '#950E0F' },
 }
 
 export interface CouponConfig {

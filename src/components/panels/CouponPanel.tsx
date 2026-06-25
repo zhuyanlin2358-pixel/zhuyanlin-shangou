@@ -31,7 +31,7 @@ export default function CouponPanel() {
                   <span style={{
                     width: 8, height: 8, borderRadius: '50%',
                     flexShrink: 0, display: 'inline-block',
-                    background: def.cardBgFrom,
+                    background: def.dotColor,
                   }} />
                   {def.name}
                 </button>

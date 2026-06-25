@@ -153,10 +153,9 @@ function CouponColorPanel() {
                 fontWeight: active ? 600 : 400,
                 transition: 'all 0.12s',
               }}>
-              {/* 券卡背景色圆点 */}
               <span style={{
                 width: 8, height: 8, borderRadius: '50%', flexShrink: 0, display: 'inline-block',
-                background: def.cardBgFrom,
+                background: def.dotColor,
               }} />
               {def.name}
             </button>
