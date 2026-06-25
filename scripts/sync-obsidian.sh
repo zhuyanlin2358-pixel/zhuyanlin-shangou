@@ -24,6 +24,7 @@ cp "$PROJECT/docs/01-使用指南.md"       "$VAULT/wiki/概念/01-使用指南.
 cp "$PROJECT/docs/02-需求漏斗.md"       "$VAULT/wiki/概念/02-需求漏斗.md"
 cp "$PROJECT/docs/03-贡献者协议.md"     "$VAULT/wiki/概念/03-贡献者协议.md"
 cp "$PROJECT/docs/04-设计师协作指南.md" "$VAULT/wiki/概念/04-设计师协作指南.md"
+cp "$PROJECT/docs/05-数据仪表盘.md"     "$VAULT/wiki/概念/05-数据仪表盘.md"
 
 echo "📦 提交并推送到 GitHub..."
 cd "$VAULT"
