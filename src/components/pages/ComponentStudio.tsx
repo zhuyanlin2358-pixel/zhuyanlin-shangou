@@ -76,9 +76,6 @@ function LayerRow({ active, onClick, label, sub }: {
         borderLeft: active ? '2px solid rgba(235,233,252,0.65)' : '2px solid transparent',
         color: active ? 'rgba(235,233,252,0.9)' : 'rgba(255,255,255,0.6)',
       }}>
-      <span style={{ flexShrink: 0, display: 'flex', opacity: active ? 1 : 0.45 }}>
-        {Ic('M2 4h12v8H2zM5 4v8M9 4v8')}
-      </span>
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 12.5, fontWeight: active ? 600 : 400, lineHeight: 1.3,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
