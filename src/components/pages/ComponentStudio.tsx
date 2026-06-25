@@ -1,20 +1,21 @@
 /**
  * 通用组件工作室（楼层条 / 横滑Tab / 一键领券红包）
- * 与 SlotStudio 完全相同的三栏布局：
- *   [左 20% 结构树] | [中 40% 实时Canvas] | [右 40% 配置面板]
+ * 三栏布局：[左 20% 结构树] | [中 40% 实时Canvas] | [右 40% 配置面板]
  */
 import { useState, useEffect, useRef, Suspense, lazy } from 'react'
 import { useFloor }  from '@/contexts/FloorContext'
 import { useHTab }   from '@/contexts/HTabContext'
 import { useCoupon } from '@/contexts/CouponContext'
-import type { ComponentId } from '@/types'
+import { COUPON_COLORS, type CouponColorKey, type ComponentId } from '@/types'
 import {
-  drawFloorCanvas, drawHTabCanvas, drawCouponPreview, preloadFonts,
+  drawFloorCanvas, drawHTabCanvas,
+  drawCouponPreview, drawCouponBg, drawCouponWaistband,
+  drawCouponButton, drawCouponSingleBg,
+  downloadCanvas, preloadFonts,
 } from '@/utils/exportUtils'
 
-const FloorPanel  = lazy(() => import('@/components/panels/FloorPanel'))
-const HTabPanel   = lazy(() => import('@/components/panels/HTabPanel'))
-const CouponPanel = lazy(() => import('@/components/panels/CouponPanel'))
+const FloorPanel = lazy(() => import('@/components/panels/FloorPanel'))
+const HTabPanel  = lazy(() => import('@/components/panels/HTabPanel'))
 
 function Loader() {
   return (
@@ -30,73 +31,51 @@ const COMP_META: Record<string, {
   studioLabel: string; panelLabel: string; layers: LayerDef[]
 }> = {
   floor: {
-    studioLabel: '楼层条工作室',
-    panelLabel: '楼层条配置',
+    studioLabel: '楼层条工作室', panelLabel: '楼层条配置',
     layers: [
-      { id: 'text',  label: '楼层文案',   sub: '文字 · 颜色' },
-      { id: 'style', label: '风格装饰',   sub: '样式 · 图形' },
-      { id: 'bg',    label: '背景色',     sub: '透明底' },
+      { id: 'style',  label: '款式配色', sub: '3款预设 · 自定义色' },
+      { id: 'text',   label: '文案设置', sub: '楼层标题' },
+      { id: 'export', label: '楼层条',   sub: '750 × 60 px' },
     ],
   },
   'h-tab': {
-    studioLabel: '横滑 Tab 工作室',
-    panelLabel: '横滑 Tab 配置',
+    studioLabel: 'Tab 工作室', panelLabel: 'Tab 配置',
     layers: [
-      { id: 'color', label: '配色主题',   sub: '7 种颜色' },
-      { id: 'tabs',  label: 'Tab 文案',   sub: '2 / 3 / 4 个' },
-      { id: 'size',  label: '输出尺寸',   sub: '750 × 88 px' },
+      { id: 'style',  label: '款式配色', sub: '7种配色' },
+      { id: 'tabs',   label: 'Tab 文案', sub: '各 Tab 名称' },
+      { id: 'export', label: 'Tab 切图', sub: '2/3/4 Tab' },
     ],
   },
   coupon: {
-    studioLabel: '红包组件工作室',
-    panelLabel: '红包配置',
+    studioLabel: '红包组件工作室', panelLabel: '红包配置',
     layers: [
-      { id: 'color',    label: '款式配色',   sub: '7 种配色' },
-      { id: 'text',     label: '文案设置',   sub: '主文案 · 按钮' },
-      { id: 'bg',       label: '券包背景',   sub: '702 × 352 px' },
-      { id: 'waist',    label: '腰封',       sub: '702 × 168 px' },
-      { id: 'btn',      label: '按钮',       sub: '480 × 80 px' },
+      { id: 'color',  label: '款式配色',      sub: '7 种配色' },
+      { id: 'text',   label: '文案设置',       sub: '主文案 · 按钮' },
+      { id: 'bg',     label: '领取前背景图',   sub: '702 × 352 px' },
+      { id: 'waist',  label: '腰封',           sub: '702 × 168 px' },
+      { id: 'btn',    label: '按钮',           sub: '480 × 80 px' },
+      { id: 'single', label: '仅剩一张券背景', sub: '702 × 236 px' },
     ],
   },
 }
 
-const ZOOM_LEVELS = [50, 75, 100, 150] as const
-type ZoomLevel = typeof ZOOM_LEVELS[number]
-
-// SVG icon helper（与 SlotStudio 同款风格）
-const Ic = (d: string) => (
-  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor"
-    strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-    <path d={d}/>
-  </svg>
-)
-
-// ── 结构树行 ──────────────────────────────────────────────────────────────────
+// ── 图层行 ────────────────────────────────────────────────────────────────────
 function LayerRow({ active, onClick, label, sub }: {
   active: boolean; onClick: () => void; label: string; sub: string
 }) {
   const [hovered, setHovered] = useState(false)
+  const bg = active   ? 'rgba(235,233,252,0.09)'
+           : hovered  ? 'rgba(255,255,255,0.05)'
+           : 'transparent'
   return (
-    <div
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+    <div onClick={onClick} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
       style={{
-        position: 'relative',
-        display: 'flex', alignItems: 'center', gap: 8,
-        height: 36, paddingLeft: 10, paddingRight: 6,
-        borderRadius: 8, cursor: 'pointer', marginBottom: 1, userSelect: 'none',
-        background: active ? 'rgba(45,120,244,0.13)' : hovered ? 'rgba(255,255,255,0.05)' : 'transparent',
-        color: active ? '#7BB7FF' : hovered ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.58)',
-        transition: 'background 0.12s, color 0.12s',
-      }}
-    >
-      {active && (
-        <div style={{
-          position: 'absolute', left: 0, top: '18%', bottom: '18%',
-          width: 2.5, background: '#4A90FF', borderRadius: 2,
-        }} />
-      )}
+        display: 'flex', alignItems: 'center', gap: 9,
+        padding: '0 10px', height: 38, borderRadius: 8, cursor: 'pointer',
+        background: bg, transition: 'background 0.12s',
+        borderLeft: active ? '2px solid rgba(235,233,252,0.65)' : '2px solid transparent',
+        color: active ? 'rgba(235,233,252,0.9)' : 'rgba(255,255,255,0.6)',
+      }}>
       <span style={{ flexShrink: 0, display: 'flex', opacity: active ? 1 : 0.45 }}>
         {Ic('M2 4h12v8H2zM5 4v8M9 4v8')}
       </span>
@@ -109,12 +88,12 @@ function LayerRow({ active, onClick, label, sub }: {
   )
 }
 
-// ── 实时 Canvas 预览 Hook（300ms debounce）────────────────────────────────────
-function useCanvasPreview(compId: ComponentId) {
+// ── Canvas 预览 Hook（300ms debounce，随 activeLayer 切换）─────────────────────
+function useCanvasPreview(compId: ComponentId, activeLayer: string | null) {
   const { config: floorCfg, floors }          = useFloor()
   const { config: hTabCfg, items: hTabItems } = useHTab()
   const { config: couponCfg }                 = useCoupon()
-  const [url, setUrl]     = useState('')
+  const [url, setUrl]         = useState('')
   const [loading, setLoading] = useState(true)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -134,31 +113,193 @@ function useCanvasPreview(compId: ComponentId) {
             colorKey: hTabCfg.colorKey, tabs: hi?.tabs ?? ['Tab 1', 'Tab 2'], activeIndex: 0,
           })
         } else if (compId === 'coupon') {
-          canvas = await drawCouponPreview(couponCfg)
+          // 按选中图层渲染对应素材
+          if (activeLayer === 'bg')     canvas = await drawCouponBg(couponCfg)
+          else if (activeLayer === 'waist')  canvas = await drawCouponWaistband(couponCfg)
+          else if (activeLayer === 'btn')    canvas = await drawCouponButton(couponCfg)
+          else if (activeLayer === 'single') canvas = await drawCouponSingleBg(couponCfg)
+          else                               canvas = await drawCouponPreview(couponCfg)
         }
         if (canvas) setUrl(canvas.toDataURL())
       } catch {}
       setLoading(false)
     }, 300)
     return () => { if (timer.current) clearTimeout(timer.current) }
-  }, [compId, floorCfg, floors, hTabCfg, hTabItems, couponCfg])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compId, activeLayer, floorCfg, floors, hTabCfg, hTabItems, couponCfg])
 
   return { url, loading }
 }
+
+// ── 红包配色面板（内联，对齐老虎机风格）──────────────────────────────────────
+const COLOR_KEYS = Object.keys(COUPON_COLORS) as CouponColorKey[]
+
+function CouponColorPanel() {
+  const { config, setColorKey } = useCoupon()
+  return (
+    <div style={{ padding: '12px 16px' }}>
+      <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.3)',
+        textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>配色预设</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {COLOR_KEYS.map(k => {
+          const def = COUPON_COLORS[k]
+          const active = config.colorKey === k
+          return (
+            <button key={k} onClick={() => setColorKey(k)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '7px 10px', borderRadius: 8, cursor: 'pointer',
+                border: `1px solid ${active ? 'rgba(235,233,252,0.25)' : 'rgba(255,255,255,0.06)'}`,
+                background: active ? 'rgba(235,233,252,0.07)' : 'rgba(255,255,255,0.02)',
+                transition: 'all 0.12s',
+              }}>
+              {/* 券卡渐变色块 */}
+              <span style={{
+                width: 20, height: 20, borderRadius: 5, flexShrink: 0,
+                background: `linear-gradient(179deg, ${def.cardBgFrom} 1%, ${def.cardBgTo} 100%)`,
+                border: '1px solid rgba(255,255,255,0.15)',
+              }} />
+              <span style={{ flex: 1, fontSize: 12, color: active ? '#ebe9fc' : 'rgba(255,255,255,0.6)',
+                fontWeight: active ? 600 : 400, textAlign: 'left' }}>{def.name}</span>
+              {/* 按钮渐变色条 */}
+              <span style={{
+                width: 36, height: 14, borderRadius: 4,
+                background: `linear-gradient(90deg, ${def.btnFrom}, ${def.btnTo})`,
+              }} />
+              {active && <span style={{ fontSize: 10, color: 'rgba(235,233,252,0.45)', flexShrink: 0 }}>当前</span>}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ── 红包文案面板（内联）──────────────────────────────────────────────────────
+function CouponTextPanel() {
+  const { config, setTitleText, setBtnText } = useCoupon()
+  const inp: React.CSSProperties = {
+    width: '100%', boxSizing: 'border-box',
+    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: 8, padding: '7px 10px', fontSize: 12,
+    color: '#ebe9fc', outline: 'none',
+  }
+  return (
+    <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div>
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginBottom: 6 }}>主文案</div>
+        <input style={inp} value={config.titleText} maxLength={24}
+          onChange={e => setTitleText(e.target.value)} placeholder="领618好店券 下单更优惠" />
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>
+          默认：领618好店券 下单更优惠
+        </div>
+      </div>
+      <div>
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginBottom: 6 }}>按钮文案</div>
+        <input style={inp} value={config.btnText} maxLength={10}
+          onChange={e => setBtnText(e.target.value)} placeholder="一键领取" />
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>
+          默认：一键领取
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── 红包素材图层面板（bg / waist / btn / single）──────────────────────────────
+function CouponAssetPanel({ layer }: { layer: string }) {
+  const { config } = useCoupon()
+
+  const META: Record<string, { label: string; size: string; fn: () => Promise<HTMLCanvasElement>; filename: string }> = {
+    bg:     { label: '领取前无tab-背景图', size: '702 × 352 px', fn: () => drawCouponBg(config),       filename: `券红包_${COUPON_COLORS[config.colorKey].name}_领取前无tab背景图_702x352.png` },
+    waist:  { label: '组件腰封图',         size: '702 × 168 px', fn: () => drawCouponWaistband(config), filename: `券红包_${COUPON_COLORS[config.colorKey].name}_组件腰封图_702x168.png` },
+    btn:    { label: '组件按钮图',         size: '480 × 80 px',  fn: () => drawCouponButton(config),    filename: `券红包_${COUPON_COLORS[config.colorKey].name}_组件按钮图_480x80.png` },
+    single: { label: '仅剩一张券背景图',   size: '702 × 236 px', fn: () => drawCouponSingleBg(config),  filename: `券红包_${COUPON_COLORS[config.colorKey].name}_仅剩一张券背景图_702x236.png` },
+  }
+
+  const m = META[layer]
+  if (!m) return null
+
+  const handleDownload = async () => {
+    try { downloadCanvas(await m.fn(), m.filename) } catch {}
+  }
+
+  return (
+    <div style={{ padding: '16px' }}>
+      <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.3)',
+        textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>素材信息</div>
+      <div style={{
+        background: 'rgba(255,255,255,0.04)', borderRadius: 10,
+        border: '1px solid rgba(255,255,255,0.08)', padding: '14px',
+        display: 'flex', flexDirection: 'column', gap: 8,
+      }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#ebe9fc' }}>{m.label}</div>
+        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{m.size} · PNG</div>
+        <button onClick={handleDownload} style={{
+          marginTop: 4, padding: '8px 0', borderRadius: 8, cursor: 'pointer',
+          background: 'var(--sl-primary-grad)', color: 'var(--sl-cta-text)',
+          border: 'none', fontSize: 12, fontWeight: 700,
+        }}>
+          ↓ 导出此素材
+        </button>
+      </div>
+      <div style={{ marginTop: 12, fontSize: 11, color: 'rgba(255,255,255,0.2)', lineHeight: 1.6 }}>
+        左侧图层对应画布已切换至当前素材预览。
+      </div>
+    </div>
+  )
+}
+
+// ── 红包配置右面板（根据 activeLayer 切换内容）────────────────────────────────
+function CouponRightPanel({ activeLayer }: { activeLayer: string | null }) {
+  if (activeLayer === 'color')  return <CouponColorPanel />
+  if (activeLayer === 'text')   return <CouponTextPanel />
+  if (activeLayer === 'bg' || activeLayer === 'waist' || activeLayer === 'btn' || activeLayer === 'single')
+    return <CouponAssetPanel layer={activeLayer} />
+  // 默认：全部展开（颜色 + 文案）
+  return (
+    <div>
+      <div style={{ padding: '10px 16px 0',
+        fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.25)',
+        textTransform: 'uppercase', letterSpacing: '0.1em' }}>款式配色</div>
+      <CouponColorPanel />
+      <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0 16px' }} />
+      <div style={{ padding: '10px 16px 0',
+        fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.25)',
+        textTransform: 'uppercase', letterSpacing: '0.1em' }}>文案设置</div>
+      <CouponTextPanel />
+    </div>
+  )
+}
+
+// ── 工具函数 ──────────────────────────────────────────────────────────────────
+function Ic(d: string) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"
+      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d={d} />
+    </svg>
+  )
+}
+
+const ZOOM_LEVELS = [50, 75, 100, 150] as const
+type ZoomLevel = typeof ZOOM_LEVELS[number]
 
 // ── 主组件 ────────────────────────────────────────────────────────────────────
 interface Props { compId: ComponentId; onBack: () => void }
 
 export default function ComponentStudio({ compId, onBack }: Props) {
-  const { url: canvasUrl, loading } = useCanvasPreview(compId)
-  const [zoom, setZoom]       = useState<ZoomLevel>(100)
+  const [zoom, setZoom]             = useState<ZoomLevel>(100)
   const [activeLayer, setActiveLayer] = useState<string | null>(null)
+
+  const { url: canvasUrl, loading } = useCanvasPreview(compId, activeLayer)
+
   const meta = COMP_META[compId] ?? { studioLabel: compId, panelLabel: '配置', layers: [] }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--sl-bg)' }}>
 
-      {/* ── 顶栏（与 SlotStudio 完全相同）── */}
+      {/* ── 顶栏 ── */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 12, padding: '0 20px',
         height: 48, flexShrink: 0, background: 'var(--sl-panel)',
@@ -179,7 +320,7 @@ export default function ComponentStudio({ compId, onBack }: Props) {
         <div style={{ flex: 1 }} />
       </div>
 
-      {/* ── 三栏主体（20% / 40% / 40%，与 SlotStudio 一致）── */}
+      {/* ── 三栏主体 ── */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
         {/* 左 20%：结构树 */}
@@ -191,8 +332,8 @@ export default function ComponentStudio({ compId, onBack }: Props) {
         }}>
           <div style={{
             fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.2)',
-            padding: '12px 14px 4px',
-            textTransform: 'uppercase', letterSpacing: '0.1em', lineHeight: '26px',
+            padding: '12px 14px 4px', textTransform: 'uppercase',
+            letterSpacing: '0.1em', lineHeight: '26px',
           }}>组件结构</div>
           <div style={{ padding: '2px 6px 16px' }}>
             {meta.layers.map(layer => {
@@ -214,14 +355,14 @@ export default function ComponentStudio({ compId, onBack }: Props) {
           backgroundImage: 'radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px)',
           backgroundSize: '20px 20px',
         }}>
-          {/* 工具条：缩放 */}
+          {/* 缩放工具条 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
             {ZOOM_LEVELS.map(z => (
               <button key={z} onClick={() => setZoom(z)} style={{
                 padding: '4px 11px', fontSize: 10, borderRadius: 7, cursor: 'pointer',
-                background: zoom === z ? 'rgba(45,120,244,0.2)' : 'rgba(255,255,255,0.05)',
-                color:      zoom === z ? '#6AA3FF' : 'rgba(255,255,255,0.4)',
-                border: `1px solid ${zoom === z ? 'rgba(45,120,244,0.35)' : 'rgba(255,255,255,0.08)'}`,
+                background: zoom === z ? 'rgba(250,217,0,0.12)' : 'rgba(255,255,255,0.05)',
+                color:      zoom === z ? '#fad900' : 'rgba(255,255,255,0.4)',
+                border: `1px solid ${zoom === z ? 'rgba(250,217,0,0.3)' : 'rgba(255,255,255,0.08)'}`,
                 fontWeight: zoom === z ? 600 : 400, transition: 'all 0.12s',
               }}>{z}%</button>
             ))}
@@ -252,7 +393,6 @@ export default function ComponentStudio({ compId, onBack }: Props) {
               }}>暂无预览</div>
             )}
           </div>
-
           {loading && (
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginTop: -8 }}>
               同步中…
@@ -279,7 +419,7 @@ export default function ComponentStudio({ compId, onBack }: Props) {
             <Suspense fallback={<Loader />}>
               {compId === 'floor'  && <FloorPanel />}
               {compId === 'h-tab'  && <HTabPanel />}
-              {compId === 'coupon' && <CouponPanel />}
+              {compId === 'coupon' && <CouponRightPanel activeLayer={activeLayer} />}
             </Suspense>
           </div>
         </div>
