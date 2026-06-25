@@ -20,6 +20,9 @@ cp "/Users/zhuyanlin/.cursorrules" "$VAULT/wiki/记忆/cursorrules快捷记忆.m
 # 产品设计文档（docs/ → wiki/概念/）
 mkdir -p "$VAULT/wiki/概念"
 cp "$PROJECT/docs/产品设计逻辑与汇报.md" "$VAULT/wiki/概念/产品设计逻辑与汇报.md"
+cp "$PROJECT/docs/01-使用指南.md"       "$VAULT/wiki/概念/01-使用指南.md"
+cp "$PROJECT/docs/02-需求漏斗.md"       "$VAULT/wiki/概念/02-需求漏斗.md"
+cp "$PROJECT/docs/03-贡献者协议.md"     "$VAULT/wiki/概念/03-贡献者协议.md"
 
 echo "📦 提交并推送到 GitHub..."
 cd "$VAULT"
