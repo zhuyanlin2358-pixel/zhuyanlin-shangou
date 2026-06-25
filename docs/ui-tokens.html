@@ -42,13 +42,23 @@
   --space-lg: 24px;
   --space-xl: 32px;
 
-  /* 字号 */
-  --font-xs:  10px;
-  --font-sm:  11px;
-  --font-md:  12px;
-  --font-base: 13px;
-  --font-lg:  14px;
-  --font-xl:  16px;
+  /* 字体系统（Ant Design 规范，5级）*/
+  --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', sans-serif;
+  --font-xs:    10px;   /* 角标/badge */
+  --font-sm:    12px;   /* 副标签/描述 */
+  --font-base:  13px;   /* 面板正文 */
+  --font-md:    14px;   /* 组件标题 */
+  --font-lg:    16px;   /* 页面标题 */
+  /* 行高配对 */
+  --lh-xs:    16px;
+  --lh-sm:    20px;
+  --lh-base:  20px;
+  --lh-md:    22px;
+  --lh-lg:    24px;
+  /* 字重 3档 */
+  --fw-regular: 400;
+  --fw-medium:  500;
+  --fw-bold:    600;
 
   /* 圆角 */
   --radius-sm: 4px;
@@ -277,7 +287,88 @@ h2 {
   <div style="font-size:11px;color:rgba(235,233,252,0.20);">标签/分隔 --sl-text-4 · 20% opacity</div>
 </div>
 
-<!-- ── 4. 侧边栏行（统一标准）── -->
+<!-- ── 4. 字体系统 ── -->
+<h2>字体系统（对齐 Ant Design 规范）</h2>
+
+<!-- 字号 + 行高表格 -->
+<div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
+  <div style="flex:1;min-width:280px;">
+    <div style="font-size:10px;color:var(--sl-text-4);margin-bottom:10px;">5 级字号（建议每个系统最多用 3-5 级）</div>
+    <div style="background:var(--sl-surface);border:1px solid var(--sl-border);border-radius:12px;overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:rgba(255,255,255,0.03);">
+            <th style="padding:10px 14px;text-align:left;font-size:10px;color:var(--sl-text-4);font-weight:600;letter-spacing:0.1em;">LEVEL</th>
+            <th style="padding:10px 14px;text-align:left;font-size:10px;color:var(--sl-text-4);font-weight:600;letter-spacing:0.1em;">TOKEN</th>
+            <th style="padding:10px 14px;text-align:left;font-size:10px;color:var(--sl-text-4);font-weight:600;letter-spacing:0.1em;">SIZE / 行高</th>
+            <th style="padding:10px 14px;text-align:left;font-size:10px;color:var(--sl-text-4);font-weight:600;letter-spacing:0.1em;">用途</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-top:1px solid var(--sl-border);">
+            <td style="padding:12px 14px;"><span style="font-size:10px;color:var(--sl-text-3);">XS</span></td>
+            <td style="padding:12px 14px;font-family:monospace;font-size:11px;color:var(--sl-primary);">--font-xs</td>
+            <td style="padding:12px 14px;font-size:10px;color:var(--sl-text-2);">10px / 16px</td>
+            <td style="padding:12px 14px;">
+              <span style="font-size:10px;color:rgba(235,233,252,0.5);background:rgba(255,255,255,0.06);padding:2px 7px;border-radius:4px;">角标 badge 最小下限</span>
+            </td>
+          </tr>
+          <tr style="border-top:1px solid var(--sl-border);">
+            <td style="padding:12px 14px;"><span style="font-size:12px;color:var(--sl-text-3);">SM</span></td>
+            <td style="padding:12px 14px;font-family:monospace;font-size:11px;color:var(--sl-primary);">--font-sm</td>
+            <td style="padding:12px 14px;font-size:10px;color:var(--sl-text-2);">12px / 20px</td>
+            <td style="padding:12px 14px;"><span style="font-size:12px;color:rgba(235,233,252,0.45);">副标签 · 描述 · hint文字</span></td>
+          </tr>
+          <tr style="border-top:1px solid var(--sl-border);background:rgba(250,217,0,0.03);">
+            <td style="padding:12px 14px;"><span style="font-size:13px;color:var(--sl-text-2);font-weight:500;">BASE ★</span></td>
+            <td style="padding:12px 14px;font-family:monospace;font-size:11px;color:var(--sl-primary);">--font-base</td>
+            <td style="padding:12px 14px;font-size:10px;color:var(--sl-text-2);">13px / 20px</td>
+            <td style="padding:12px 14px;"><span style="font-size:13px;color:var(--sl-text-1);">面板正文 · 最常用基准</span></td>
+          </tr>
+          <tr style="border-top:1px solid var(--sl-border);">
+            <td style="padding:12px 14px;"><span style="font-size:14px;color:var(--sl-text-2);">MD</span></td>
+            <td style="padding:12px 14px;font-family:monospace;font-size:11px;color:var(--sl-primary);">--font-md</td>
+            <td style="padding:12px 14px;font-size:10px;color:var(--sl-text-2);">14px / 22px</td>
+            <td style="padding:12px 14px;"><span style="font-size:14px;color:var(--sl-text-1);">组件标题 · section label</span></td>
+          </tr>
+          <tr style="border-top:1px solid var(--sl-border);">
+            <td style="padding:12px 14px;"><span style="font-size:16px;color:var(--sl-text-2);">LG</span></td>
+            <td style="padding:12px 14px;font-family:monospace;font-size:11px;color:var(--sl-primary);">--font-lg</td>
+            <td style="padding:12px 14px;font-size:10px;color:var(--sl-text-2);">16px / 24px</td>
+            <td style="padding:12px 14px;"><span style="font-size:16px;color:var(--sl-text-1);font-weight:600;">页面级标题</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 字重 + 字体族 -->
+  <div style="min-width:220px;">
+    <div style="font-size:10px;color:var(--sl-text-4);margin-bottom:10px;">字重（3 档）</div>
+    <div style="background:var(--sl-surface);border:1px solid var(--sl-border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;margin-bottom:16px;">
+      <div>
+        <div style="font-size:13px;font-weight:400;color:var(--sl-text-1);">Regular 400</div>
+        <div style="font-size:10px;color:var(--sl-text-4);font-family:monospace;">--fw-regular · 正文/描述</div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--sl-text-1);">Medium 500</div>
+        <div style="font-size:10px;color:var(--sl-text-4);font-family:monospace;">--fw-medium · 次级标题/激活态</div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--sl-text-1);">Semibold 600</div>
+        <div style="font-size:10px;color:var(--sl-text-4);font-family:monospace;">--fw-bold · 标题/按钮/激活</div>
+      </div>
+    </div>
+
+    <div style="font-size:10px;color:var(--sl-text-4);margin-bottom:10px;">⚠️ 禁止字号</div>
+    <div style="background:rgba(255,48,80,0.06);border:1px solid rgba(255,48,80,0.15);border-radius:10px;padding:12px;">
+      <div style="font-size:9px;color:rgba(255,100,120,0.8);margin-bottom:4px;">9px / 9.5px / 10.5px / 11px</div>
+      <div style="font-size:11px;color:rgba(255,100,120,0.6);">低于 12px 在屏幕上可读性差，Ant Design 明确不建议正文使用 12px 以下</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 5. 侧边栏行（统一标准）── -->
 <h2>侧边栏行（全工具统一 · FileItem 组件）</h2>
 <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
   <!-- 会场搭建侧边栏示例 -->

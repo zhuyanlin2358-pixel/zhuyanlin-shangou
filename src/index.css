@@ -315,6 +315,39 @@ body.dark-mode *:hover,
   --sl-cta-text:     #1a1000;             /* 黄底深色文字 */
   --sl-primary-grad: linear-gradient(90deg, #fad900, #ffa203);
   --sl-cta-shadow:   rgba(250,217,0,0.3);
+
+  /* ── 字体系统（对齐 Ant Design 规范，5级）── */
+  --font-family:  -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC',
+                  'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-xs:    10px;   /* 角标/badge（下限，不可再小）*/
+  --font-sm:    12px;   /* 副标签/描述/hint */
+  --font-base:  13px;   /* 面板正文（工具密度优化，比 Ant 14 小1px）*/
+  --font-md:    14px;   /* 组件标题/section label */
+  --font-lg:    16px;   /* 页面级标题 */
+
+  /* 行高（配对，对齐 Ant 比例）*/
+  --lh-xs:    16px;
+  --lh-sm:    20px;
+  --lh-base:  20px;
+  --lh-md:    22px;
+  --lh-lg:    24px;
+
+  /* 字重（3档）*/
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-bold:     600;
+
+  /* 间距系统（8px 基准）*/
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  32px;
+
+  /* 圆角 */
+  --radius-sm:  4px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
 }
 
 /* ── Linear / Vercel 精致深色系设计 token ── */
