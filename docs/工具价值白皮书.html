@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>闪购营销设计工作台 · 工具价值白皮书</title>
+<style>
+  :root {
+    --bg:      #010104;
+    --panel:   #0d0d18;
+    --card:    #14141f;
+    --border:  rgba(235,233,252,0.08);
+    --text:    #ebe9fc;
+    --muted:   rgba(235,233,252,0.45);
+    --dim:     rgba(235,233,252,0.22);
+    --yellow:  #fad900;
+    --orange:  #ffa203;
+    --grad:    linear-gradient(90deg,#fad900,#ffa203);
+    --red:     #ff3060;
+    --green:   #22c55e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── 幻灯片容器 ── */
+  .deck {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 80px;
+    opacity: 0;
+    transform: translateX(40px);
+    transition: opacity .45s ease, transform .45s ease;
+    pointer-events: none;
+  }
+
+  .slide.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+
+  .slide.out {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+
+  /* ── 导航 ── */
+  .nav {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+  }
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--dim);
+    cursor: pointer;
+    transition: all .2s;
+  }
+
+  .dot.active { background: var(--yellow); width: 20px; border-radius: 3px; }
+
+  .nav-btn {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(235,233,252,0.06);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    transition: all .15s;
+    z-index: 100;
+  }
+
+  .nav-btn:hover { background: rgba(235,233,252,0.12); color: var(--text); }
+  .nav-btn.prev { left: 24px; }
+  .nav-btn.next { right: 24px; }
+
+  .slide-num {
+    position: fixed;
+    top: 28px; right: 36px;
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: .08em;
+  }
+
+  /* ── 通用排版 ── */
+  .label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--yellow);
+    margin-bottom: 14px;
+  }
+
+  h1 { font-size: 56px; font-weight: 800; line-height: 1.05; letter-spacing: -2px; }
+  h2 { font-size: 38px; font-weight: 800; line-height: 1.1; letter-spacing: -1px; }
+  h3 { font-size: 22px; font-weight: 700; }
+
+  .sub { font-size: 18px; color: var(--muted); margin-top: 16px; line-height: 1.6; }
+  .sub-sm { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 99px;
+    background: rgba(250,217,0,0.12);
+    color: var(--yellow);
+    border: 1px solid rgba(250,217,0,0.25);
+    margin-bottom: 20px;
+  }
+
+  /* ── 卡片 ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+  }
+
+  /* ── 数据大字 ── */
+  .big-num {
+    font-size: 72px;
+    font-weight: 900;
+    letter-spacing: -3px;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+
+  .big-num-label {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* ── 分割线 ── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    width: 100%;
+    margin: 24px 0;
+  }
+
+  /* ── 渐变强调 ── */
+  .hl { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- ─────────────── S1 封面 ─────────────── -->
+  <div class="slide active" data-slide="0">
+    <div style="text-align:center; max-width:780px;">
+      <div class="label">工具价值白皮书 · 2026</div>
+      <h1>
+        闪购营销<br>
+        <span class="hl">设计工作台</span>
+      </h1>
+      <p class="sub">弥补系统空缺，释放设计产能<br>让运营和设计师都能一键出图</p>
+      <div style="margin-top:40px; display:flex; align-items:center; justify-content:center; gap:24px;">
+        <div style="text-align:center;">
+          <div class="big-num" style="font-size:48px;">X%</div>
+          <div class="big-num-label">切图时间节省</div>
+        </div>
+        <div style="width:1px; height:48px; background:var(--border);"></div>
+        <div style="text-align:center;">
+          <div class="big-num" style="font-size:48px;">X倍</div>
+          <div class="big-num-label">版本迭代速度</div>
+        </div>
+        <div style="width:1px; height:48px; background:var(--border);"></div>
+        <div style="text-align:center;">
+          <div class="big-num" style="font-size:48px;">0</div>
+          <div class="big-num-label">需要会 PS/Figma</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── S2 问题 ─────────────── -->
+  <div class="slide" data-slide="1">
+    <div style="max-width:860px; width:100%;">
+      <div class="label">现状 · 三个痛点</div>
+      <h2>现有工作流<br>的摩擦成本</h2>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-top:36px;">
+        <div class="card">
+          <div style="font-size:32px; margin-bottom:12px;">⏳</div>
+          <h3 style="font-size:18px; margin-bottom:8px;">一套素材<br>X 小时起</h3>
+          <p class="sub-sm">Figma 画图 → 标注 → 切图 → 压缩 → 上传<br>每次活动重复一遍</p>
+        </div>
+        <div class="card">
+          <div style="font-size:32px; margin-bottom:12px;">🔁</div>
+          <h3 style="font-size:18px; margin-bottom:8px;">改稿循环<br>X 轮起</h3>
+          <p class="sub-sm">运营提需求 → 设计理解偏差 → 来回确认<br>沟通成本高于制作成本</p>
+        </div>
+        <div class="card">
+          <div style="font-size:32px; margin-bottom:12px;">🔗</div>
+          <h3 style="font-size:18px; margin-bottom:8px;">依赖设计师<br>排期排队</h3>
+          <p class="sub-sm">紧急活动等不了排期<br>设计师被低价值重复工作占满</p>
+        </div>
+      </div>
+      <div style="margin-top:24px; padding:16px 24px; border-radius:12px; background:rgba(255,48,96,0.06); border:1px solid rgba(255,48,96,0.15); display:flex; align-items:center; gap:12px;">
+        <span style="font-size:20px;">⚡</span>
+        <span style="font-size:14px; color:rgba(235,233,252,0.7);">核心矛盾：<strong style="color:var(--text);">活动频率越来越高，设计资源没有同比增加</strong>，靠人堆不可持续。</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── S3 核心图示 ─────────────── -->
+  <div class="slide" data-slide="2">
+    <div style="max-width:960px; width:100%;">
+      <div class="label" style="text-align:center;">弥补空缺 · 双向互补</div>
+      <h2 style="text-align:center; font-size:30px; margin-bottom:36px;">现有系统 vs 本工具</h2>
+
+      <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:0; align-items:center;">
+
+        <!-- 左：现有公司系统 -->
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="text-align:center; font-size:11px; font-weight:700; letter-spacing:.12em; color:var(--muted); margin-bottom:6px; text-transform:uppercase;">现有公司系统</div>
+
+          <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:20px;">🎨</span>
+            <div>
+              <div style="font-size:13px; font-weight:600;">Figma / PS</div>
+              <div style="font-size:11px; color:var(--dim);">设计制作工具</div>
+            </div>
+          </div>
+
+          <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:20px;">🏪</span>
+            <div>
+              <div style="font-size:13px; font-weight:600;">神灯 / 美门</div>
+              <div style="font-size:11px; color:var(--dim);">运营投放平台</div>
+            </div>
+          </div>
+
+          <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:20px;">📐</span>
+            <div>
+              <div style="font-size:13px; font-weight:600;">Figma 组件库</div>
+              <div style="font-size:11px; color:var(--dim);">设计规范沉淀</div>
+            </div>
+          </div>
+
+          <div style="background:rgba(255,48,96,0.06); border:1px dashed rgba(255,48,96,0.3); border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:20px;">❌</span>
+            <div>
+              <div style="font-size:13px; font-weight:600; color:rgba(255,48,96,0.8);">运营自助出图</div>
+              <div style="font-size:11px; color:var(--dim);">暂无工具覆盖</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 中：弥补 -->
+        <div style="display:flex; flex-direction:column; align-items:center; padding:0 24px; gap:12px;">
+          <!-- 左箭头 -->
+          <svg width="120" height="28" viewBox="0 0 120 28">
+            <defs>
+              <linearGradient id="g1" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0%" stop-color="#fad900"/>
+                <stop offset="100%" stop-color="#ffa203"/>
+              </linearGradient>
+            </defs>
+            <line x1="10" y1="14" x2="110" y2="14" stroke="url(#g1)" stroke-width="2" stroke-dasharray="4 3"/>
+            <polygon points="110,8 120,14 110,20" fill="#ffa203"/>
+            <polygon points="10,8 0,14 10,20" fill="#fad900"/>
+          </svg>
+
+          <div style="background:var(--grad); border-radius:12px; padding:14px 16px; text-align:center; min-width:120px;">
+            <div style="font-size:11px; font-weight:800; color:#1a1000; letter-spacing:.06em; line-height:1.4;">弥补空缺<br>双向互补</div>
+          </div>
+
+          <!-- 右箭头 -->
+          <svg width="120" height="28" viewBox="0 0 120 28">
+            <line x1="10" y1="14" x2="110" y2="14" stroke="url(#g1)" stroke-width="2" stroke-dasharray="4 3"/>
+            <polygon points="110,8 120,14 110,20" fill="#ffa203"/>
+            <polygon points="10,8 0,14 10,20" fill="#fad900"/>
+          </svg>
+
+          <div style="font-size:10px; color:var(--dim); text-align:center; line-height:1.5; max-width:100px;">
+            规范输入<br>素材输出<br>双向流通
+          </div>
+        </div>
+
+        <!-- 右：本工具 -->
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="text-align:center; font-size:11px; font-weight:700; letter-spacing:.12em; color:var(--yellow); margin-bottom:6px; text-transform:uppercase;">本工具覆盖</div>
+
+          <div style="background:rgba(250,217,0,0.07); border:1px solid rgba(250,217,0,0.2); border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:20px;">🏗️</span>
+            <div>
+              <div style="font-size:13px; font-weight:600;">会场可视化搭建</div>
+              <div style="font-size:11px; color:var(--dim);">拖拽布局，实时预览</div>
+            </div>
+          </div>
+
+          <div style="background:rgba(250,217,0,0.07); border:1px solid rgba(250,217,0,0.2); border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:20px;">⚙️</span>
+            <div>
+              <div style="font-size:13px; font-weight:600;">组件快速配置</div>
+              <div style="font-size:11px; color:var(--dim);">配色/文案/图片一屏完成</div>
+            </div>
+          </div>
+
+          <div style="background:rgba(250,217,0,0.07); border:1px solid rgba(250,217,0,0.2); border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:20px;">📦</span>
+            <div>
+              <div style="font-size:13px; font-weight:600;">一键导出切图</div>
+              <div style="font-size:11px; color:var(--dim);">按需勾选，分类打包</div>
+            </div>
+          </div>
+
+          <div style="background:rgba(34,197,94,0.07); border:1px solid rgba(34,197,94,0.2); border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:20px;">✅</span>
+            <div>
+              <div style="font-size:13px; font-weight:600; color:rgba(34,197,94,0.9);">运营可自助完成</div>
+              <div style="font-size:11px; color:var(--dim);">无需 PS / Figma 技能</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── S4 工作流 ─────────────── -->
+  <div class="slide" data-slide="3">
+    <div style="max-width:860px; width:100%; text-align:center;">
+      <div class="label">工作流 · 3步完成</div>
+      <h2 style="font-size:34px; margin-bottom:8px;">以前 X 小时，现在 X 分钟</h2>
+      <p class="sub" style="font-size:15px; margin-bottom:40px;">全流程在浏览器内完成，无需安装任何软件</p>
+
+      <div style="display:grid; grid-template-columns:1fr 40px 1fr 40px 1fr; align-items:center; gap:0;">
+
+        <div class="card" style="text-align:center; padding:32px 20px;">
+          <div style="width:48px; height:48px; border-radius:50%; background:var(--grad); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:20px; font-weight:900; color:#1a1000;">1</div>
+          <h3 style="font-size:16px; margin-bottom:8px;">选择组件</h3>
+          <p class="sub-sm">从组件工坊拖入画布<br>（老虎机/楼层/Tab/红包）</p>
+          <div style="margin-top:16px; font-size:11px; color:var(--dim);">⏱ &lt; 30秒</div>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:center;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="#fad900" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <div class="card" style="text-align:center; padding:32px 20px; border-color:rgba(250,217,0,0.25);">
+          <div style="width:48px; height:48px; border-radius:50%; background:var(--grad); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:20px; font-weight:900; color:#1a1000;">2</div>
+          <h3 style="font-size:16px; margin-bottom:8px;">配置样式</h3>
+          <p class="sub-sm">点击组件 → 右侧面板<br>换色、改文案、传图</p>
+          <div style="margin-top:16px; font-size:11px; color:var(--dim);">⏱ X 分钟</div>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:center;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="#fad900" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <div class="card" style="text-align:center; padding:32px 20px;">
+          <div style="width:48px; height:48px; border-radius:50%; background:var(--grad); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:20px; font-weight:900; color:#1a1000;">3</div>
+          <h3 style="font-size:16px; margin-bottom:8px;">导出素材</h3>
+          <p class="sub-sm">勾选需要的切图<br>一键打包 ZIP 下载</p>
+          <div style="margin-top:16px; font-size:11px; color:var(--dim);">⏱ &lt; 1分钟</div>
+        </div>
+
+      </div>
+
+      <div style="margin-top:28px; padding:14px 24px; border-radius:10px; background:rgba(250,217,0,0.06); border:1px solid rgba(250,217,0,0.15); display:inline-flex; align-items:center; gap:10px;">
+        <span style="font-size:16px;">💡</span>
+        <span style="font-size:13px; color:rgba(235,233,252,0.7);">运营全程自助完成 · 设计师只需进「工作室」做精细调整 · 规范在工具里，无法出错</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── S5 数据 ─────────────── -->
+  <div class="slide" data-slide="4">
+    <div style="max-width:860px; width:100%;">
+      <div class="label" style="text-align:center;">效能数据 · Before vs After</div>
+      <h2 style="text-align:center; margin-bottom:36px;">提效量化</h2>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <!-- Before -->
+          <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:rgba(255,80,80,0.7); margin-bottom:4px;">▸ Before（人工流程）</div>
+          <div style="background:rgba(255,48,96,0.05); border:1px solid rgba(255,48,96,0.12); border-radius:12px; padding:20px;">
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px;">
+                <span style="color:var(--muted);">一套老虎机素材</span>
+                <span style="font-weight:700; color:rgba(255,80,80,0.8);">X 小时</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px;">
+                <span style="color:var(--muted);">改稿沟通轮次</span>
+                <span style="font-weight:700; color:rgba(255,80,80,0.8);">X 轮</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px;">
+                <span style="color:var(--muted);">需要工具技能</span>
+                <span style="font-weight:700; color:rgba(255,80,80,0.8);">Figma / PS</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px;">
+                <span style="color:var(--muted);">能独立出图的岗位</span>
+                <span style="font-weight:700; color:rgba(255,80,80,0.8);">仅设计师</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <!-- After -->
+          <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:rgba(34,197,94,0.8); margin-bottom:4px;">▸ After（本工具）</div>
+          <div style="background:rgba(34,197,94,0.05); border:1px solid rgba(34,197,94,0.15); border-radius:12px; padding:20px;">
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px;">
+                <span style="color:var(--muted);">一套老虎机素材</span>
+                <span style="font-weight:700; color:rgba(34,197,94,0.9);">X 分钟</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px;">
+                <span style="color:var(--muted);">改稿沟通轮次</span>
+                <span style="font-weight:700; color:rgba(34,197,94,0.9);">实时预览，即改即看</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px;">
+                <span style="color:var(--muted);">需要工具技能</span>
+                <span style="font-weight:700; color:rgba(34,197,94,0.9);">浏览器即可</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px;">
+                <span style="color:var(--muted);">能独立出图的岗位</span>
+                <span style="font-weight:700; color:rgba(34,197,94,0.9);">运营 + 设计师</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-top:24px;">
+        <div style="text-align:center; padding:20px; background:var(--card); border:1px solid var(--border); border-radius:12px;">
+          <div class="big-num" style="font-size:44px;">X%</div>
+          <div class="big-num-label">制作时间节省</div>
+        </div>
+        <div style="text-align:center; padding:20px; background:var(--card); border:1px solid var(--border); border-radius:12px;">
+          <div class="big-num" style="font-size:44px;">X%</div>
+          <div class="big-num-label">改稿轮次减少</div>
+        </div>
+        <div style="text-align:center; padding:20px; background:var(--card); border:1px solid var(--border); border-radius:12px;">
+          <div class="big-num" style="font-size:44px;">X倍</div>
+          <div class="big-num-label">活动响应速度</div>
+        </div>
+        <div style="text-align:center; padding:20px; background:var(--card); border:1px solid var(--border); border-radius:12px;">
+          <div class="big-num" style="font-size:44px;">0</div>
+          <div class="big-num-label">设计依赖（简单需求）</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── S6 设计哲学 ─────────────── -->
+  <div class="slide" data-slide="5">
+    <div style="max-width:860px; width:100%;">
+      <div class="label">设计哲学 · 来自亦仁 & 刘小白</div>
+      <h2 style="font-size:32px; margin-bottom:32px;">为什么这样设计</h2>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:var(--yellow); margin-bottom:12px;">亦仁：效率即护城河</div>
+          <p style="font-size:14px; color:var(--muted); line-height:1.7;">
+            「重复性工作系统化，系统化工作自动化。」<br><br>
+            活动频率越来越高，设计资源没有同比增加。<br>
+            工具是唯一能打破这个线性关系的方法。
+          </p>
+        </div>
+
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:var(--yellow); margin-bottom:12px;">刘小白：渐进式披露</div>
+          <p style="font-size:14px; color:var(--muted); line-height:1.7;">
+            「选项越多，用户越难做决定。」<br><br>
+            高频功能放表面（配色/文案），低频功能放深处（工作室），
+            但深处的功能一样完整。
+          </p>
+        </div>
+
+        <div class="card" style="grid-column:1/-1;">
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; text-align:center;">
+            <div>
+              <div style="font-size:24px; margin-bottom:8px;">🎯</div>
+              <div style="font-size:13px; font-weight:600; margin-bottom:4px;">任务驱动</div>
+              <div style="font-size:12px; color:var(--dim);">首页只问"你今天要干什么"<br>而不是展示功能列表</div>
+            </div>
+            <div>
+              <div style="font-size:24px; margin-bottom:8px;">👆</div>
+              <div style="font-size:13px; font-weight:600; margin-bottom:4px;">选中即配置</div>
+              <div style="font-size:12px; color:var(--dim);">点哪里，右侧就配哪里<br>无需学习界面结构</div>
+            </div>
+            <div>
+              <div style="font-size:24px; margin-bottom:8px;">📐</div>
+              <div style="font-size:13px; font-weight:600; margin-bottom:4px;">规范在工具里</div>
+              <div style="font-size:12px; color:var(--dim);">配色/尺寸/组件规范内置<br>用户无法做出不规范的稿</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── S7 结语 ─────────────── -->
+  <div class="slide" data-slide="6">
+    <div style="text-align:center; max-width:720px;">
+      <div class="label">结语</div>
+      <h2 style="font-size:42px; margin-bottom:20px;">
+        表面越简洁<br>
+        <span class="hl">深处越完整</span>
+      </h2>
+      <p class="sub" style="margin-bottom:48px;">
+        工具的价值不在于功能数量<br>
+        而在于每个用户在每个时刻<br>
+        看到的信息量<strong style="color:var(--text);">刚刚好</strong>
+      </p>
+
+      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px 20px; font-size:13px; color:var(--muted);">
+          现已支持：老虎机 · 楼层条 · 横滑Tab · 一键领券红包
+        </div>
+      </div>
+
+      <div style="margin-top:40px; font-size:12px; color:var(--dim);">
+        http://localhost:5178 &nbsp;·&nbsp; 浏览器直接打开 &nbsp;·&nbsp; 无需安装
+      </div>
+    </div>
+  </div>
+
+</div><!-- /deck -->
+
+<!-- 导航 -->
+<button class="nav-btn prev" onclick="go(-1)">‹</button>
+<button class="nav-btn next" onclick="go(1)">›</button>
+
+<div class="nav" id="nav"></div>
+<div class="slide-num" id="slide-num"></div>
+
+<script>
+  const slides  = document.querySelectorAll('.slide')
+  const navEl   = document.getElementById('nav')
+  const numEl   = document.getElementById('slide-num')
+  let cur = 0
+
+  // 生成 dot
+  slides.forEach((_, i) => {
+    const d = document.createElement('div')
+    d.className = 'dot' + (i === 0 ? ' active' : '')
+    d.onclick = () => go(i - cur)
+    navEl.appendChild(d)
+  })
+
+  function update() {
+    slides.forEach((s, i) => {
+      s.classList.remove('active', 'out')
+      if (i === cur) s.classList.add('active')
+      else if (i < cur) s.classList.add('out')
+    })
+    document.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('active', i === cur)
+    })
+    numEl.textContent = `${cur + 1} / ${slides.length}`
+  }
+
+  function go(delta) {
+    cur = Math.max(0, Math.min(slides.length - 1, cur + delta))
+    update()
+  }
+
+  // 键盘
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') go(1)
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')  go(-1)
+  })
+
+  // 点击右半屏前进，左半屏后退
+  document.getElementById('deck').addEventListener('click', e => {
+    if (e.target.closest('.nav-btn')) return
+    go(e.clientX > window.innerWidth / 2 ? 1 : -1)
+  })
+
+  update()
+</script>
+</body>
+</html>
