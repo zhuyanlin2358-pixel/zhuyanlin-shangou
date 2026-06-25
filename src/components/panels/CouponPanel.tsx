@@ -10,42 +10,34 @@ export default function CouponPanel() {
   return (
     <div className="py-1">
 
-      {/* 款式选择 */}
+      {/* 款式选择（横排药丸，对齐老虎机配色预设风格）*/}
       <DisclosureGroup title="款式配色" defaultOpen>
-        <div className="px-4 pb-3 space-y-1.5">
-          {COLOR_KEYS.map(k => {
-            const def = COUPON_COLORS[k]
-            const active = config.colorKey === k
-            return (
-              <button
-                key={k}
-                onClick={() => setColorKey(k)}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all"
-                style={{
-                  border: `1px solid ${active ? '#FF5050' : 'rgba(255,255,255,0.08)'}`,
-                  background: active ? 'rgba(255,80,80,0.06)' : 'rgba(255,255,255,0.02)',
-                }}
-              >
-                {/* 色块（券卡背景色） */}
-                <span
-                  className="w-5 h-5 rounded shrink-0"
+        <div className="px-4 pb-3">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {COLOR_KEYS.map(k => {
+              const def = COUPON_COLORS[k]
+              const active = config.colorKey === k
+              return (
+                <button key={k} onClick={() => setColorKey(k)}
                   style={{
-                    background: `linear-gradient(179deg, ${def.cardBgFrom} 1%, ${def.cardBgTo} 100%)`,
-                    border: '1px solid rgba(255,255,255,0.2)',
-                  }}
-                />
-                <span className="text-xs text-white/80 flex-1">{def.name}</span>
-                {/* 按钮色预览 */}
-                <span
-                  className="w-10 h-4 rounded"
-                  style={{
-                    background: `linear-gradient(90deg, ${def.btnFrom} 0%, ${def.btnTo} 100%)`,
-                  }}
-                />
-                {active && <span className="text-[10px] text-red-400">当前</span>}
-              </button>
-            )
-          })}
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '4px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 11,
+                    border: `1px solid ${active ? 'rgba(255,48,96,0.6)' : 'rgba(255,255,255,0.1)'}`,
+                    background: active ? 'rgba(255,48,96,0.12)' : 'rgba(255,255,255,0.04)',
+                    color:      active ? '#FF8FAA' : 'rgba(255,255,255,0.5)',
+                    fontWeight: active ? 600 : 400,
+                    transition: 'all 0.12s',
+                  }}>
+                  <span style={{
+                    width: 8, height: 8, borderRadius: '50%',
+                    flexShrink: 0, display: 'inline-block',
+                    background: def.cardBgFrom,
+                  }} />
+                  {def.name}
+                </button>
+              )
+            })}
+          </div>
         </div>
       </DisclosureGroup>
 

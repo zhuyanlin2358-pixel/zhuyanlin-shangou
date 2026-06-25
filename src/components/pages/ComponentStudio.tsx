@@ -131,7 +131,7 @@ function useCanvasPreview(compId: ComponentId, activeLayer: string | null) {
   return { url, loading }
 }
 
-// ── 红包配色面板（内联，对齐老虎机风格）──────────────────────────────────────
+// ── 红包配色面板（横排药丸，与老虎机 PresetGrid 完全一致）─────────────────────
 const COLOR_KEYS = Object.keys(COUPON_COLORS) as CouponColorKey[]
 
 function CouponColorPanel() {
@@ -140,33 +140,28 @@ function CouponColorPanel() {
     <div style={{ padding: '12px 16px' }}>
       <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.3)',
         textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>配色预设</div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
         {COLOR_KEYS.map(k => {
           const def = COUPON_COLORS[k]
           const active = config.colorKey === k
           return (
             <button key={k} onClick={() => setColorKey(k)}
               style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '7px 10px', borderRadius: 8, cursor: 'pointer',
-                border: `1px solid ${active ? 'rgba(235,233,252,0.25)' : 'rgba(255,255,255,0.06)'}`,
-                background: active ? 'rgba(235,233,252,0.07)' : 'rgba(255,255,255,0.02)',
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '4px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 11,
+                borderColor: active ? 'rgba(255,48,96,0.6)' : 'rgba(255,255,255,0.1)',
+                borderWidth: 1, borderStyle: 'solid',
+                background: active ? 'rgba(255,48,96,0.12)' : 'rgba(255,255,255,0.04)',
+                color:      active ? '#FF8FAA' : 'rgba(255,255,255,0.5)',
+                fontWeight: active ? 600 : 400,
                 transition: 'all 0.12s',
               }}>
-              {/* 券卡渐变色块 */}
+              {/* 券卡背景色圆点 */}
               <span style={{
-                width: 20, height: 20, borderRadius: 5, flexShrink: 0,
-                background: `linear-gradient(179deg, ${def.cardBgFrom} 1%, ${def.cardBgTo} 100%)`,
-                border: '1px solid rgba(255,255,255,0.15)',
+                width: 8, height: 8, borderRadius: '50%', flexShrink: 0, display: 'inline-block',
+                background: def.cardBgFrom,
               }} />
-              <span style={{ flex: 1, fontSize: 12, color: active ? '#ebe9fc' : 'rgba(255,255,255,0.6)',
-                fontWeight: active ? 600 : 400, textAlign: 'left' }}>{def.name}</span>
-              {/* 按钮渐变色条 */}
-              <span style={{
-                width: 36, height: 14, borderRadius: 4,
-                background: `linear-gradient(90deg, ${def.btnFrom}, ${def.btnTo})`,
-              }} />
-              {active && <span style={{ fontSize: 10, color: 'rgba(235,233,252,0.45)', flexShrink: 0 }}>当前</span>}
+              {def.name}
             </button>
           )
         })}
@@ -373,18 +368,21 @@ export default function ComponentStudio({ compId, onBack }: Props) {
             transform: `scale(${zoom / 100})`, transformOrigin: 'top center',
             transition: 'transform 0.18s ease', flexShrink: 0,
           }}>
-            {loading ? (
+            {/* 有旧图时保留显示（加载中渐隐），避免闪烁 */}
+            {canvasUrl ? (
+              <img src={canvasUrl} alt={meta.studioLabel} style={{
+                maxWidth: 750, width: '100%', height: 'auto',
+                borderRadius: 14, display: 'block',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+                opacity: loading ? 0.5 : 1,
+                transition: 'opacity 0.15s ease',
+              }} />
+            ) : loading ? (
               <div style={{
                 width: 500, height: 100, display: 'flex', alignItems: 'center',
                 justifyContent: 'center', background: 'rgba(255,255,255,0.04)',
                 borderRadius: 14, fontSize: 11, color: 'rgba(255,255,255,0.3)',
               }}>渲染中…</div>
-            ) : canvasUrl ? (
-              <img src={canvasUrl} alt={meta.studioLabel} style={{
-                maxWidth: 750, width: '100%', height: 'auto',
-                borderRadius: 14, display: 'block',
-                boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-              }} />
             ) : (
               <div style={{
                 width: 500, height: 80, display: 'flex', alignItems: 'center',
