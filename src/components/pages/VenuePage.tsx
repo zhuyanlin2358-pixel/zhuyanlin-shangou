@@ -4,7 +4,7 @@
  * 两种模式：
  *
  * ① 画布布局模式（默认三列）
- *   [图层面板 220px] | [手机画布 flex-1] | [核心属性面板 280px]
+ *   [图层面板 220px] | [手机画布 flex-1] | [核心属性面板 340px]
  *   右侧面板：只放当前选中组件的核心属性 + 底部「高级设置 →」按钮
  *
  * ② 高级设置模式（点击「高级设置」进入）
@@ -152,9 +152,9 @@ export default function VenuePage() {
           ))}
         </div>
 
-        {/* 右段：280px，与右侧配置面板等宽，包含 CTA */}
+        {/* 右段：340px，与右侧配置面板等宽，包含 CTA */}
         <div style={{
-          width: 280, flexShrink: 0, height: '100%',
+          width: 340, flexShrink: 0, height: '100%',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
           padding: '0 16px',
           borderLeft: '1px solid var(--sl-border)',
