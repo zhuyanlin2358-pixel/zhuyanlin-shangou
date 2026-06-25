@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>闪购工作台 · UI 设计令牌</title>
+<style>
+/* ── 设计令牌（与 src/index.css 保持同步）────────────────────────────────── */
+:root {
+  /* 背景层次 */
+  --sl-bg:           #010104;
+  --sl-panel:        #08080e;
+  --sl-surface:      #0f0f1a;
+
+  /* 边框 */
+  --sl-border:       rgba(235,233,252,0.07);
+  --sl-border-md:    rgba(235,233,252,0.12);
+
+  /* 文字层次 */
+  --sl-text-1:       #ebe9fc;
+  --sl-text-2:       rgba(235,233,252,0.60);
+  --sl-text-3:       rgba(235,233,252,0.38);
+  --sl-text-4:       rgba(235,233,252,0.20);
+
+  /* 品牌色 */
+  --sl-primary:      #fad900;
+  --sl-accent:       #ffa203;
+  --sl-cta-text:     #1a1000;
+  --sl-primary-grad: linear-gradient(90deg, #fad900, #ffa203);
+
+  /* 侧边栏行 token（FileItem/VenueLayerPanel）*/
+  --sidebar-active-bg:    rgba(255,255,255,0.09);
+  --sidebar-hover-bg:     rgba(255,255,255,0.05);
+  --sidebar-active-text:  rgba(235,233,252,0.9);
+  --sidebar-muted-text:   rgba(255,255,255,0.45);
+  --sidebar-accent-line:  rgba(255,255,255,0.65);
+
+  /* 间距（8px 基准）*/
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* 字号 */
+  --font-xs:  10px;
+  --font-sm:  11px;
+  --font-md:  12px;
+  --font-base: 13px;
+  --font-lg:  14px;
+  --font-xl:  16px;
+
+  /* 圆角 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* 配色预设圆点（色彩感知层，高饱和）*/
+  --dot-teal:  #0BC371;
+  --dot-blue:  #3181E6;
+  --dot-green: #36C945;
+  --dot-gold1: #FFAD00;
+  --dot-gold2: #D97A35;
+  --dot-pink:  #FF6EB4;
+  --dot-red:   #FF3E58;
+}
+
+/* ── 基础 reset ── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--sl-bg);
+  color: var(--sl-text-1);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', sans-serif;
+  font-size: var(--font-base);
+  padding: 40px;
+  line-height: 1.6;
+}
+h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.subtitle { color: var(--sl-text-3); font-size: 12px; margin-bottom: 40px; }
+h2 {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--sl-text-4);
+  margin-bottom: 16px; margin-top: 40px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--sl-border);
+}
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.card {
+  background: var(--sl-panel);
+  border: 1px solid var(--sl-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+}
+
+/* ── 色彩卡片 ── */
+.color-chip {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: var(--radius-md);
+  background: var(--sl-surface); border: 1px solid var(--sl-border);
+  margin-bottom: 6px;
+}
+.color-swatch {
+  width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;
+}
+.color-name { font-size: 12px; font-weight: 600; color: var(--sl-text-1); }
+.color-value { font-size: 10px; color: var(--sl-text-3); font-family: monospace; }
+
+/* ── 侧边栏行（与 FileItem 完全同款）── */
+.sidebar-demo {
+  background: var(--sl-panel);
+  border: 1px solid var(--sl-border);
+  border-radius: var(--radius-lg);
+  padding: 8px 6px;
+  width: 220px;
+}
+.sidebar-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--sl-text-4);
+  padding: 8px 10px 4px;
+}
+.file-item {
+  position: relative; display: flex; align-items: center; gap: 8px;
+  height: 34px; padding: 0 6px 0 10px; border-radius: 8px;
+  cursor: pointer; margin-bottom: 1px;
+  color: var(--sidebar-muted-text);
+  transition: background 0.12s, color 0.12s;
+  user-select: none;
+}
+.file-item:hover { background: var(--sidebar-hover-bg); }
+.file-item.active {
+  background: var(--sidebar-active-bg);
+  color: var(--sidebar-active-text);
+}
+.file-item.active::before {
+  content: '';
+  position: absolute; left: 0; top: 20%; bottom: 20%;
+  width: 2.5px; background: var(--sidebar-accent-line); border-radius: 2px;
+}
+.file-item-text { flex: 1; min-width: 0; }
+.file-item-label {
+  font-size: 12.5px; line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.file-item.active .file-item-label { font-weight: 600; }
+.file-item-sub { font-size: 9.5px; color: rgba(255,255,255,0.28); line-height: 1.2; }
+.badge {
+  font-size: 10px; font-weight: 600; padding: 1px 6px;
+  background: rgba(255,255,255,0.08); border-radius: 4px;
+  color: rgba(255,255,255,0.4); flex-shrink: 0;
+}
+.badge-num {
+  width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0;
+  background: rgba(255,255,255,0.08); display: flex;
+  align-items: center; justify-content: center;
+  font-size: 10px; color: rgba(255,255,255,0.4);
+}
+
+/* ── 按钮 ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 16px; border-radius: 10px; border: none;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  transition: opacity 0.12s;
+}
+.btn:hover { opacity: 0.88; }
+.btn-primary { background: var(--sl-primary-grad); color: var(--sl-cta-text); }
+.btn-ghost {
+  background: rgba(255,255,255,0.06);
+  color: var(--sl-text-2);
+  border: 1px solid var(--sl-border-md);
+}
+.btn-danger {
+  background: rgba(255,48,80,0.12);
+  color: #FF8FAA;
+  border: 1px solid rgba(255,48,80,0.3);
+}
+
+/* ── 配色药丸（PresetPill）── */
+.preset-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.preset-pill {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 8px; cursor: pointer; font-size: 11px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.5);
+  transition: all 0.12s;
+}
+.preset-pill.active {
+  border-color: rgba(255,48,96,0.6);
+  background: rgba(255,48,96,0.12);
+  color: #FF8FAA;
+  font-weight: 600;
+}
+.dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; display: inline-block;
+}
+
+/* ── 输入框 ── */
+.input {
+  width: 100%; background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 7px 10px; font-size: 12px;
+  color: var(--sl-text-1); outline: none;
+}
+.input:focus { border-color: rgba(250,217,0,0.4); }
+.input-label { font-size: 10px; color: var(--sl-text-3); margin-bottom: 5px; }
+
+/* ── 间距展示 ── */
+.space-demo {
+  display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap;
+}
+.space-block {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.space-rect {
+  background: rgba(250,217,0,0.2);
+  border: 1px solid rgba(250,217,0,0.4);
+}
+.space-val { font-size: 10px; color: var(--sl-text-3); font-family: monospace; }
+
+/* ── Token 表格 ── */
+.token-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: 8px;
+  background: var(--sl-surface); border: 1px solid var(--sl-border);
+  margin-bottom: 5px; font-family: monospace;
+}
+.token-name { font-size: 11px; color: var(--sl-primary); flex: 1; }
+.token-val { font-size: 10px; color: var(--sl-text-3); }
+</style>
+</head>
+<body>
+
+<h1>闪购营销设计工作台</h1>
+<div class="subtitle">UI 设计令牌手册 · 最小约束集 · 更新：2026-06-25</div>
+
+<!-- ── 1. 背景层次 ── -->
+<h2>背景层次</h2>
+<div class="grid-3">
+  <div class="color-chip">
+    <div class="color-swatch" style="background:#010104;border:1px solid rgba(255,255,255,0.2)"></div>
+    <div><div class="color-name">--sl-bg</div><div class="color-value">#010104 · 主画布</div></div>
+  </div>
+  <div class="color-chip">
+    <div class="color-swatch" style="background:#08080e;border:1px solid rgba(255,255,255,0.15)"></div>
+    <div><div class="color-name">--sl-panel</div><div class="color-value">#08080e · 侧边栏/顶栏</div></div>
+  </div>
+  <div class="color-chip">
+    <div class="color-swatch" style="background:#0f0f1a;border:1px solid rgba(255,255,255,0.12)"></div>
+    <div><div class="color-name">--sl-surface</div><div class="color-value">#0f0f1a · 区块/卡片</div></div>
+  </div>
+</div>
+
+<!-- ── 2. 品牌色 ── -->
+<h2>品牌色</h2>
+<div class="grid-3">
+  <div class="color-chip">
+    <div class="color-swatch" style="background:#fad900"></div>
+    <div><div class="color-name">--sl-primary</div><div class="color-value">#fad900 · 美团黄</div></div>
+  </div>
+  <div class="color-chip">
+    <div class="color-swatch" style="background:#ffa203"></div>
+    <div><div class="color-name">--sl-accent</div><div class="color-value">#ffa203 · 暖橙</div></div>
+  </div>
+  <div class="color-chip">
+    <div class="color-swatch" style="background:linear-gradient(90deg,#fad900,#ffa203)"></div>
+    <div><div class="color-name">--sl-primary-grad</div><div class="color-value">渐变 · CTA按钮</div></div>
+  </div>
+</div>
+
+<!-- ── 3. 文字层次 ── -->
+<h2>文字层次</h2>
+<div style="background:var(--sl-surface);border:1px solid var(--sl-border);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:12px;">
+  <div style="font-size:16px;font-weight:700;color:#ebe9fc;">主文字 --sl-text-1 · #ebe9fc</div>
+  <div style="font-size:13px;color:rgba(235,233,252,0.6);">次文字 --sl-text-2 · 60% opacity</div>
+  <div style="font-size:12px;color:rgba(235,233,252,0.38);">弱文字 --sl-text-3 · 38% opacity</div>
+  <div style="font-size:11px;color:rgba(235,233,252,0.20);">标签/分隔 --sl-text-4 · 20% opacity</div>
+</div>
+
+<!-- ── 4. 侧边栏行（统一标准）── -->
+<h2>侧边栏行（全工具统一 · FileItem 组件）</h2>
+<div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
+  <!-- 会场搭建侧边栏示例 -->
+  <div>
+    <div style="font-size:10px;color:var(--sl-text-4);margin-bottom:8px;">会场搭建 · VenueLayerPanel</div>
+    <div class="sidebar-demo">
+      <div class="sidebar-label">页面结构</div>
+      <div class="file-item" onclick="toggleActive(this)">
+        <div class="file-item-text">
+          <div class="file-item-label">活动头图</div>
+          <div class="file-item-sub">头图 · 背景色 · 尺寸</div>
+        </div>
+      </div>
+      <div class="file-item active" onclick="toggleActive(this)">
+        <div class="file-item-text">
+          <div class="file-item-label">老虎机</div>
+          <div class="file-item-sub">抽奖组件全套切图</div>
+        </div>
+        <div class="badge-num">1</div>
+      </div>
+      <div class="file-item" onclick="toggleActive(this)">
+        <div class="file-item-text">
+          <div class="file-item-label">一键领券红包</div>
+          <div class="file-item-sub">7色配色切图</div>
+        </div>
+        <div class="badge-num">2</div>
+      </div>
+      <div class="sidebar-label" style="margin-top:8px;">组件工坊</div>
+      <div class="file-item" onclick="toggleActive(this)">
+        <div class="file-item-text">
+          <div class="file-item-label">楼层条</div>
+          <div class="file-item-sub">点击查看组件介绍</div>
+        </div>
+      </div>
+      <div class="file-item" onclick="toggleActive(this)">
+        <div class="file-item-text">
+          <div class="file-item-label">横滑 Tab</div>
+          <div class="file-item-sub">点击查看预览 / 再次加入</div>
+        </div>
+        <div class="badge" style="font-size:9px;padding:1px 5px;">已加入</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 组件工作室侧边栏示例 -->
+  <div>
+    <div style="font-size:10px;color:var(--sl-text-4);margin-bottom:8px;">红包工作室 · ComponentStudio</div>
+    <div class="sidebar-demo">
+      <div class="sidebar-label">组件结构</div>
+      <div class="file-item" onclick="toggleActive(this)">
+        <div class="file-item-text">
+          <div class="file-item-label">款式配色</div>
+          <div class="file-item-sub">7 种配色</div>
+        </div>
+      </div>
+      <div class="file-item" onclick="toggleActive(this)">
+        <div class="file-item-text">
+          <div class="file-item-label">文案设置</div>
+          <div class="file-item-sub">主文案 · 按钮</div>
+        </div>
+      </div>
+      <div class="file-item active" onclick="toggleActive(this)">
+        <div class="file-item-text">
+          <div class="file-item-label">领取前背景图</div>
+          <div class="file-item-sub">702 × 352 px</div>
+        </div>
+      </div>
+      <div class="file-item" onclick="toggleActive(this)">
+        <div class="file-item-text">
+          <div class="file-item-label">腰封</div>
+          <div class="file-item-sub">702 × 168 px</div>
+        </div>
+      </div>
+      <div class="file-item" onclick="toggleActive(this)">
+        <div class="file-item-text">
+          <div class="file-item-label">按钮</div>
+          <div class="file-item-sub">480 × 80 px</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Token 说明 -->
+  <div style="flex:1;min-width:240px;">
+    <div style="font-size:10px;color:var(--sl-text-4);margin-bottom:8px;">侧边栏行 Token（两处完全共用）</div>
+    <div class="token-row"><div class="token-name">--sidebar-active-bg</div><div class="token-val">rgba(255,255,255,0.09)</div></div>
+    <div class="token-row"><div class="token-name">--sidebar-hover-bg</div><div class="token-val">rgba(255,255,255,0.05)</div></div>
+    <div class="token-row"><div class="token-name">--sidebar-active-text</div><div class="token-val">rgba(235,233,252,0.9)</div></div>
+    <div class="token-row"><div class="token-name">--sidebar-muted-text</div><div class="token-val">rgba(255,255,255,0.45)</div></div>
+    <div class="token-row"><div class="token-name">--sidebar-accent-line</div><div class="token-val">rgba(255,255,255,0.65)</div></div>
+    <div style="margin-top:12px;padding:10px;background:rgba(250,217,0,0.06);border:1px solid rgba(250,217,0,0.15);border-radius:8px;font-size:11px;color:rgba(250,217,0,0.6);">
+      ⚠️ 禁止：不要自己写 height/background/color，使用 FileItem 组件
+    </div>
+  </div>
+</div>
+
+<!-- ── 5. 按钮 ── -->
+<h2>按钮</h2>
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+  <button class="btn btn-primary">↓ 完成 · 下载素材</button>
+  <button class="btn btn-ghost">更新画布预览</button>
+  <button class="btn btn-ghost">← 首页</button>
+  <button class="btn btn-danger">× 删除</button>
+</div>
+<div style="margin-top:12px;display:flex;gap:24px;">
+  <div class="token-row" style="flex:1;"><div class="token-name">CTA主按钮</div><div class="token-val">background: var(--sl-primary-grad) · color: var(--sl-cta-text)</div></div>
+  <div class="token-row" style="flex:1;"><div class="token-name">Ghost按钮</div><div class="token-val">background: rgba(255,255,255,0.06) · border: --sl-border-md</div></div>
+</div>
+
+<!-- ── 6. 配色药丸（统一规范）── -->
+<h2>配色药丸（老虎机 + 红包统一规范）</h2>
+<div style="display:flex;gap:24px;flex-wrap:wrap;">
+  <div>
+    <div style="font-size:10px;color:var(--sl-text-4);margin-bottom:8px;">老虎机风格（参考基准）</div>
+    <div class="preset-pills">
+      <div class="preset-pill"><span class="dot" style="background:#F952FF"></span>情人粉</div>
+      <div class="preset-pill active"><span class="dot" style="background:#FF3048"></span>大促红</div>
+      <div class="preset-pill"><span class="dot" style="background:#FFECAD"></span>黄色</div>
+      <div class="preset-pill"><span class="dot" style="background:#FF7632"></span>橘色</div>
+      <div class="preset-pill"><span class="dot" style="background:#88F4FE"></span>蓝色</div>
+    </div>
+  </div>
+  <div>
+    <div style="font-size:10px;color:var(--sl-text-4);margin-bottom:8px;">红包配色（同款药丸）</div>
+    <div class="preset-pills">
+      <div class="preset-pill"><span class="dot" style="background:var(--dot-teal)"></span>青色</div>
+      <div class="preset-pill active"><span class="dot" style="background:var(--dot-blue)"></span>蓝色</div>
+      <div class="preset-pill"><span class="dot" style="background:var(--dot-green)"></span>绿色</div>
+      <div class="preset-pill"><span class="dot" style="background:var(--dot-gold1)"></span>金色</div>
+      <div class="preset-pill"><span class="dot" style="background:var(--dot-gold2)"></span>金色深</div>
+      <div class="preset-pill"><span class="dot" style="background:var(--dot-pink)"></span>粉色</div>
+      <div class="preset-pill"><span class="dot" style="background:var(--dot-red)"></span>红色</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 7. 间距系统 ── -->
+<h2>间距系统（8px 基准）</h2>
+<div class="space-demo">
+  <div class="space-block"><div class="space-rect" style="width:4px;height:4px;"></div><div class="space-val">xs 4px</div></div>
+  <div class="space-block"><div class="space-rect" style="width:8px;height:8px;"></div><div class="space-val">sm 8px</div></div>
+  <div class="space-block"><div class="space-rect" style="width:16px;height:16px;"></div><div class="space-val">md 16px</div></div>
+  <div class="space-block"><div class="space-rect" style="width:24px;height:24px;"></div><div class="space-val">lg 24px</div></div>
+  <div class="space-block"><div class="space-rect" style="width:32px;height:32px;"></div><div class="space-val">xl 32px</div></div>
+</div>
+
+<!-- ── 8. 输入框 ── -->
+<h2>输入框</h2>
+<div style="max-width:360px;display:flex;flex-direction:column;gap:12px;">
+  <div>
+    <div class="input-label">主文案</div>
+    <input class="input" type="text" value="领618好店券 下单更优惠" />
+  </div>
+  <div>
+    <div class="input-label">按钮文案</div>
+    <input class="input" type="text" placeholder="一键领取" />
+  </div>
+</div>
+
+<!-- ── 9. 规则速查 ── -->
+<h2>开发规则速查（最小约束集）</h2>
+<div class="card" style="margin-top:0;">
+  <table style="width:100%;border-collapse:collapse;font-size:12px;">
+    <thead>
+      <tr style="border-bottom:1px solid var(--sl-border);">
+        <th style="text-align:left;padding:8px 12px;color:var(--sl-text-3);font-weight:600;">类别</th>
+        <th style="text-align:left;padding:8px 12px;color:var(--sl-text-3);font-weight:600;">✅ 应该</th>
+        <th style="text-align:left;padding:8px 12px;color:var(--sl-text-3);font-weight:600;">❌ 禁止</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--sl-border);">
+        <td style="padding:10px 12px;color:var(--sl-text-2);">侧边栏行</td>
+        <td style="padding:10px 12px;color:#4ade80;font-family:monospace;">使用 &lt;FileItem&gt; 组件</td>
+        <td style="padding:10px 12px;color:#f87171;font-family:monospace;">自己写 div 模拟行样式</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--sl-border);">
+        <td style="padding:10px 12px;color:var(--sl-text-2);">配色选择器</td>
+        <td style="padding:10px 12px;color:#4ade80;font-family:monospace;">横排药丸 + 8px 圆点</td>
+        <td style="padding:10px 12px;color:#f87171;font-family:monospace;">DisclosureGroup 包裹的列表</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--sl-border);">
+        <td style="padding:10px 12px;color:var(--sl-text-2);">CTA 按钮</td>
+        <td style="padding:10px 12px;color:#4ade80;font-family:monospace;">var(--sl-primary-grad)</td>
+        <td style="padding:10px 12px;color:#f87171;font-family:monospace;">background: blue / #2D78F4</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--sl-border);">
+        <td style="padding:10px 12px;color:var(--sl-text-2);">背景色</td>
+        <td style="padding:10px 12px;color:#4ade80;font-family:monospace;">var(--sl-bg/panel/surface)</td>
+        <td style="padding:10px 12px;color:#f87171;font-family:monospace;">#0C111B / #0D1117 硬编码</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 12px;color:var(--sl-text-2);">画布区域背景</td>
+        <td style="padding:10px 12px;color:#4ade80;font-family:monospace;">#080C14 + 淡点阵</td>
+        <td style="padding:10px 12px;color:#f87171;font-family:monospace;">纯黑或其他颜色</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div style="margin-top:32px;padding:16px;background:rgba(250,217,0,0.05);border:1px solid rgba(250,217,0,0.12);border-radius:12px;font-size:11px;color:rgba(250,217,0,0.5);">
+  📌 此文档与 <code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;">src/index.css</code> 保持同步。
+  新增变量先加进 index.css，再更新这里。
+  有疑问看 <code>FileTree.tsx</code> 的 T token 对象和 <code>SlotConfigBlocks.tsx</code> 的 PresetGrid。
+</div>
+
+<script>
+// 点击行切换 active 状态（交互演示）
+function toggleActive(el) {
+  const siblings = el.parentElement.querySelectorAll('.file-item');
+  siblings.forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+}
+// 配色药丸切换
+document.querySelectorAll('.preset-pill').forEach(pill => {
+  pill.addEventListener('click', function() {
+    const siblings = this.parentElement.querySelectorAll('.preset-pill');
+    siblings.forEach(s => s.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

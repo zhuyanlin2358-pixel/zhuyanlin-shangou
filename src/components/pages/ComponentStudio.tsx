@@ -3,6 +3,7 @@
  * 三栏布局：[左 20% 结构树] | [中 40% 实时Canvas] | [右 40% 配置面板]
  */
 import { useState, useEffect, useRef, Suspense, lazy } from 'react'
+import { FileItem } from '@/components/ui/FileTree'
 import { useFloor }  from '@/contexts/FloorContext'
 import { useHTab }   from '@/contexts/HTabContext'
 import { useCoupon } from '@/contexts/CouponContext'
@@ -59,31 +60,6 @@ const COMP_META: Record<string, {
   },
 }
 
-// ── 图层行 ────────────────────────────────────────────────────────────────────
-function LayerRow({ active, onClick, label, sub }: {
-  active: boolean; onClick: () => void; label: string; sub: string
-}) {
-  const [hovered, setHovered] = useState(false)
-  const bg = active   ? 'rgba(235,233,252,0.09)'
-           : hovered  ? 'rgba(255,255,255,0.05)'
-           : 'transparent'
-  return (
-    <div onClick={onClick} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 9,
-        padding: '0 10px', height: 38, borderRadius: 8, cursor: 'pointer',
-        background: bg, transition: 'background 0.12s',
-        borderLeft: active ? '2px solid rgba(235,233,252,0.65)' : '2px solid transparent',
-        color: active ? 'rgba(235,233,252,0.9)' : 'rgba(255,255,255,0.6)',
-      }}>
-      <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 12.5, fontWeight: active ? 600 : 400, lineHeight: 1.3,
-          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
-        <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.28)', lineHeight: 1.2 }}>{sub}</div>
-      </div>
-    </div>
-  )
-}
 
 // ── Canvas 预览 Hook（300ms debounce，随 activeLayer 切换）─────────────────────
 function useCanvasPreview(compId: ComponentId, activeLayer: string | null) {
@@ -330,9 +306,9 @@ export default function ComponentStudio({ compId, onBack }: Props) {
             {meta.layers.map(layer => {
               const active = activeLayer === layer.id
               return (
-                <LayerRow key={layer.id} active={active}
+                <FileItem key={layer.id} active={active}
                   onClick={() => setActiveLayer(active ? null : layer.id)}
-                  label={layer.label} sub={layer.sub} />
+                  label={layer.label} sublabel={layer.sub} />
               )
             })}
           </div>
