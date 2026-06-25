@@ -1141,15 +1141,19 @@ export async function drawCouponSingleBg(cfg: CouponConfig): Promise<HTMLCanvasE
   const ctx = canvas.getContext('2d')!
   ctx.scale(S, S)
 
-  // 背景渐变（与主背景同色，高度缩短）
+  // 背景渐变（与主背景同色，高度缩短为 236）
   const bg = ctx.createLinearGradient(0, 0, 0, H)
   bg.addColorStop(0.01, c.cardBgFrom)
   bg.addColorStop(1,    c.cardBgTo)
   ctx.fillStyle = bg
   ctx.fillRect(0, 0, W, H)
 
-  // 标题 + 闪电装饰（y 坐标与 Figma 一致：title y:11）
-  drawCouponHeader(ctx, cfg)
+  // Figma 精确：标题文字 y:11，无闪电装饰（区别于主背景 y:25+闪电）
+  ctx.font = `400 32px ${FB}`
+  ctx.fillStyle = c.textColor
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'top'
+  ctx.fillText(cfg.titleText, 351, 11, 358)
 
   return downsample(canvas)
 }

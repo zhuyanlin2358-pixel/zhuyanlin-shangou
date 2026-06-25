@@ -19,7 +19,7 @@ import {
   preloadFonts,
   drawSlotBannerCanvas, drawSlotBgCanvas, drawButtonCanvas, drawLinkCanvas,
   drawEmptyStateCanvas, drawPrizeCanvas, drawDialogButtonCanvas, drawDialogResultCanvas,
-  drawCouponBg, drawCouponWaistband, drawCouponButton,
+  drawCouponBg, drawCouponPreview, drawCouponWaistband, drawCouponButton, drawCouponSingleBg,
   drawHTabCanvas, drawFloorCanvas,
 } from '@/utils/exportUtils'
 
@@ -37,6 +37,7 @@ const SLOT_DIALOG_BUTTONS = [
   '确认', '领奖品', '查看收货地址', '重新加载', '关闭', '查看详情', '分享给朋友',
 ]
 import type { PrizeInfo, XfTransform } from '@/utils/exportUtils'
+import { COUPON_COLORS } from '@/types'
 
 // ── 工具 ──────────────────────────────────────────────────────────────────────
 function canvasToBlob(c: HTMLCanvasElement): Promise<Blob> {
@@ -657,16 +658,27 @@ export default function DeliveryPage() {
 
     if (item.componentId === 'coupon') {
       const cfg = couponCtx.config
+      const colorName = COUPON_COLORS[cfg.colorKey].name
       const assetList: AssetDef[] = [
-        { id: mk('券包背景'), label: '券包背景', size: '702 × 352 px', generate: () => drawCouponBg(cfg) },
-        { id: mk('腰封图'),   label: '腰封图',   size: '702 × 168 px', generate: () => drawCouponWaistband(cfg) },
-        { id: mk('领取按钮'), label: '领取按钮', size: '480 × 80 px',  generate: () => drawCouponButton(cfg) },
+        { id: mk('领取前无tab-背景图'), label: '领取前无tab-背景图', size: '702 × 352 px', generate: () => drawCouponBg(cfg) },
+        { id: mk('券包预览图'),         label: '券包预览图',         size: '702 × 352 px', generate: () => drawCouponPreview(cfg) },
+        { id: mk('组件腰封图'),         label: '组件腰封图',         size: '702 × 168 px', generate: () => drawCouponWaistband(cfg) },
+        { id: mk('组件按钮图'),         label: '组件按钮图',         size: '480 × 80 px',  generate: () => drawCouponButton(cfg) },
+        { id: mk('仅剩一张券背景图'),   label: '仅剩一张券背景图',   size: '702 × 236 px', generate: () => drawCouponSingleBg(cfg) },
       ]
       const downloadAll = async () => {
         await preloadFonts()
-        const [bg, w, b] = await Promise.all([drawCouponBg(cfg), drawCouponWaistband(cfg), drawCouponButton(cfg)])
-        const zip = new JSZip(); zip.file('背景.png', await canvasToBlob(bg)); zip.file('腰封.png', await canvasToBlob(w)); zip.file('按钮.png', await canvasToBlob(b))
-        downloadBlob(await zip.generateAsync({ type: 'blob' }), `红包_${cfg.colorKey}.zip`)
+        const [bg, full, waist, btn, single] = await Promise.all([
+          drawCouponBg(cfg), drawCouponPreview(cfg),
+          drawCouponWaistband(cfg), drawCouponButton(cfg), drawCouponSingleBg(cfg),
+        ])
+        const zip = new JSZip()
+        zip.file(`券红包_${colorName}_领取前无tab背景图_702x352.png`, await canvasToBlob(bg))
+        zip.file(`券红包_${colorName}_券包预览图_702x352.png`,        await canvasToBlob(full))
+        zip.file(`券红包_${colorName}_组件腰封图_702x168.png`,        await canvasToBlob(waist))
+        zip.file(`券红包_${colorName}_组件按钮图_480x80.png`,         await canvasToBlob(btn))
+        zip.file(`券红包_${colorName}_仅剩一张券背景图_702x236.png`,  await canvasToBlob(single))
+        downloadBlob(await zip.generateAsync({ type: 'blob' }), `一键领券红包_无tab_${colorName}.zip`)
       }
       return { assetList, downloadAll }
     }

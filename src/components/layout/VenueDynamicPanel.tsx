@@ -401,7 +401,7 @@ const COMP_PREVIEW_META: Record<string, { desc: string; items: string[] }> = {
   slot:    { desc: '大促核心玩法，用户点击转盘抽奖，增强互动。', items: ['主视觉 750×242', '弹窗结果页 × 6种', '弹窗按钮 × 7种', '奖品图（动态数量）'] },
   floor:   { desc: '楼层分隔条，区分页面不同内容区域。',       items: ['750 × 60 px', '3款预设', '自定义配色'] },
   'h-tab': { desc: '横向滑动标签，快速切换商品或活动分类。',   items: ['2 / 3 / 4 个 Tab', '7种配色', '每个 Tab 单独切图'] },
-  coupon:  { desc: '一键领取优惠券红包，引导领券提升转化。',   items: ['背景 702×352', '腰封 702×168', '按钮 480×80'] },
+  coupon:  { desc: '一键领取优惠券红包，引导领券提升转化。',   items: ['无tab背景 702×352', '券包预览 702×352', '腰封 702×168', '按钮 480×80', '单券背景 702×236'] },
 }
 
 function ComponentPreviewCard({ compId }: { compId: ComponentId }) {
@@ -445,7 +445,8 @@ function ComponentPreviewCard({ compId }: { compId: ComponentId }) {
     }
     generate()
     return () => { cancelled = true }
-  }, [compId])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compId, coupon.config, slotCtx.config, htab.config, floor.config])
 
   if (!meta) return null
 
