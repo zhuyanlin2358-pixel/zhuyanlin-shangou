@@ -392,13 +392,14 @@ export interface CouponColorDef {
 }
 
 export const COUPON_COLORS: Record<CouponColorKey, CouponColorDef> = {
-  teal:  { name: '青色', cardBgFrom: '#CFFAF6', cardBgTo: '#A7F4ED', btnFrom: '#3AC749', btnTo: '#10D321', textColor: '#099A59' },
-  blue:  { name: '蓝色', cardBgFrom: '#C8E2FB', cardBgTo: '#A7D2FF', btnFrom: '#3181E6', btnTo: '#57A6FF', textColor: '#3B657C' },
-  green: { name: '绿色', cardBgFrom: '#DBF7BD', cardBgTo: '#D7F5B1', btnFrom: '#3AC749', btnTo: '#10D321', textColor: '#00A611' },
-  gold1: { name: '金色', cardBgFrom: '#FBE7C0', cardBgTo: '#FADFB0', btnFrom: '#FF1F43', btnTo: '#FF008E', textColor: '#950E0F' },
-  gold2: { name: '金色深', cardBgFrom: '#FBE7C0', cardBgTo: '#FADFB0', btnFrom: '#FF1F43', btnTo: '#FF008E', textColor: '#950E0F' },
-  pink:  { name: '粉色', cardBgFrom: '#FDDCFF', cardBgTo: '#FFBCE0', btnFrom: '#FF3E58', btnTo: '#FF1838', textColor: '#950E0F' },
-  red:   { name: '红色', cardBgFrom: '#FFDCE5', cardBgTo: '#FFD4D4', btnFrom: '#FF3E58', btnTo: '#FF2958', textColor: '#950E0F' },
+  // Figma 精确色值（2026-06-25 更新，来源：一键领券红包组件 Figma file）
+  teal:  { name: '青色',  cardBgFrom: '#CFFAF6', cardBgTo: '#A7F4ED', btnFrom: '#0BC371', btnTo: '#2DC983', textColor: '#099A59' },
+  blue:  { name: '蓝色',  cardBgFrom: '#C8E2FB', cardBgTo: '#A7D2FF', btnFrom: '#3181E6', btnTo: '#57A6FF', textColor: '#3B657C' },
+  green: { name: '绿色',  cardBgFrom: '#DBF7BD', cardBgTo: '#D7F5B1', btnFrom: '#36C945', btnTo: '#13D224', textColor: '#00A611' },
+  gold1: { name: '金色',  cardBgFrom: '#FBE7C0', cardBgTo: '#FADFB0', btnFrom: '#FF3E58', btnTo: '#FF1838', textColor: '#950E0F' },
+  gold2: { name: '金色深', cardBgFrom: '#FFEDD8', cardBgTo: '#F6D4AA', btnFrom: '#A55725', btnTo: '#CA7537', textColor: '#950E0F' },
+  pink:  { name: '粉色',  cardBgFrom: '#FDDCFF', cardBgTo: '#FFBCE0', btnFrom: '#FF1F43', btnTo: '#FF008E', textColor: '#950E0F' },
+  red:   { name: '红色',  cardBgFrom: '#FFDCE5', cardBgTo: '#FFD4D4', btnFrom: '#FF3E58', btnTo: '#FF1838', textColor: '#950E0F' },
 }
 
 export interface CouponConfig {

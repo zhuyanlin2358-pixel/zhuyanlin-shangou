@@ -1,14 +1,14 @@
 /**
- * 一键领券红包配置页
- * UI 完全对齐老虎机：SectionTitle 编号 + ExportCard 暗色导出按钮
- * 顶部已通过 registerExportAll 挂载「一键导出 ZIP」，页面内不重复
+ * 一键领券红包配置页（无tab类）
+ * 5 种导出：领取前无tab-背景图 / 券包预览图 / 组件腰封图 / 组件按钮图 / 仅剩一张券背景图
  */
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Download } from 'lucide-react'
 import { useApp } from '@/contexts/AppContext'
 import { useCoupon } from '@/contexts/CouponContext'
 import {
-  drawCouponBg, drawCouponWaistband, drawCouponButton, drawCouponPreview,
+  drawCouponBg, drawCouponWaistband, drawCouponButton,
+  drawCouponPreview, drawCouponSingleBg,
   downloadCanvas, downloadZip, isFontsReady, preloadFonts,
 } from '@/utils/exportUtils'
 import { COUPON_COLORS } from '@/types'
@@ -18,37 +18,40 @@ export default function CouponPage() {
   const { showToast, registerExportAll } = useApp()
   const { config } = useCoupon()
 
-  // 各 section 预览 URL
-  const [prevFull,  setPrevFull]  = useState('')   // 完整预览（加入会场 + 导出用）
-  const [prevBg,    setPrevBg]    = useState('')   // ① 券包背景
-  const [prevWaist, setPrevWaist] = useState('')   // ② 券包腰封
-  const [prevBtn,   setPrevBtn]   = useState('')   // ③ 组件按钮
+  // 5 个 section 的预览 URL
+  const [prevBg,     setPrevBg]     = useState('')  // ① 领取前无tab-背景图
+  const [prevFull,   setPrevFull]   = useState('')  // ② 券包预览图
+  const [prevWaist,  setPrevWaist]  = useState('')  // ③ 组件腰封图
+  const [prevBtn,    setPrevBtn]    = useState('')  // ④ 组件按钮图
+  const [prevSingle, setPrevSingle] = useState('')  // ⑤ 仅剩一张券背景图
 
   useEffect(() => {
     let cancelled = false
 
     const render = async () => {
-      // ① Preview 优先：完整预览先出，用户立刻看到内容 + 「加入会场」可用
+      // ② 完整预览优先出，加入会场立刻可用
       const full = await drawCouponPreview(config).then(c => c.toDataURL()).catch(() => '')
       if (cancelled) return
       setPrevFull(full)
 
-      // ② 让浏览器先把 preview 绘制到屏幕，再渲染 3 张导出图
       await new Promise<void>(r => requestAnimationFrame(() => r()))
       if (cancelled) return
 
-      const [bg, waist, btn] = await Promise.all([
+      const [bg, waist, btn, single] = await Promise.all([
         drawCouponBg(config).then(c => c.toDataURL()),
         drawCouponWaistband(config).then(c => c.toDataURL()),
         drawCouponButton(config).then(c => c.toDataURL()),
-      ]).catch(() => ['', '', ''] as [string, string, string])
+        drawCouponSingleBg(config).then(c => c.toDataURL()),
+      ]).catch(() => ['', '', '', ''] as [string, string, string, string])
       if (cancelled) return
-      setPrevBg(bg as string); setPrevWaist(waist as string); setPrevBtn(btn as string)
+      setPrevBg(bg as string)
+      setPrevWaist(waist as string)
+      setPrevBtn(btn as string)
+      setPrevSingle(single as string)
     }
 
     render()
 
-    // 首次访问字体未就绪时：字体加载完后整体刷新一次，确保文字正确
     if (!isFontsReady()) {
       preloadFonts().then(() => { if (!cancelled) render() })
     }
@@ -56,22 +59,29 @@ export default function CouponPage() {
   }, [config])
 
   const colorName = COUPON_COLORS[config.colorKey].name
+  const c = COUPON_COLORS[config.colorKey]
+  const cardGrad = `linear-gradient(179deg, ${c.cardBgFrom} 1%, ${c.cardBgTo} 100%)`
+  const btnGrad  = `linear-gradient(90deg, ${c.btnFrom}, ${c.btnTo})`
 
-  // 注册顶部「一键导出 ZIP」
+  // 顶部「一键导出 ZIP」— 5 张全部打包
   const handleExportAll = useCallback(async () => {
     showToast('正在渲染一键领券红包…')
     try {
-      const [bg, waistband, button] = await Promise.all([
+      const [bg, full, waistband, button, single] = await Promise.all([
         drawCouponBg(config),
+        drawCouponPreview(config),
         drawCouponWaistband(config),
         drawCouponButton(config),
+        drawCouponSingleBg(config),
       ])
       await downloadZip([
-        { canvas: bg,        name: `券红包_${colorName}_背景图_702x352.png` },
-        { canvas: waistband, name: `券红包_${colorName}_腰封图_702x168.png` },
-        { canvas: button,    name: `券红包_${colorName}_按钮图_480x80.png` },
-      ], `一键领券红包_${colorName}`)
-      showToast('✅ 已导出 3 张切图 ZIP')
+        { canvas: bg,       name: `券红包_${colorName}_领取前无tab背景图_702x352.png` },
+        { canvas: full,     name: `券红包_${colorName}_券包预览图_702x352.png` },
+        { canvas: waistband,name: `券红包_${colorName}_组件腰封图_702x168.png` },
+        { canvas: button,   name: `券红包_${colorName}_组件按钮图_480x80.png` },
+        { canvas: single,   name: `券红包_${colorName}_仅剩一张券背景图_702x236.png` },
+      ], `一键领券红包_无tab_${colorName}`)
+      showToast('✅ 已导出 5 张切图 ZIP')
     } catch (e: unknown) {
       showToast(`❌ 导出失败：${e instanceof Error ? e.message : '未知'}`)
     }
@@ -81,38 +91,49 @@ export default function CouponPage() {
 
   const exportOne = async (fn: () => Promise<HTMLCanvasElement>, filename: string, label: string) => {
     try {
-      const canvas = await fn()
-      downloadCanvas(canvas, filename)
+      downloadCanvas(await fn(), filename)
       showToast(`✅ 已导出${label}`)
     } catch (e: unknown) {
       showToast(`❌ ${e instanceof Error ? e.message : '导出失败'}`)
     }
   }
 
-  // 占位符背景色（彩色渐变 = 用户感知"已加载"，而不是灰框"白屏"）
-  const c = COUPON_COLORS[config.colorKey]
-  const cardGrad = `linear-gradient(179deg, ${c.cardBgFrom} 1%, ${c.cardBgTo} 100%)`
-  const btnGrad  = `linear-gradient(90deg, ${c.btnFrom}, ${c.btnTo})`
-
   return (
     <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
 
-      {/* ── ① 完整预览（加入会场 + 仅供参考，不单独导出）── */}
+      {/* ── ① 领取前无tab-背景图 ── */}
       <div>
-        <SectionTitle num={1} label="完整预览" sub={`${colorName} · 合成效果图，不单独导出`} badge="预览" />
+        <SectionTitle num={1} label="领取前无tab-背景图" sub="渐变底 + 标题文案 · 702 × 352 px" badge="素材 1" />
         <ExportCard
-          label="一键领券红包 — 完整预览"
-          sub="702 × 352 px"
+          label="领取前无tab-背景图"
+          sub="702 × 352 px · PNG"
+          previewUrl={prevBg}
+          placeholderBg={cardGrad}
+          placeholderH={214}
+          onExport={() => exportOne(
+            () => drawCouponBg(config),
+            `券红包_${colorName}_领取前无tab背景图_702x352.png`,
+            '领取前无tab-背景图'
+          )}
+        />
+      </div>
+
+      {/* ── ② 券包预览图 ── */}
+      <div>
+        <SectionTitle num={2} label="券包预览图" sub="完整合成效果图 · 702 × 352 px" badge="素材 2" />
+        <ExportCard
+          label="券包预览图"
+          sub="702 × 352 px · PNG"
           previewUrl={prevFull}
           placeholderBg={cardGrad}
           placeholderH={214}
           onExport={() => exportOne(
             () => drawCouponPreview(config),
-            `券红包_${colorName}_完整预览_702x352.png`,
-            '完整预览'
+            `券红包_${colorName}_券包预览图_702x352.png`,
+            '券包预览图'
           )}
         />
-        {/* 加入会场（在会场页时显示，紧跟第①节） */}
+        {/* 加入会场（在会场页时显示） */}
         {prevFull && (
           <div style={{ marginTop: 8 }}>
             <VenueAddButton
@@ -126,43 +147,26 @@ export default function CouponPage() {
         )}
       </div>
 
-      {/* ── ② 券包背景 ── */}
+      {/* ── ③ 组件腰封图 ── */}
       <div>
-        <SectionTitle num={2} label="券包背景" sub="渐变底 + 标题文案 · 702 × 352 px" badge="素材 1" />
+        <SectionTitle num={3} label="组件腰封图" sub="弧形渐变条 + 按钮 · 702 × 168 px" badge="素材 3" />
         <ExportCard
-          label="券包背景图"
-          sub="702 × 352 px · PNG"
-          previewUrl={prevBg}
-          placeholderBg={cardGrad}
-          placeholderH={214}
-          onExport={() => exportOne(
-            () => drawCouponBg(config),
-            `券红包_${colorName}_背景图_702x352.png`,
-            '券包背景'
-          )}
-        />
-      </div>
-
-      {/* ── ③ 券包腰封 ── */}
-      <div>
-        <SectionTitle num={3} label="券包腰封" sub="渐变条 + 底部白 fade · 702 × 168 px" badge="素材 2" />
-        <ExportCard
-          label="券包腰封图"
+          label="组件腰封图"
           sub="702 × 168 px · PNG"
           previewUrl={prevWaist}
           placeholderBg={cardGrad}
           placeholderH={103}
           onExport={() => exportOne(
             () => drawCouponWaistband(config),
-            `券红包_${colorName}_腰封图_702x168.png`,
-            '券包腰封'
+            `券红包_${colorName}_组件腰封图_702x168.png`,
+            '组件腰封图'
           )}
         />
       </div>
 
-      {/* ── ④ 组件按钮 ── */}
+      {/* ── ④ 组件按钮图 ── */}
       <div>
-        <SectionTitle num={4} label="组件按钮" sub="90° 渐变胶囊 · 480 × 80 px" badge="素材 3" />
+        <SectionTitle num={4} label="组件按钮图" sub="90° 渐变胶囊 · 480 × 80 px" badge="素材 4" />
         <ExportCard
           label="组件按钮图"
           sub="480 × 80 px · PNG"
@@ -172,8 +176,25 @@ export default function CouponPage() {
           placeholderH={56}
           onExport={() => exportOne(
             () => drawCouponButton(config),
-            `券红包_${colorName}_按钮图_480x80.png`,
-            '组件按钮'
+            `券红包_${colorName}_组件按钮图_480x80.png`,
+            '组件按钮图'
+          )}
+        />
+      </div>
+
+      {/* ── ⑤ 仅剩一张券背景图 ── */}
+      <div>
+        <SectionTitle num={5} label="仅剩一张券背景图" sub="单券剩余状态 · 702 × 236 px" badge="素材 5" />
+        <ExportCard
+          label="仅剩一张券背景图"
+          sub="702 × 236 px · PNG"
+          previewUrl={prevSingle}
+          placeholderBg={cardGrad}
+          placeholderH={144}
+          onExport={() => exportOne(
+            () => drawCouponSingleBg(config),
+            `券红包_${colorName}_仅剩一张券背景图_702x236.png`,
+            '仅剩一张券背景图'
           )}
         />
       </div>
@@ -182,7 +203,7 @@ export default function CouponPage() {
   )
 }
 
-// ── SectionTitle（与老虎机完全一致）────────────────────────────────────────────
+// ── SectionTitle ──────────────────────────────────────────────────────────────
 function SectionTitle({ num, label, sub, badge }: {
   num: number; label: string; sub: string; badge?: string
 }) {
@@ -208,12 +229,12 @@ function SectionTitle({ num, label, sub, badge }: {
   )
 }
 
-// ── ExportCard（复用 slot-export-card / slot-btn-export CSS）──────────────────
+// ── ExportCard ────────────────────────────────────────────────────────────────
 function ExportCard({ label, sub, previewUrl, imgW = 460, placeholderH = 120, placeholderBg, onExport }: {
   label: string; sub: string
   previewUrl: string; imgW?: number
-  placeholderH?: number          // 占位符高度（px）
-  placeholderBg?: string         // 占位符背景（彩色渐变 = 用户感知"已加载"）
+  placeholderH?: number
+  placeholderBg?: string
   onExport: () => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -229,7 +250,6 @@ function ExportCard({ label, sub, previewUrl, imgW = 460, placeholderH = 120, pl
           <div style={{
             width: imgW, height: placeholderH, borderRadius: 10, flexShrink: 0,
             background: placeholderBg ?? 'rgba(255,255,255,0.04)',
-            // 渐变占位：没有闪烁动画，视觉上像"已加载"
             transition: 'opacity 0.3s',
           }} />
         )}
@@ -247,4 +267,3 @@ function ExportCard({ label, sub, previewUrl, imgW = 460, placeholderH = 120, pl
     </div>
   )
 }
-

@@ -1129,6 +1129,32 @@ export async function drawCouponBg(cfg: CouponConfig): Promise<HTMLCanvasElement
 }
 
 /**
+ * 仅剩一张券背景图 702×236（Figma 无tab类 · 单券剩余状态）
+ * 与 drawCouponBg 逻辑一致，但高度更小（236px），标题贴顶
+ */
+export async function drawCouponSingleBg(cfg: CouponConfig): Promise<HTMLCanvasElement> {
+  await preloadFonts()
+  const W = 702, H = 236, S = 2
+  const c = COUPON_COLORS[cfg.colorKey]
+  const canvas = document.createElement('canvas')
+  canvas.width = W * S; canvas.height = H * S
+  const ctx = canvas.getContext('2d')!
+  ctx.scale(S, S)
+
+  // 背景渐变（与主背景同色，高度缩短）
+  const bg = ctx.createLinearGradient(0, 0, 0, H)
+  bg.addColorStop(0.01, c.cardBgFrom)
+  bg.addColorStop(1,    c.cardBgTo)
+  ctx.fillStyle = bg
+  ctx.fillRect(0, 0, W, H)
+
+  // 标题 + 闪电装饰（y 坐标与 Figma 一致：title y:11）
+  drawCouponHeader(ctx, cfg)
+
+  return downsample(canvas)
+}
+
+/**
  * 券包腰封 702×168（Figma node 69:3697 / 69:4722）
  * 精确还原弧形顶边 SVG 路径 + 渐变填充
  */
