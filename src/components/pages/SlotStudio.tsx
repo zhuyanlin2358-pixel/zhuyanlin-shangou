@@ -3,6 +3,7 @@
  * 布局：20% 结构树 | 40% 预览+演示 | 40% 素材预览+配置
  */
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import Spinner from '@/components/ui/Spinner'
 import { motion, AnimatePresence } from 'motion/react'
 import { useSlot } from '@/contexts/SlotContext'
 import {
@@ -563,7 +564,9 @@ function StudioCanvas({ bannerUrl, config, onLayerClick }: {
       <div style={{ position: 'relative', width: '100%', maxWidth: 520 }}>
         {bannerUrl
           ? <img src={bannerUrl} draggable={false} style={{ width: '100%', borderRadius: 14, display: 'block', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }} />
-          : <div style={{ width: '100%', aspectRatio: '750/242', borderRadius: 14, background: `linear-gradient(120deg,${config.slotTintFrom},${config.slotTintTo})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 12 }}>渲染中…</div>
+          : <div style={{ width: '100%', aspectRatio: '750/242', borderRadius: 14, background: `linear-gradient(120deg,${config.slotTintFrom},${config.slotTintTo})`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Spinner size="md" />
+            </div>
         }
         {/* 热区 */}
         {demo === 'idle' && [
@@ -673,7 +676,7 @@ export default function SlotStudio({ onBack }: { onBack: () => void }) {
   return (
     <div className="flex flex-col h-screen" style={{ background: 'var(--sl-bg)' }}>
       {/* 顶栏 */}
-      <div className="flex items-center gap-3 px-5 h-12 shrink-0 border-b"
+      <div className="flex items-center gap-3 px-5 h-14 shrink-0 border-b"
         style={{ background: 'var(--sl-panel)', borderColor: 'var(--sl-border)', boxShadow: 'var(--shadow-topbar)', zIndex: 10, position: 'relative' }}>
         <button onClick={onBack}
           className="flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-xl hover:opacity-90"

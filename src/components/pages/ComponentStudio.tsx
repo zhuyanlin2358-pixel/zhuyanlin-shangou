@@ -3,6 +3,7 @@
  * 三栏布局：[左 20% 结构树] | [中 40% 实时Canvas] | [右 40% 配置面板]
  */
 import { useState, useEffect, useRef, Suspense, lazy } from 'react'
+import Spinner from '@/components/ui/Spinner'
 import { FileItem } from '@/components/ui/FileTree'
 import { useFloor }  from '@/contexts/FloorContext'
 import { useHTab }   from '@/contexts/HTabContext'
@@ -20,8 +21,9 @@ const HTabPanel  = lazy(() => import('@/components/panels/HTabPanel'))
 
 function Loader() {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center',
-      height: 80, fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>加载中…</div>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 80 }}>
+      <Spinner size="sm" />
+    </div>
   )
 }
 
@@ -447,7 +449,7 @@ export default function ComponentStudio({ compId, onBack }: Props) {
       {/* ── 顶栏 ── */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 12, padding: '0 20px',
-        height: 48, flexShrink: 0, background: 'var(--sl-panel)',
+        height: 56, flexShrink: 0, background: 'var(--sl-panel)',
         borderBottom: '1px solid var(--sl-border)',
         boxShadow: 'var(--shadow-topbar)', zIndex: 10, position: 'relative',
       }}>
@@ -533,8 +535,10 @@ export default function ComponentStudio({ compId, onBack }: Props) {
               <div style={{
                 width: 500, height: 100, display: 'flex', alignItems: 'center',
                 justifyContent: 'center', background: 'rgba(255,255,255,0.04)',
-                borderRadius: 14, fontSize: 12, color: 'rgba(255,255,255,0.3)',
-              }}>渲染中…</div>
+                borderRadius: 14,
+              }}>
+                <Spinner size="md" />
+              </div>
             ) : (
               <div style={{
                 width: 500, height: 80, display: 'flex', alignItems: 'center',
@@ -543,11 +547,7 @@ export default function ComponentStudio({ compId, onBack }: Props) {
               }}>暂无预览</div>
             )}
           </div>
-          {loading && (
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginTop: -8 }}>
-              同步中…
-            </div>
-          )}
+          {loading && <Spinner size="sm" />}
         </div>
 
         {/* 右 360px（45×8）：配置面板 */}

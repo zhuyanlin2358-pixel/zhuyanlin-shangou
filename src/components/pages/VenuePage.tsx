@@ -197,7 +197,7 @@ export default function VenuePage() {
 
       {/* ── 统一顶栏（Figma风格：左固定 + 中绝对居中 + 右固定）── */}
       <div className="flex items-center shrink-0 border-b"
-        style={{ height: 48, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)', padding: 0, gap: 0, boxShadow: 'var(--shadow-topbar)', zIndex: 10, position: 'relative' }}>
+        style={{ height: 56, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)', padding: 0, gap: 0, boxShadow: 'var(--shadow-topbar)', zIndex: 10, position: 'relative' }}>
 
         {/* 左段：216px（27×8），与侧边栏等宽，← 首页 + 页面结构 */}
         <div style={{
@@ -221,10 +221,6 @@ export default function VenuePage() {
             </svg>
             首页
           </button>
-          <div style={{ width: 1, height: 12, background: 'rgba(235,233,252,0.1)', margin: '0 8px', flexShrink: 0 }} />
-          <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(235,233,252,0.4)' }}>
-            页面结构
-          </span>
         </div>
 
         {/* 中央标题：绝对居中，不影响两端布局 */}

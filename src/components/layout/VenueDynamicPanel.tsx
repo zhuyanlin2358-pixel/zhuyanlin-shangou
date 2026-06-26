@@ -13,6 +13,7 @@
  */
 import { useEffect, useRef, useState, useCallback, lazy, Suspense } from 'react'
 import { ImageIcon, Trash2, RefreshCw } from 'lucide-react'
+import Spinner from '@/components/ui/Spinner'
 import { useVenue }  from '@/contexts/VenueContext'
 import { useFloor }  from '@/contexts/FloorContext'
 import { useHTab }   from '@/contexts/HTabContext'
@@ -36,7 +37,11 @@ const FloorPanel  = lazy(() => import('@/components/panels/FloorPanel'))
 const CouponPanel = lazy(() => import('@/components/panels/CouponPanel'))
 
 function PLoader() {
-  return <div className="flex items-center justify-center h-24 text-[12px]" style={{ color: 'rgba(255,255,255,0.2)' }}>加载中…</div>
+  return (
+    <div className="flex items-center justify-center h-24">
+      <Spinner size="sm" />
+    </div>
+  )
 }
 
 // ── 生成各组件预览 URL（从共享文件导入）──────────────────────────────────────
@@ -337,7 +342,7 @@ function ComponentPreviewCard({ compId }: { compId: ComponentId }) {
         minHeight: 80, display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         {loading ? (
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', padding: 16 }}>渲染中…</div>
+          <Spinner size="sm" />
         ) : previewUrl ? (
           <img src={previewUrl} alt={compId} style={{ width: '100%', height: 'auto', display: 'block' }} />
         ) : (
