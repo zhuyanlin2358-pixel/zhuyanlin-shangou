@@ -11,19 +11,19 @@
  *   [返回条 40px] | [组件完整配置页 flex-1] | [手机预览 380px]
  *   包含：弹窗、导出、Tab文案、奖品图等深度配置
  */
-import { Suspense, lazy, useState, useEffect } from 'react'
+import { Suspense, lazy, useState, useEffect, useRef } from 'react'
 import { useApp }    from '@/contexts/AppContext'
 import { useVenue }  from '@/contexts/VenueContext'
-import { useSlot }   from '@/contexts/SlotContext'
+import { useSlot, SLOT_PRESETS } from '@/contexts/SlotContext'
 import { useHTab }   from '@/contexts/HTabContext'
 import { useCoupon } from '@/contexts/CouponContext'
+import { useFloor }  from '@/contexts/FloorContext'
+import { COUPON_COLORS } from '@/types'
 import type { ComponentId } from '@/types'
 import type { ZoomOpt } from '@/components/layout/VenueCanvasCenter'
 import { SCENE_TEMPLATES } from '@/utils/sceneTemplates'
 import { GLOBAL_THEMES }   from '@/utils/globalThemes'
 import { genFloorUrl, genHTabUrl, genCouponUrl, genSlotUrl } from '@/utils/venuePreviewUrls'
-import { useFloor } from '@/contexts/FloorContext'
-import { COUPON_COLORS } from '@/types'
 
 const ZOOM_OPTS: ZoomOpt[] = [50, 75, 100, 125, 150]
 
@@ -31,64 +31,90 @@ const ZOOM_OPTS: ZoomOpt[] = [50, 75, 100, 125, 150]
 function TemplateApplier() {
   const { pendingTemplate, setPendingTemplate, showToast } = useApp()
   const { addItem, clearItems } = useVenue()
-  const { applyPreset } = useSlot()
-  const { setColor }    = useHTab()
-  const { setColorKey } = useCoupon()
+  const { config: slotCfg, applyPreset } = useSlot()
+  const { config: hTabCfg, items: hTabItems, setColor } = useHTab()
+  const { config: couponCfg, setColorKey } = useCoupon()
   const { config: floorCfg, floors } = useFloor()
+  const applyingRef = useRef(false) // 防止 Strict Mode 双执行
 
   useEffect(() => {
-    if (!pendingTemplate) return
+    if (!pendingTemplate || applyingRef.current) return
     const tpl = SCENE_TEMPLATES.find(t => t.key === pendingTemplate)
     if (!tpl) { setPendingTemplate(null); return }
 
+    applyingRef.current = true
+
     const run = async () => {
-      // ① 清空画布
-      clearItems()
-      // ② 应用全局主题
       const theme = GLOBAL_THEMES.find(t => t.key === tpl.themeKey)
-      if (theme) {
-        applyPreset(theme.slotPreset)
-        setColor(theme.htabColor)
-        setColorKey(theme.couponColor)
-      }
-      // ③ 逐个加入组件（生成预览 URL）
+
+      // ① 用 preset 值直接构造 slot config（不依赖 setState flush）
+      const preset = theme ? SLOT_PRESETS[theme.slotPreset] : null
+      const newSlotCfg = preset ? {
+        ...slotCfg,
+        btnActiveFrom: preset.from,    btnActiveTo: preset.to,
+        btnDisabledFrom: preset.disFrom, btnDisabledTo: preset.disTo,
+        slotTintFrom: preset.slotFrom,  slotTintTo: preset.slotTo,
+        slotRect7From: preset.rect7From, slotRect7To: preset.rect7To,
+        linksColor: preset.linksColor,  titleColor: preset.titleColor,
+        btnTextColor: preset.btnTextColor ?? '#FFFFFF',
+      } : slotCfg
+
+      // ② 异步生成所有预览 URL（先全部 ready，再统一写入 canvas）
+      type ItemDef = Parameters<typeof addItem>[0]
+      const newItems: ItemDef[] = []
+
       for (const compId of tpl.components) {
         try {
           switch (compId) {
             case 'slot': {
-              // slot config 已由 applyPreset 更新，但 state 可能未 flush
-              // 直接用 genSlotUrl 会用旧 config，所以用 setTimeout 等一帧
-              await new Promise(r => setTimeout(r, 100))
-              // 简化：用占位预览，用户可在工作室里更新
-              addItem({ componentId: 'slot', label: '老虎机', previewUrl: '', origW: 750, origH: 242 })
+              const url = await genSlotUrl(newSlotCfg)
+              newItems.push({ componentId: 'slot', label: '老虎机', previewUrl: url, origW: 750, origH: 242 })
               break
             }
             case 'floor': {
               const fi = floors[0]
               const text = fi?.text ?? '领好店券 下单更优惠'
               const url = await genFloorUrl({ ...floorCfg, text })
-              addItem({ componentId: 'floor', label: text, previewUrl: url, origW: 750, origH: 60, sourceId: fi?.id })
+              newItems.push({ componentId: 'floor', label: text, previewUrl: url, origW: 750, origH: 60, sourceId: fi?.id })
               break
             }
             case 'h-tab': {
-              const url = await genHTabUrl({ colorKey: theme?.htabColor ?? 'yellow', tabs: ['分类一', '分类二', '分类三'], activeIndex: 0 })
-              addItem({ componentId: 'h-tab', label: 'Tab 1', previewUrl: url, origW: 750, origH: 88 })
+              const hi = hTabItems[0]
+              const url = await genHTabUrl({
+                colorKey: theme?.htabColor ?? hTabCfg.colorKey,
+                tabs: hi?.tabs ?? ['分类一', '分类二', '分类三'],
+                activeIndex: 0,
+              })
+              newItems.push({ componentId: 'h-tab', label: 'Tab 1', previewUrl: url, origW: 750, origH: 88 })
               break
             }
             case 'coupon': {
-              const url = await genCouponUrl({ colorKey: theme?.couponColor ?? 'red', titleText: '领好店券 下单更优惠', btnText: '一键领取' })
-              const colorName = COUPON_COLORS[theme?.couponColor ?? 'red'].name
-              addItem({ componentId: 'coupon', label: `券红包·${colorName}`, previewUrl: url, origW: 702, origH: 352 })
+              const colorKey = theme?.couponColor ?? couponCfg.colorKey
+              const url = await genCouponUrl({ colorKey, titleText: couponCfg.titleText, btnText: couponCfg.btnText })
+              newItems.push({ componentId: 'coupon', label: `券红包·${COUPON_COLORS[colorKey].name}`, previewUrl: url, origW: 702, origH: 352 })
               break
             }
           }
-        } catch { /* 单个组件失败不中断 */ }
+        } catch { /* 单个失败不中断 */ }
       }
+
+      // ③ 所有数据 ready 后，一次性 clear + add（原子操作）
+      clearItems()
+      newItems.forEach(it => addItem(it))
+
+      // ④ 更新 context 配色（不影响上面已生成的 URL）
+      if (theme) {
+        applyPreset(theme.slotPreset)
+        setColor(theme.htabColor)
+        setColorKey(theme.couponColor)
+      }
+
       showToast(`✅ 「${tpl.name}」方案已加载`)
       setPendingTemplate(null)
+      applyingRef.current = false
     }
 
-    run()
+    run().catch(() => { applyingRef.current = false })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingTemplate])
 
