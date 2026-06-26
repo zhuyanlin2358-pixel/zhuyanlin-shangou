@@ -187,7 +187,7 @@ export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: P
           {items.length === 0 && (
             <div style={{
               padding: '10px 10px 6px',
-              fontSize: 11,
+              fontSize: 12,
               color: 'rgba(255,255,255,0.18)',
               lineHeight: 1.5,
             }}>

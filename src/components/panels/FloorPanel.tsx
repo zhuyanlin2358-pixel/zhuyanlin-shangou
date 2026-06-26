@@ -192,7 +192,7 @@ function DecoStyleBtn({
   return (
     <button
       onClick={onSelect}
-      className="px-2.5 py-1 text-[10.5px] rounded-md transition-all"
+      className="px-2.5 py-1 text-[12px] rounded-md transition-all"
       style={{
         border: `1px solid ${active ? '#FF5050' : 'rgba(255,255,255,0.12)'}`,
         background: active ? 'rgba(255,80,80,0.10)' : 'rgba(255,255,255,0.03)',

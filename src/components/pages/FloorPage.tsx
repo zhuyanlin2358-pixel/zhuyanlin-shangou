@@ -228,7 +228,7 @@ function FloorListItem({
         ) : (
           <div
             className="relative w-full flex items-center justify-center"
-            style={{ height: 40, color: 'var(--text-3)', fontSize: 11 }}
+            style={{ height: 40, color: 'var(--text-3)', fontSize: 12 }}
           >渲染中…</div>
         )}
       </div>

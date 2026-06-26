@@ -48,7 +48,7 @@ const VARIANT_STYLES: Record<Variant, React.CSSProperties> = {
 }
 
 const SIZE_STYLES: Record<Size, React.CSSProperties> = {
-  sm:   { height: 28, padding: '0 10px', fontSize: 11, fontWeight: 500, borderRadius: 7, gap: 5 },
+  sm:   { height: 28, padding: '0 10px', fontSize: 12, fontWeight: 500, borderRadius: 7, gap: 5 },
   md:   { height: 34, padding: '0 14px', fontSize: 13, fontWeight: 500, borderRadius: 9, gap: 6 },
   lg:   { height: 42, padding: '0 20px', fontSize: 14, fontWeight: 600, borderRadius: 10, gap: 8 },
   icon: { height: 34, width: 34, padding: '0',  fontSize: 13, fontWeight: 500, borderRadius: 9, gap: 0 },

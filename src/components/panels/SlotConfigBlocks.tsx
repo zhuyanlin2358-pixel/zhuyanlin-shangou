@@ -75,7 +75,7 @@ export function SlotColorConfig() {
     <div className="space-y-3">
       {/* 配色预设（按会场背景色智能推荐） */}
       <div>
-        <div className="text-[10.5px] font-medium text-white/40 mb-1.5">
+        <div className="text-[12px] font-medium text-white/40 mb-1.5">
           配色预设
           <span className="ml-1.5 text-white/25 font-normal">
             {bgTone === 'dark' ? '· 推荐深色系' : bgTone === 'promo' ? '· 推荐同色系' : '· 推荐浅色系'}
@@ -146,7 +146,7 @@ export function SlotDialogBtnConfig() {
   const { config, setConfig } = useSlot()
   return (
     <div className="space-y-3">
-      <div className="text-[11px] text-white/35 leading-relaxed">跟随老虎机激活按钮配色</div>
+      <div className="text-[12px] text-white/35 leading-relaxed">跟随老虎机激活按钮配色</div>
       <div style={{ height:40, borderRadius:20, background:`linear-gradient(90deg,${config.btnActiveFrom},${config.btnActiveTo})`,
         display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, color:'#fff' }}>
         弹窗按钮预览
@@ -162,7 +162,7 @@ export function SlotDialogBgConfig() {
   const { config, setConfig } = useSlot()
   return (
     <div className="space-y-3">
-      <div className="text-[11px] text-white/35 leading-relaxed">跟随老虎机主题背景色</div>
+      <div className="text-[12px] text-white/35 leading-relaxed">跟随老虎机主题背景色</div>
       <div style={{ height:48, borderRadius:10, background:`linear-gradient(120deg,${config.slotTintFrom},${config.slotTintTo})` }} />
       <ColorField label="背景起始色" value={config.slotTintFrom} onChange={c => setConfig({ slotTintFrom: c })} />
       <ColorField label="背景结束色" value={config.slotTintTo}   onChange={c => setConfig({ slotTintTo: c })} />
@@ -208,7 +208,7 @@ function TypePopover({ type, onChange }: { type: PrizeType; onChange: (t: PrizeT
     <>
       <button ref={btnRef} onClick={handleToggle} style={{
         display: 'inline-flex', alignItems: 'center', gap: 4,
-        padding: '3px 9px', borderRadius: 6, fontSize: 11, cursor: 'pointer',
+        padding: '3px 9px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
         background: open ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.08)',
         color: 'rgba(255,255,255,0.65)',
         border: '1px solid rgba(255,255,255,0.14)',
@@ -433,7 +433,7 @@ export function InlineConfigSection({
           style={{ color: 'rgba(255,255,255,0.3)', transform: open ? 'none' : 'rotate(-90deg)', transition: 'transform 0.18s', flexShrink: 0 }} />
         <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.75)' }}>{label}</span>
         {badge && (
-          <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>
+          <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>
             {badge}
           </span>
         )}

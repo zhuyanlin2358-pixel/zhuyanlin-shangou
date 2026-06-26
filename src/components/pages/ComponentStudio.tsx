@@ -21,7 +21,7 @@ const HTabPanel  = lazy(() => import('@/components/panels/HTabPanel'))
 function Loader() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center',
-      height: 80, fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>加载中…</div>
+      height: 80, fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>加载中…</div>
   )
 }
 
@@ -121,7 +121,7 @@ function CouponColorPanel() {
             <button key={k} onClick={() => setColorKey(k)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
-                padding: '4px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 11,
+                padding: '4px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 12,
                 borderColor: active ? 'rgba(255,48,96,0.6)' : 'rgba(255,255,255,0.1)',
                 borderWidth: 1, borderStyle: 'solid',
                 background: active ? 'rgba(255,48,96,0.12)' : 'rgba(255,255,255,0.04)',
@@ -201,7 +201,7 @@ function CouponAssetPanel({ layer }: { layer: string }) {
         display: 'flex', flexDirection: 'column', gap: 8,
       }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: '#ebe9fc' }}>{m.label}</div>
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{m.size} · PNG</div>
+        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>{m.size} · PNG</div>
         <button onClick={handleDownload} style={{
           marginTop: 4, padding: '8px 0', borderRadius: 8, cursor: 'pointer',
           background: 'var(--sl-primary-grad)', color: 'var(--sl-cta-text)',
@@ -210,7 +210,7 @@ function CouponAssetPanel({ layer }: { layer: string }) {
           ↓ 导出此素材
         </button>
       </div>
-      <div style={{ marginTop: 12, fontSize: 11, color: 'rgba(255,255,255,0.2)', lineHeight: 1.6 }}>
+      <div style={{ marginTop: 12, fontSize: 12, color: 'rgba(255,255,255,0.2)', lineHeight: 1.6 }}>
         左侧图层对应画布已切换至当前素材预览。
       </div>
     </div>
@@ -353,13 +353,13 @@ export default function ComponentStudio({ compId, onBack }: Props) {
               <div style={{
                 width: 500, height: 100, display: 'flex', alignItems: 'center',
                 justifyContent: 'center', background: 'rgba(255,255,255,0.04)',
-                borderRadius: 14, fontSize: 11, color: 'rgba(255,255,255,0.3)',
+                borderRadius: 14, fontSize: 12, color: 'rgba(255,255,255,0.3)',
               }}>渲染中…</div>
             ) : (
               <div style={{
                 width: 500, height: 80, display: 'flex', alignItems: 'center',
                 justifyContent: 'center', background: 'rgba(255,255,255,0.04)',
-                borderRadius: 14, fontSize: 11, color: 'rgba(255,255,255,0.25)',
+                borderRadius: 14, fontSize: 12, color: 'rgba(255,255,255,0.25)',
               }}>暂无预览</div>
             )}
           </div>

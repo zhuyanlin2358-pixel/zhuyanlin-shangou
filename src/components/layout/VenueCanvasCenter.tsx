@@ -395,7 +395,7 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
                   {selectedLayer === item.id && !isDblActive && (
                     <div style={{
                       position: 'absolute', top: 4, left: isCoupon ? 24 : 12,
-                      fontSize: 9, fontWeight: 600, color: '#fff',
+                      fontSize: 10, fontWeight: 600, color: '#fff',
                       background: '#2D78F4', borderRadius: 3, padding: '1px 5px',
                       pointerEvents: 'none',
                     }}>
@@ -405,7 +405,7 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
                   {isDblActive && (
                     <div style={{
                       position: 'absolute', top: 4, left: isCoupon ? 24 : 12,
-                      fontSize: 9, fontWeight: 600, color: '#1a0a00',
+                      fontSize: 10, fontWeight: 600, color: '#1a0a00',
                       background: '#FFB800', borderRadius: 3, padding: '1px 5px',
                       pointerEvents: 'none',
                     }}>

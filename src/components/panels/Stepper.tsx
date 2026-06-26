@@ -52,7 +52,7 @@ export default function Stepper() {
                   }
                 </div>
                 <div style={{
-                  fontSize: 11, fontWeight: isActive ? 600 : 500, textAlign: 'center', whiteSpace: 'nowrap', transition: 'color 0.3s',
+                  fontSize: 12, fontWeight: isActive ? 600 : 500, textAlign: 'center', whiteSpace: 'nowrap', transition: 'color 0.3s',
                   color: isDone ? 'rgba(255,140,165,0.65)' : isActive ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.28)',
                 }}>
                   {step.label}

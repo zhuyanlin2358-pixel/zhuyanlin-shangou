@@ -94,7 +94,7 @@ export function FileItem({
       {/* 角标 */}
       {badge !== undefined && (
         <span style={{
-          fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.32)',
+          fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.32)',
           background: 'rgba(255,255,255,0.07)',
           borderRadius: 4, padding: '1px 5px', flexShrink: 0,
         }}>
@@ -199,7 +199,7 @@ export function FolderItem({
 
         {badge !== undefined && (
           <span style={{
-            fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.32)',
+            fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.32)',
             background: 'rgba(255,255,255,0.07)',
             borderRadius: 4, padding: '1px 5px', flexShrink: 0,
           }}>

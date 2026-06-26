@@ -23,7 +23,7 @@ export default function PreviewPanel() {
         borderBottom: '1px solid rgba(255,255,255,0.07)',
         flexShrink: 0,
       }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.5px' }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.5px' }}>
           手机预览
         </div>
       </div>
@@ -98,7 +98,7 @@ export default function PreviewPanel() {
           </div>
         </div>
 
-        <div style={{ marginTop: 8, fontSize: 11, color: 'rgba(255,255,255,0.2)', textAlign: 'center' }}>
+        <div style={{ marginTop: 8, fontSize: 12, color: 'rgba(255,255,255,0.2)', textAlign: 'center' }}>
           拖动老虎机可上下移动
         </div>
       </div>

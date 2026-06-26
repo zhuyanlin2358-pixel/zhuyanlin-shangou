@@ -221,7 +221,7 @@ function SectionTitle({ num, label, sub, badge }: {
       </div>
       {badge && (
         <span style={{
-          fontSize: 11, padding: '2px 8px', borderRadius: 4,
+          fontSize: 12, padding: '2px 8px', borderRadius: 4,
           background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)',
         }}>{badge}</span>
       )}

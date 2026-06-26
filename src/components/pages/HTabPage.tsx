@@ -183,7 +183,7 @@ function HTabListItem({
         ) : (
           <div
             className="w-full flex items-center justify-center"
-            style={{ height: 44, color: 'var(--text-3)', fontSize: 11 }}
+            style={{ height: 44, color: 'var(--text-3)', fontSize: 12 }}
           >
             渲染中…
           </div>
@@ -287,7 +287,7 @@ function TabLabelInput({
     <div className="flex items-center gap-1">
       <button
         onClick={onSetActive}
-        className="w-5 h-5 text-[9px] font-mono rounded-full flex items-center justify-center shrink-0 transition-all"
+        className="w-5 h-5 text-[10px] font-mono rounded-full flex items-center justify-center shrink-0 transition-all"
         style={{
           background: active ? bgColor : 'rgba(255,255,255,0.08)',
           color: active ? '#fff' : 'rgba(255,255,255,0.35)',

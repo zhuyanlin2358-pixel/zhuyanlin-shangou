@@ -21,7 +21,7 @@ export default function CouponPanel() {
                 <button key={k} onClick={() => setColorKey(k)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 6,
-                    padding: '4px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 11,
+                    padding: '4px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 12,
                     border: `1px solid ${active ? 'rgba(255,48,96,0.6)' : 'rgba(255,255,255,0.1)'}`,
                     background: active ? 'rgba(255,48,96,0.12)' : 'rgba(255,255,255,0.04)',
                     color:      active ? '#FF8FAA' : 'rgba(255,255,255,0.5)',

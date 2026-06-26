@@ -28,14 +28,14 @@ export function PF({
   if (horizontal) {
     return (
       <div className="flex items-center gap-3">
-        <span className="w-20 shrink-0 text-[10.5px] font-medium text-white/48 tracking-[0.25px]">{label}</span>
+        <span className="w-20 shrink-0 text-[12px] font-medium text-white/48 tracking-[0.25px]">{label}</span>
         <div className="flex-1 min-w-0">{children}</div>
       </div>
     )
   }
   return (
     <div className="space-y-1">
-      <label className="text-[10.5px] font-medium text-white/48 block tracking-[0.25px]">{label}</label>
+      <label className="text-[12px] font-medium text-white/48 block tracking-[0.25px]">{label}</label>
       {desc && <p className="text-[10px] text-white/30 leading-snug">{desc}</p>}
       {children}
     </div>

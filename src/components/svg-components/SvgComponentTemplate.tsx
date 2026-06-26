@@ -170,7 +170,7 @@ export default function SvgComponentPage() {
         background: 'rgba(255,255,255,0.025)',
         display: 'flex', flexDirection: 'column', gap: 12,
       }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)' }}>配色</div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.4)' }}>配色</div>
 
         {/* 颜色选择器（每个可配色一行）*/}
         {([
@@ -180,7 +180,7 @@ export default function SvgComponentPage() {
           { key: 'textColor', label: '文字色' },
         ] as { key: keyof ComponentColors; label: string }[]).map(({ key, label }) => (
           <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', width: 80, flexShrink: 0 }}>{label}</span>
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', width: 80, flexShrink: 0 }}>{label}</span>
             <div style={{ position: 'relative' }}>
               <div style={{
                 width: 24, height: 24, borderRadius: 6,
@@ -201,7 +201,7 @@ export default function SvgComponentPage() {
 
         {/* 文案输入（如果有） */}
         <div>
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 6 }}>文案</div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 6 }}>文案</div>
           <input
             value={text}
             onChange={e => setText(e.target.value)}

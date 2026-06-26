@@ -72,7 +72,7 @@ function CanvasRow({ url, label, onDl }: { url: string; label: string; onDl: () 
       <div className="flex items-center justify-between mb-1">
         <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>{label}</span>
         <button onClick={onDl}
-          className="flex items-center gap-1 px-2 py-0.5 text-[9px] rounded-lg"
+          className="flex items-center gap-1 px-2 py-0.5 text-[10px] rounded-lg"
           style={{ background: 'rgba(250,217,0,0.10)', color: '#fad900', border: '1px solid rgba(250,217,0,0.22)', cursor: 'pointer' }}>
           <Icons.dl /> 下载
         </button>
@@ -145,7 +145,7 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
   // ── 无选中 ──
   if (!selected) {
     return (
-      <div className="p-4 text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.3)' }}>
+      <div className="p-4 text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.3)' }}>
         在左侧结构树点击任意层级，右侧显示该层的素材预览和配置项。
       </div>
     )
@@ -180,7 +180,7 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
           <div className="flex items-center justify-between mb-2">
             <SectionHead label="奖品图素材（横排预览）" />
             <button onClick={addPrize}
-              className="flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold rounded-lg"
+              className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-lg"
               style={{ background: 'rgba(250,217,0,0.12)', color: '#fad900', border: '1px solid rgba(250,217,0,0.22)', cursor: 'pointer' }}>
               <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M8 3v10M3 8h10"/></svg>
               增加
@@ -193,10 +193,10 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
                   display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
                   {state[`prize${i}`]
                     ? <img src={state[`prize${i}`]} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                    : <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)' }}>生成中</span>
+                    : <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>生成中</span>
                   }
                 </div>
-                <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)' }}>奖品 {i+1}</span>
+                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>奖品 {i+1}</span>
                 {state[`prize${i}`] && (
                   <div style={{ marginTop: 3 }}>
                     <button onClick={() => dl(Object.assign(document.createElement('canvas'), { width: 1, height: 1 }), '')}
@@ -221,7 +221,7 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
               </div>
               {config.prizes.length > 1 && (
                 <button onClick={() => removePrize(idx)}
-                  style={{ fontSize: 9, color: 'rgba(239,68,68,0.6)', background: 'rgba(239,68,68,0.08)', border: 'none', borderRadius: 4, padding: '1px 6px', cursor: 'pointer' }}>
+                  style={{ fontSize: 10, color: 'rgba(239,68,68,0.6)', background: 'rgba(239,68,68,0.08)', border: 'none', borderRadius: 4, padding: '1px 6px', cursor: 'pointer' }}>
                   删除
                 </button>
               )}
@@ -255,7 +255,7 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
             <div className="flex items-center justify-between mb-2">
               <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>奖品图 {idx+1} 预览</span>
               <a href={url} download={`奖品图${idx+1}.png`}
-                style={{ fontSize: 9, color: '#fad900', background: 'rgba(250,217,0,0.09)', padding: '2px 7px', borderRadius: 4, textDecoration: 'none' }}>
+                style={{ fontSize: 10, color: '#fad900', background: 'rgba(250,217,0,0.09)', padding: '2px 7px', borderRadius: 4, textDecoration: 'none' }}>
                 ↓ 下载
               </a>
             </div>
@@ -319,7 +319,7 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
             <div className="flex items-center justify-between mb-2">
               <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>空态页预览</span>
               <a href={state.empty} download="空态页.png"
-                style={{ fontSize: 9, color: '#fad900', background: 'rgba(250,217,0,0.09)', padding: '2px 7px', borderRadius: 4, textDecoration: 'none' }}>
+                style={{ fontSize: 10, color: '#fad900', background: 'rgba(250,217,0,0.09)', padding: '2px 7px', borderRadius: 4, textDecoration: 'none' }}>
                 ↓ 下载
               </a>
             </div>
@@ -350,7 +350,7 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
                 onDl={() => { const a = document.createElement('a'); a.href = url; a.download = `弹窗_${dr.label}.png`; a.click() }} />
             ) : (
               <div key={dr.state} style={{ height: 40, background: 'rgba(255,255,255,0.03)', borderRadius: 6, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)' }}>生成 {dr.label}…</span>
+                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>生成 {dr.label}…</span>
               </div>
             )
           })}
@@ -468,7 +468,7 @@ function LayerItem({ layer, selected, onSelect, depth, expanded, onToggle }: {
           }}>
             {layer.label}
           </div>
-          <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.28)', lineHeight: 1.2 }}>
+          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.28)', lineHeight: 1.2 }}>
             {layer.sub}
           </div>
         </div>
@@ -694,7 +694,7 @@ export default function SlotStudio({ onBack }: { onBack: () => void }) {
         <div style={{ flex: 1 }} />
         {[{l:'保存模板',i:'⊕'},{l:'版本对比',i:'⟺'},{l:'导出资源',i:'↓'}].map(b => (
           <button key={b.l}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] rounded-lg hover:opacity-80"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] rounded-lg hover:opacity-80"
             style={{ background:'rgba(255,255,255,0.06)', color:'rgba(255,255,255,0.4)', border:'1px solid rgba(255,255,255,0.08)', cursor:'pointer' }}>
             <span style={{ fontSize:11 }}>{b.i}</span>{b.l}
           </button>

@@ -123,7 +123,7 @@ export default function ReviewPage() {
               borderRadius: 8, padding: '8px 16px', textAlign: 'center',
             }}>
               <div style={{ fontSize: 20, fontWeight: 700, color: s.color }}>{s.value}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>{s.label}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -261,7 +261,7 @@ export default function ReviewPage() {
                       <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {sub.projectName}
                       </div>
-                      <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>
+                      <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>
                         {sub.submitter} · {new Date(sub.createdAt).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         {sub.assets.length > 0 && ` · ${sub.assets.length} 张素材`}
                       </div>
@@ -272,7 +272,7 @@ export default function ReviewPage() {
                       display: 'flex', alignItems: 'center', gap: 4,
                       padding: '3px 9px', borderRadius: 99,
                       background: cfg.color + '18', color: cfg.color,
-                      fontSize: 11, fontWeight: 600, flexShrink: 0,
+                      fontSize: 12, fontWeight: 600, flexShrink: 0,
                     }}>
                       {cfg.icon}{cfg.label}
                     </div>
@@ -305,7 +305,7 @@ export default function ReviewPage() {
 
                       {/* 操作按钮 */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: 11, color: 'var(--text-3)', marginRight: 4 }}>标记为:</span>
+                        <span style={{ fontSize: 12, color: 'var(--text-3)', marginRight: 4 }}>标记为:</span>
                         {(['pending', 'approved', 'rejected'] as ReviewStatus[]).map(s => {
                           const c = STATUS_CONFIG[s]
                           return (
@@ -316,7 +316,7 @@ export default function ReviewPage() {
                                 borderColor: sub.status === s ? c.color : 'var(--border)',
                                 background: sub.status === s ? c.color + '18' : 'transparent',
                                 color: sub.status === s ? c.color : 'var(--text-2)',
-                                fontSize: 11, cursor: 'pointer', transition: 'all 0.12s',
+                                fontSize: 12, cursor: 'pointer', transition: 'all 0.12s',
                               }}
                             >
                               {c.icon}{c.label}
@@ -325,7 +325,7 @@ export default function ReviewPage() {
                         })}
                         <div style={{ flex: 1 }} />
                         {!sub.webhookSent && (
-                          <span style={{ fontSize: 11, color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <span style={{ fontSize: 12, color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: 4 }}>
                             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#F59E0B', display: 'inline-block' }} />
                             大象通知待配置
                           </span>
@@ -335,7 +335,7 @@ export default function ReviewPage() {
                             display: 'flex', alignItems: 'center', gap: 4,
                             padding: '4px 10px', borderRadius: 6,
                             border: '1px solid var(--border)', background: 'transparent',
-                            color: '#ef4444', fontSize: 11, cursor: 'pointer',
+                            color: '#ef4444', fontSize: 12, cursor: 'pointer',
                           }}
                         >
                           <Trash2 size={11} />删除
@@ -366,7 +366,7 @@ export default function ReviewPage() {
 function FormField({ label, children, style }: { label: string; children: React.ReactNode; style?: React.CSSProperties }) {
   return (
     <div style={style}>
-      <label style={{ display: 'block', fontSize: 11, fontWeight: 500, color: 'var(--text-3)', marginBottom: 5 }}>{label}</label>
+      <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-3)', marginBottom: 5 }}>{label}</label>
       {children}
     </div>
   )

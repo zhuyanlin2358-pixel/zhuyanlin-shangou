@@ -36,7 +36,7 @@ export default function HomePage() {
 
         {/* 标题 */}
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
-          <p style={{ margin: '0 0 12px', fontSize: 11, letterSpacing: '3px', color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>
+          <p style={{ margin: '0 0 12px', fontSize: 12, letterSpacing: '3px', color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>
             美团闪购
           </p>
           <h1 style={{ margin: '0 0 12px', fontSize: 36, fontWeight: 800, color: '#ffffff', letterSpacing: '-1px', lineHeight: 1.15 }}>
@@ -86,7 +86,7 @@ export default function HomePage() {
               <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.5 }}>
                 老虎机 · 楼层条<br />横滑Tab · 一键领券
               </div>
-              <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>
+              <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'rgba(255,255,255,0.25)' }}>
                 三列画布编辑器
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                   <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -134,7 +134,7 @@ export default function HomePage() {
               <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.5 }}>
                 N4 文字标签 · N2<br />一拖四 · Banner
               </div>
-              <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>
+              <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'rgba(255,255,255,0.25)' }}>
                 素材设计工作室
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                   <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -181,12 +181,12 @@ export default function HomePage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
                     <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{t.emoji} {t.name}</span>
                     <span style={{
-                      fontSize: 9, padding: '1px 5px', borderRadius: 3,
+                      fontSize: 10, padding: '1px 5px', borderRadius: 3,
                       background: `${t.bgColor}22`, color: t.bgColor,
                       border: `1px solid ${t.bgColor}44`, flexShrink: 0,
                     }}>{t.tag}</span>
                   </div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', lineHeight: 1.4 }}>{t.desc}</div>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', lineHeight: 1.4 }}>{t.desc}</div>
                 </div>
               </button>
             ))}

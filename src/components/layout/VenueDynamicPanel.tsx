@@ -38,7 +38,7 @@ const FloorPanel  = lazy(() => import('@/components/panels/FloorPanel'))
 const CouponPanel = lazy(() => import('@/components/panels/CouponPanel'))
 
 function PLoader() {
-  return <div className="flex items-center justify-center h-24 text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>加载中…</div>
+  return <div className="flex items-center justify-center h-24 text-[12px]" style={{ color: 'rgba(255,255,255,0.2)' }}>加载中…</div>
 }
 
 // ── 生成各组件预览 URL（从共享文件导入）──────────────────────────────────────
@@ -123,7 +123,7 @@ function HeaderConfig() {
   return (
     <div className="p-4 space-y-5">
       <div>
-        <div className="text-[11px] font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>头图图片</div>
+        <div className="text-[12px] font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>头图图片</div>
         <div
           onClick={() => fileRef.current?.click()}
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all"
@@ -140,7 +140,7 @@ function HeaderConfig() {
               </div>
           }
           <div className="flex-1 min-w-0">
-            <div className="text-[11px] font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            <div className="text-[12px] font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>
               {headerUrl ? '点击更换头图' : '上传头图'}
             </div>
             <div className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.25)' }}>
@@ -158,11 +158,11 @@ function HeaderConfig() {
       </div>
 
       <div>
-        <div className="text-[11px] font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>头图高度</div>
+        <div className="text-[12px] font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>头图高度</div>
         <div className="flex gap-1.5">
           {HEADER_SIZES.map(s => (
             <button key={s.key} onClick={() => setHeaderSize(s.key)}
-              className="flex-1 py-2 text-[11px] rounded-xl transition-all"
+              className="flex-1 py-2 text-[12px] rounded-xl transition-all"
               style={{
                 border: `1px solid ${headerSize === s.key ? 'rgba(255,80,80,0.5)' : 'rgba(255,255,255,0.08)'}`,
                 background: headerSize === s.key ? 'rgba(255,80,80,0.1)' : 'rgba(255,255,255,0.03)',
@@ -170,21 +170,21 @@ function HeaderConfig() {
                 fontWeight: headerSize === s.key ? 600 : 400, cursor: 'pointer',
               }}>
               <div>{s.label}</div>
-              <div style={{ fontSize: 9, opacity: 0.7, marginTop: 1 }}>{s.h}px</div>
+              <div style={{ fontSize: 10, opacity: 0.7, marginTop: 1 }}>{s.h}px</div>
             </button>
           ))}
         </div>
       </div>
 
       <div>
-        <div className="text-[11px] font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>会场背景色</div>
+        <div className="text-[12px] font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>会场背景色</div>
         <div className="flex items-center gap-3">
           <label className="relative cursor-pointer">
             <div style={{ width: 28, height: 28, borderRadius: 6, background: bgColor, border: '1px solid rgba(255,255,255,0.15)' }} />
             <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)}
               style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%' }} />
           </label>
-          <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'rgba(255,255,255,0.4)' }}>{bgColor.toUpperCase()}</span>
+          <span style={{ fontSize: 12, fontFamily: 'monospace', color: 'rgba(255,255,255,0.4)' }}>{bgColor.toUpperCase()}</span>
         </div>
       </div>
 
@@ -195,10 +195,10 @@ function HeaderConfig() {
             style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', opacity: 0.55 }}>
             <span style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(255,200,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 12, color: 'rgba(255,180,0,0.5)' }}>{it.icon}</span>
             <div className="flex-1">
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{it.label}</div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>{it.label}</div>
               <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginTop: 1 }}>{it.desc}</div>
             </div>
-            <span style={{ fontSize: 9, color: 'rgba(255,180,0,0.45)', border: '1px solid rgba(255,180,0,0.12)', borderRadius: 3, padding: '1px 5px' }}>待开发</span>
+            <span style={{ fontSize: 10, color: 'rgba(255,180,0,0.45)', border: '1px solid rgba(255,180,0,0.12)', borderRadius: 3, padding: '1px 5px' }}>待开发</span>
           </div>
         ))}
       </div>
@@ -211,18 +211,18 @@ function PageSettings() {
   const { bgColor, setBgColor } = useVenue()
   return (
     <div className="p-4 space-y-5">
-      <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.3)' }}>
+      <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.3)' }}>
         点击左侧图层或画布中的组件来配置。
       </p>
       <div>
-        <div className="text-[11px] font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>会场背景色</div>
+        <div className="text-[12px] font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>会场背景色</div>
         <div className="flex items-center gap-3">
           <label className="relative cursor-pointer">
             <div style={{ width: 32, height: 32, borderRadius: 8, background: bgColor, border: '1px solid rgba(255,255,255,0.15)' }} />
             <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)}
               style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%' }} />
           </label>
-          <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'rgba(255,255,255,0.4)' }}>{bgColor.toUpperCase()}</span>
+          <span style={{ fontSize: 12, fontFamily: 'monospace', color: 'rgba(255,255,255,0.4)' }}>{bgColor.toUpperCase()}</span>
         </div>
       </div>
     </div>
@@ -343,7 +343,7 @@ function RefreshButton({ item }: { item: VenueItem }) {
     <button
       onClick={handle}
       disabled={loading}
-      className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-lg transition-all"
+      className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium rounded-lg transition-all"
       style={{
         background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.55)',
         border: '1px solid rgba(255,255,255,0.1)', cursor: loading ? 'not-allowed' : 'pointer',
@@ -419,11 +419,11 @@ function ComponentPreviewCard({ compId }: { compId: ComponentId }) {
         minHeight: 80, display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         {loading ? (
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', padding: 16 }}>渲染中…</div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', padding: 16 }}>渲染中…</div>
         ) : previewUrl ? (
           <img src={previewUrl} alt={compId} style={{ width: '100%', height: 'auto', display: 'block' }} />
         ) : (
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', padding: 16 }}>预览暂不可用</div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', padding: 16 }}>预览暂不可用</div>
         )}
       </div>
 
@@ -439,7 +439,7 @@ function ComponentPreviewCard({ compId }: { compId: ComponentId }) {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
           {meta.items.map((item, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
               <div style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
               {item}
             </div>
@@ -447,7 +447,7 @@ function ComponentPreviewCard({ compId }: { compId: ComponentId }) {
         </div>
       </div>
 
-      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', lineHeight: 1.55 }}>
+      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', lineHeight: 1.55 }}>
         加入会场后，点击左侧图层列表选中该组件即可配置。
       </div>
     </div>
@@ -491,7 +491,7 @@ function HTabInlinePanel({ sourceId }: { sourceId?: string }) {
                   cursor: 'pointer',
                 }}>
                 <div style={{ width: 16, height: 16, borderRadius: '50%', background: def.inactiveBg, boxShadow: '0 0 0 1.5px rgba(255,255,255,0.15)' }} />
-                <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)' }}>{def.name}</span>
+                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>{def.name}</span>
               </button>
             )
           })}
@@ -504,7 +504,7 @@ function HTabInlinePanel({ sourceId }: { sourceId?: string }) {
         <div className="flex gap-1.5">
           {[2, 3, 4].map(n => (
             <button key={n} onClick={() => setTabCount(n)}
-              className="flex-1 py-2 text-[11px] rounded-xl transition-all"
+              className="flex-1 py-2 text-[12px] rounded-xl transition-all"
               style={{
                 border: `1px solid ${tabCount === n ? 'rgba(255,80,80,0.5)' : 'rgba(255,255,255,0.08)'}`,
                 background: tabCount === n ? 'rgba(255,80,80,0.1)' : 'rgba(255,255,255,0.03)',

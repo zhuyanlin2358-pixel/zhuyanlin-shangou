@@ -123,7 +123,7 @@ function TypeSelector({
         <div key={cat.id} className="mb-3">
           {/* 类别标题 */}
           <div className="flex items-center gap-2 px-4 py-1.5"
-            style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: 600 }}>
+            style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: 600 }}>
             <span style={{ opacity: 0.6 }}>{cat.icon}</span>
             {cat.label}
           </div>
@@ -157,12 +157,12 @@ function TypeSelector({
             >
               <span className="flex-1 text-[12px] truncate">{item.name}</span>
               {item.status === 'coming' ? (
-                <span className="text-[9px] px-1.5 py-0.5 rounded shrink-0"
+                <span className="text-[10px] px-1.5 py-0.5 rounded shrink-0"
                   style={{ background: 'rgba(255,200,0,0.08)', color: 'rgba(255,180,0,0.4)', border: '1px solid rgba(255,180,0,0.12)' }}>
                   待开发
                 </span>
               ) : (
-                <span className="text-[9px] px-1 rounded shrink-0"
+                <span className="text-[10px] px-1 rounded shrink-0"
                   style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.25)' }}>
                   {item.size}
                 </span>
@@ -195,7 +195,7 @@ function StudioContent({ selected }: { selected: MaterialId | null }) {
           <div className="text-sm font-semibold mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
             选择左侧素材类型开始设计
           </div>
-          <div className="text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
+          <div className="text-[12px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
             选择类型 → 调整属性 → 预览 → 导出
           </div>
         </div>
@@ -234,7 +234,7 @@ function StudioPanel({ selected }: { selected: MaterialId | null }) {
       </div>
       <div className="flex-1 overflow-y-auto">
         {!selected && (
-          <div className="p-4 text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.25)' }}>
+          <div className="p-4 text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.25)' }}>
             选中左侧素材类型后，此处显示专属配置项。
           </div>
         )}
@@ -285,7 +285,7 @@ export default function MaterialStudioPage() {
             素材设计工作室
           </span>
           {selected && (
-            <span className="text-[11px] px-2 py-0.5 rounded-full"
+            <span className="text-[12px] px-2 py-0.5 rounded-full"
               style={{ background: 'rgba(45,120,244,0.12)', color: '#6AA3FF' }}>
               {selected === 'n4'      ? 'N4 文字标签 · 240×156 px'
                 : selected === 'n2'      ? 'N2 品牌 Logo'

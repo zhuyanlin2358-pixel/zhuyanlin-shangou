@@ -302,7 +302,7 @@ function SlotComponentSection({
           <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.25)' }}>已选 {selCount}/{assets.length}</span>
           <button
             onClick={() => onSelectGroup(assets.map(a => a.id), selCount < assets.length)}
-            className="text-[9px] px-2 py-0.5 rounded-lg transition-all hover:opacity-80"
+            className="text-[10px] px-2 py-0.5 rounded-lg transition-all hover:opacity-80"
             style={{ background: 'rgba(45,120,244,0.12)', color: '#6AA3FF', border: '1px solid rgba(45,120,244,0.2)', cursor: 'pointer' }}>
             {selCount === assets.length ? '全不选' : '全选'}
           </button>
@@ -331,7 +331,7 @@ function SlotComponentSection({
           groupIds={prizeAssets.map(a => a.id)} selectedIds={selectedIds} onToggle={onToggleId}
           extra={
             <button onClick={e => { e.stopPropagation(); onAddPrize() }}
-              className="flex items-center gap-1 px-2 py-0.5 text-[9px] font-semibold rounded-lg ml-1 transition-all hover:opacity-80"
+              className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-lg ml-1 transition-all hover:opacity-80"
               style={{ background: 'rgba(45,120,244,0.15)', color: '#6AA3FF', border: '1px solid rgba(45,120,244,0.2)', cursor: 'pointer' }}>
               <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M8 3v10M3 8h10"/></svg>
               增加奖品图
@@ -343,7 +343,7 @@ function SlotComponentSection({
                 checked={selectedIds.has(a.id)} onToggle={onToggleId} /></div>
               {prizeCount > 1 && (
                 <button onClick={() => onRemovePrize(i)}
-                  className="px-1.5 py-1 text-[9px] rounded transition-all hover:opacity-80 shrink-0"
+                  className="px-1.5 py-1 text-[10px] rounded transition-all hover:opacity-80 shrink-0"
                   style={{ color: 'rgba(239,68,68,0.6)', background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer' }}>
                   ✕
                 </button>
@@ -423,7 +423,7 @@ function ComponentSection({
           <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.25)' }}>已选 {sel.length}/{assets.length}</span>
           <button
             onClick={() => onSelectGroup(assets.map(a => a.id), sel.length < assets.length)}
-            className="text-[9px] px-2 py-0.5 rounded-lg transition-all hover:opacity-80"
+            className="text-[10px] px-2 py-0.5 rounded-lg transition-all hover:opacity-80"
             style={{ background: 'rgba(45,120,244,0.12)', color: '#6AA3FF', border: '1px solid rgba(45,120,244,0.2)', cursor: 'pointer' }}>
             {sel.length === assets.length ? '全不选' : '全选'}
           </button>
@@ -524,9 +524,9 @@ function AssetGallery({ assets }: { assets: AssetDef[] }) {
             display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
           }}>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.7)',
+              <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.7)',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{asset.label}</div>
-              <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>{asset.size}</div>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>{asset.size}</div>
             </div>
             {cache[asset.id] && (
               <a href={cache[asset.id]} download={`${asset.label}.png`}
@@ -818,20 +818,20 @@ export default function DeliveryPage() {
         </button>
         <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)' }} />
         <span className="text-base font-bold" style={{ color: '#fff' }}>交付中心</span>
-        <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(34,197,94,0.12)', color: '#4ade80' }}>
+        <span className="text-[12px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(34,197,94,0.12)', color: '#4ade80' }}>
           ✅ 素材已就绪
         </span>
         <div style={{ flex: 1 }} />
         {/* 全选 / 全不选 */}
         <button onClick={allSelected ? selectNone : selectAll}
-          className="text-[11px] px-3 py-1.5 rounded-lg transition-all hover:opacity-80"
+          className="text-[12px] px-3 py-1.5 rounded-lg transition-all hover:opacity-80"
           style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)',
             border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}>
           {allSelected ? '全不选' : `全选 (${totalAssetCount})`}
         </button>
         {/* 选中计数 */}
         {selectedCount > 0 && (
-          <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          <span className="text-[12px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
             已选 {selectedCount} 个
           </span>
         )}
@@ -914,11 +914,11 @@ export default function DeliveryPage() {
           style={{ width: 360, borderColor: 'var(--sl-border)', background: 'var(--sl-panel)' }}>
           <div className="px-4 py-3 border-b shrink-0 flex items-center justify-between"
             style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-            <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.25)' }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.25)' }}>
               素材预览
             </span>
             {selectedCount > 0 && (
-              <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)' }}>
+              <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>
                 {selectedCount} 张
               </span>
             )}

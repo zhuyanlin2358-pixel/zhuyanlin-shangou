@@ -85,7 +85,7 @@ export default function YituosiPage() {
       </SectionCard>
 
       <SectionCard num={3} label="活动 Logo" sub={`品牌/活动圆形 Logo · ${SUB}`} name="一拖四_活动Logo" exportRef={r3}>
-        <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', fontSize: 11 }}>Logo</div>
+        <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', fontSize: 12 }}>Logo</div>
       </SectionCard>
 
       <SectionCard num={4} label="副标题" sub={`活动副文案 · ${SUB}`} name="一拖四_副标题" exportRef={r4}>

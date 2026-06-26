@@ -121,12 +121,12 @@ export default function VenuePhonePreview() {
       >
         {/* 区块标题 */}
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] font-semibold" style={{ color: 'rgba(255,255,255,0.5)' }}>
+          <span className="text-[12px] font-semibold" style={{ color: 'rgba(255,255,255,0.5)' }}>
             活动头图
           </span>
           {/* 方案包入口（占位，未来扩展） */}
           <span
-            className="text-[9px] px-1.5 py-0.5 rounded"
+            className="text-[10px] px-1.5 py-0.5 rounded"
             style={{ background: 'rgba(255,200,0,0.08)', color: 'rgba(255,180,0,0.5)', border: '1px solid rgba(255,180,0,0.15)' }}
           >
             方案包 · 即将上线
@@ -154,10 +154,10 @@ export default function VenuePhonePreview() {
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <div className="text-[11px] font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            <div className="text-[12px] font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>
               {headerUrl ? '点击更换头图' : '上传头图'}
             </div>
-            <div className="text-[9px] mt-0.5" style={{ color: 'rgba(255,255,255,0.25)' }}>
+            <div className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.25)' }}>
               750 × {HEADER_SIZES.find(s => s.key === headerSize)?.h} px
             </div>
           </div>
@@ -210,7 +210,7 @@ export default function VenuePhonePreview() {
                 style={{ width: '100%', height: '100%' }}
               />
             </div>
-            <span className="text-[9px] font-mono" style={{ color: 'rgba(255,255,255,0.25)' }}>
+            <span className="text-[10px] font-mono" style={{ color: 'rgba(255,255,255,0.25)' }}>
               {bgColor.toUpperCase()}
             </span>
           </label>
@@ -272,7 +272,7 @@ export default function VenuePhonePreview() {
                   gap: 4, cursor: 'pointer',
                 }}>
                 <ImageIcon size={16} style={{ color: 'rgba(0,0,0,0.2)' }} />
-                <span style={{ fontSize: 9, color: 'rgba(0,0,0,0.25)' }}>点击上传头图</span>
+                <span style={{ fontSize: 10, color: 'rgba(0,0,0,0.25)' }}>点击上传头图</span>
               </div>
             )}
 

@@ -174,7 +174,7 @@ export default function TiltedCard({
             borderRadius: 4,
             backgroundColor: 'rgba(0,0,0,0.75)',
             padding: '4px 10px',
-            fontSize: 11,
+            fontSize: 12,
             color: '#fff',
             opacity,
             rotate: rotateFigcaption,

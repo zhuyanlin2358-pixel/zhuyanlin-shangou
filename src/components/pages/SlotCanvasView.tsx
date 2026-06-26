@@ -78,7 +78,7 @@ export default function SlotCanvasView({ onEnterStudio }: Props) {
         className="flex flex-col shrink-0 border-r overflow-y-auto"
         style={{ width: 160, background: '#0C111B', borderColor: 'rgba(255,255,255,0.07)' }}
       >
-        <div className="px-3 pt-3 pb-1 text-[9px] tracking-wider" style={{ color: 'rgba(255,255,255,0.25)' }}>
+        <div className="px-3 pt-3 pb-1 text-[10px] tracking-wider" style={{ color: 'rgba(255,255,255,0.25)' }}>
           常用组件
         </div>
 
@@ -105,7 +105,7 @@ export default function SlotCanvasView({ onEnterStudio }: Props) {
           )
         })}
 
-        <div className="px-3 pt-3 pb-1 text-[9px] tracking-wider mt-2" style={{ color: 'rgba(255,255,255,0.15)' }}>
+        <div className="px-3 pt-3 pb-1 text-[10px] tracking-wider mt-2" style={{ color: 'rgba(255,255,255,0.15)' }}>
           素材列表
         </div>
         {['① 未抽奖状态', '② 背景切图', '③ 空态页', '④⑤ 按钮×2', '⑥ 奖品图×3', '⑦ 弹窗按钮', '⑧ 弹窗结果页'].map(label => (
@@ -208,7 +208,7 @@ export default function SlotCanvasView({ onEnterStudio }: Props) {
         style={{ width: 260, background: '#161B22', borderColor: 'rgba(255,255,255,0.07)' }}
       >
         {/* 面板标题 */}
-        <div className="px-4 py-3 border-b text-[11px] font-semibold" style={{ borderColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)' }}>
+        <div className="px-4 py-3 border-b text-[12px] font-semibold" style={{ borderColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)' }}>
           {activeAttr === 'default' && '设计属性'}
           {activeAttr === 'title'   && '✏️ 标题文案'}
           {activeAttr === 'cards'   && '🎁 奖品图配置'}
@@ -266,7 +266,7 @@ export default function SlotCanvasView({ onEnterStudio }: Props) {
             <Settings size={14} />
             进入设计工作室
           </button>
-          <div className="text-[9px] text-center mt-1.5" style={{ color: 'rgba(255,255,255,0.25)' }}>
+          <div className="text-[10px] text-center mt-1.5" style={{ color: 'rgba(255,255,255,0.25)' }}>
             空态页 · 奖品图 · 动效 · 导出全部 8 张
           </div>
         </div>

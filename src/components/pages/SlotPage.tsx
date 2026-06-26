@@ -122,7 +122,7 @@ function DraggableImageWrap({
       ) : (
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 4 }}>
           <div style={{ fontSize: 18, opacity: 0.3 }}>+</div>
-          {emptyHint && <div style={{ fontSize: 9, color: '#888', textAlign: 'center', lineHeight: 1.4 }}>{emptyHint}</div>}
+          {emptyHint && <div style={{ fontSize: 10, color: '#888', textAlign: 'center', lineHeight: 1.4 }}>{emptyHint}</div>}
         </div>
       )}
     </div>
@@ -243,7 +243,7 @@ export function PrizeCardFull({
                     objectFit: 'contain', userSelect: 'none', display: 'block',
                   }}
                 />
-              : <span style={{ fontSize: 9, color: '#888', textAlign: 'center', lineHeight: 1.4, pointerEvents: 'none' }}>
+              : <span style={{ fontSize: 10, color: '#888', textAlign: 'center', lineHeight: 1.4, pointerEvents: 'none' }}>
                   {onClick ? '点击\n上传图片' : ''}
                 </span>
             }
@@ -311,7 +311,7 @@ function ClickZone({ top, left, w, h, label, onClick }: {
     >
       {hover && (
         <span style={{
-          fontSize: 9, fontWeight: 600, color: '#fff',
+          fontSize: 10, fontWeight: 600, color: '#fff',
           background: 'rgba(200,140,0,0.85)',
           borderRadius: 3, padding: '1px 5px', margin: 3,
           pointerEvents: 'none', whiteSpace: 'nowrap',
@@ -358,7 +358,7 @@ function SectionTitle({ num, label, sub, badge, id }: { num: number; label: stri
         <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-1)' }}>{label}</div>
         <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>{sub}</div>
       </div>
-      {badge && <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>{badge}</span>}
+      {badge && <span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 4, background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>{badge}</span>}
     </div>
   )
 }
@@ -456,7 +456,7 @@ function PrizeEditorCard({ idx, prize, onExport, onPreview }: {
       {/* 底部信息行 */}
       <div style={{ padding: '10px 14px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
         <div>
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', background: 'rgba(255,48,96,0.08)', borderRadius: 4, padding: '1px 6px', display: 'inline-block', marginBottom: 2 }}>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', background: 'rgba(255,48,96,0.08)', borderRadius: 4, padding: '1px 6px', display: 'inline-block', marginBottom: 2 }}>
             {PRIZE_TYPE_LABELS[prize.type]}
           </div>
           <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.8)' }}>
@@ -794,7 +794,7 @@ export default function SlotPage({ onZoneClick }: { onZoneClick?: (zone: string)
             </div>
           </ExportCard>
           {config.emptyImageUrl && (
-            <div style={{ marginTop: 6, fontSize: 11, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
+            <div style={{ marginTop: 6, fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
               拖动插图调整位置 · 滚轮调整大小
             </div>
           )}
@@ -868,7 +868,7 @@ export default function SlotPage({ onZoneClick }: { onZoneClick?: (zone: string)
 
         {/* ── 分隔线：弹窗部分 ── */}
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 8 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.8px', marginBottom: 24 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.8px', marginBottom: 24 }}>
             老虎机弹窗
           </div>
 

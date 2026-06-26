@@ -142,12 +142,12 @@ function SlotCard({ previewUrl, onDownload }: { previewUrl: string; onDownload: 
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.85)' }}>老虎机</div>
-          <div className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          <div className="text-[12px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
             主视觉 · 弹窗 · 奖品图 · 按钮等全套切图
           </div>
         </div>
         <button onClick={() => setOpen(o => !o)}
-          className="flex items-center gap-1 text-[11px] px-3 py-1.5 rounded-lg transition-all"
+          className="flex items-center gap-1 text-[12px] px-3 py-1.5 rounded-lg transition-all"
           style={{ color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer' }}>
           {open ? '收起' : '查看详情'}
           <ChevronDown size={11} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
@@ -171,7 +171,7 @@ function SlotCard({ previewUrl, onDownload }: { previewUrl: string; onDownload: 
 
           {/* 弹窗预览 */}
           <div className="pt-4">
-            <div className="text-[11px] font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            <div className="text-[12px] font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.4)' }}>
               弹窗按钮（含 7 种文案 × 配色）
             </div>
             <div className="flex items-center gap-3">
@@ -179,7 +179,7 @@ function SlotCard({ previewUrl, onDownload }: { previewUrl: string; onDownload: 
                 <img src={dialogUrl} alt="弹窗按钮预览"
                   style={{ height: 36, borderRadius: 18, display: 'block', background: 'rgba(255,255,255,0.05)' }} />
               )}
-              <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+              <span className="text-[12px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
                 配色跟随老虎机主题，已包含在下载包中
               </span>
             </div>
@@ -187,7 +187,7 @@ function SlotCard({ previewUrl, onDownload }: { previewUrl: string; onDownload: 
 
           {/* 奖品图 */}
           <div>
-            <div className="text-[11px] font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            <div className="text-[12px] font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.4)' }}>
               奖品图（可单独替换图片）
             </div>
             <div className="flex gap-3 flex-wrap">
@@ -204,18 +204,18 @@ function SlotCard({ previewUrl, onDownload }: { previewUrl: string; onDownload: 
                     {prize.imageUrl ? (
                       <img src={prize.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     ) : (
-                      <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', textAlign: 'center', padding: '0 4px' }}>
+                      <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', textAlign: 'center', padding: '0 4px' }}>
                         {prize.type === 'thanks' ? '谢谢\n参与' : '未上传\n商品图'}
                       </span>
                     )}
                   </div>
-                  <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)' }}>奖品 {idx+1}</span>
+                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>奖品 {idx+1}</span>
                   {/* 替换按钮（仅需要图片的类型显示） */}
                   {(prize.type === 'product-tag' || prize.type === 'product-dashed') && (
                     <>
                       <button
                         onClick={() => fileRefs.current[idx]?.click()}
-                        className="flex items-center gap-1 text-[9px] px-2 py-0.5 rounded transition-all"
+                        className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded transition-all"
                         style={{ background: 'rgba(45,120,244,0.12)', color: '#6AA3FF', border: '1px solid rgba(45,120,244,0.2)', cursor: 'pointer' }}
                       >
                         <RefreshCw size={8} /> 替换
@@ -257,12 +257,12 @@ function ComponentCard({ label, previewUrl, componentId, onDownload }: {
       <div style={{ width: 88, height: 48, borderRadius: 8, overflow: 'hidden', background: 'rgba(255,255,255,0.05)', flexShrink: 0 }}>
         {previewUrl
           ? <img src={previewUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          : <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>无预览</span>
+          : <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>无预览</span>
         }
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-sm font-semibold truncate" style={{ color: 'rgba(255,255,255,0.85)' }}>{label}</div>
-        <div className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+        <div className="text-[12px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
           {componentId === 'coupon' && '背景图 · 腰封 · 按钮 共 3 张'}
           {componentId === 'h-tab'  && '全套 Tab 切图'}
           {componentId === 'floor'  && '楼层条切图'}
@@ -381,7 +381,7 @@ export default function DeliveryModal({ onClose }: { onClose: () => void }) {
               <Package size={15} />
               {allStatus === 'loading' ? '生成中，请稍候…' : allStatus === 'done' ? '✅ 全部素材已下载！' : '一键全部打包下载 ZIP'}
             </button>
-            <div className="text-center mt-2 text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
+            <div className="text-center mt-2 text-[12px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
               包含所有组件的完整切图素材
             </div>
           </div>

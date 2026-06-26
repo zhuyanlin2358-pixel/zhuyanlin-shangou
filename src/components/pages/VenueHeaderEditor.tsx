@@ -69,7 +69,7 @@ export default function VenueHeaderEditor() {
             <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-1)', marginBottom: 3 }}>
               {headerUrl ? '点击更换头图' : '上传活动头图'}
             </div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)' }}>
+            <div style={{ fontSize: 12, color: 'var(--text-3)' }}>
               750 × {HEADER_SIZES.find(s => s.key === headerSize)?.desc.split('×')[1].trim()}，置顶显示
             </div>
           </div>
@@ -116,7 +116,7 @@ export default function VenueHeaderEditor() {
             <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)}
               style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%' }} />
           </label>
-          <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-3)' }}>{bgColor.toUpperCase()}</span>
+          <span style={{ fontSize: 12, fontFamily: 'monospace', color: 'var(--text-3)' }}>{bgColor.toUpperCase()}</span>
         </div>
       </section>
 
@@ -141,7 +141,7 @@ export default function VenueHeaderEditor() {
           </div>
           <div>
             <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 2 }}>动效库</div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)' }}>头图入场动效、循环动效及自定义动效配置</div>
+            <div style={{ fontSize: 12, color: 'var(--text-3)' }}>头图入场动效、循环动效及自定义动效配置</div>
           </div>
           <span style={{ marginLeft: 'auto', fontSize: 10, color: 'rgba(255,180,0,0.6)', border: '1px solid rgba(255,180,0,0.2)', borderRadius: 4, padding: '2px 8px', flexShrink: 0 }}>
             待开发
@@ -168,7 +168,7 @@ export default function VenueHeaderEditor() {
           </div>
           <div>
             <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-2)', marginBottom: 2 }}>文案叠加</div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)' }}>在头图上叠加活动标题、副标题等文案元素</div>
+            <div style={{ fontSize: 12, color: 'var(--text-3)' }}>在头图上叠加活动标题、副标题等文案元素</div>
           </div>
           <span style={{ marginLeft: 'auto', fontSize: 10, color: 'rgba(100,160,255,0.5)', border: '1px solid rgba(100,160,255,0.15)', borderRadius: 4, padding: '2px 8px', flexShrink: 0 }}>
             待开发
