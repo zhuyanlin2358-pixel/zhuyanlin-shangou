@@ -44,6 +44,39 @@ function PLoader() {
   )
 }
 
+// ── 红包热区内联编辑（模块顶层，防 re-mount 失焦）────────────────────────────
+function CouponZoneInline({ zone }: { zone: string }) {
+  const { config, setTitleText, setBtnText } = useCoupon()
+  const inp = {
+    width: '100%', boxSizing: 'border-box' as const,
+    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: 8, padding: '7px 10px', fontSize: 12,
+    color: '#ebe9fc', outline: 'none',
+  }
+  const label = { fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.3)' as const,
+    textTransform: 'uppercase' as const, letterSpacing: '0.1em', marginBottom: 8 }
+  return (
+    <div>
+      {zone === 'title' && (
+        <>
+          <div style={label}>主文案</div>
+          <input style={inp} value={config.titleText} maxLength={24}
+            onChange={e => setTitleText(e.target.value)} placeholder="领618好店券 下单更优惠" />
+          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>最多 24 字</div>
+        </>
+      )}
+      {zone === 'btn' && (
+        <>
+          <div style={label}>按钮文案</div>
+          <input style={inp} value={config.btnText} maxLength={10}
+            onChange={e => setBtnText(e.target.value)} placeholder="一键领取" />
+          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>最多 10 字</div>
+        </>
+      )}
+    </div>
+  )
+}
+
 // ── 生成各组件预览 URL（从共享文件导入）──────────────────────────────────────
 import { genFloorUrl, genHTabUrl, genCouponUrl, genSlotUrl } from '@/utils/venuePreviewUrls'
 
@@ -491,13 +524,15 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
 
   const ZONE_LABEL: Record<string, string> = {
     text: '标题文案', prize: '奖品图设置',
+    title: '主文案',  btn: '按钮文案',
   }
+  const isZoneMode = !!(activeZone && (selectedItem?.componentId === 'slot' || selectedItem?.componentId === 'coupon'))
   // 面板标题
   const panelTitle = pendingComp
     ? (COMP_LABEL[pendingComp] ?? pendingComp)
     : !selectedLayer ? '页面设置'
     : selectedLayer === 'header' ? '活动头图'
-    : (selectedItem?.componentId === 'slot' && activeZone)
+    : isZoneMode
       ? ZONE_LABEL[activeZone] ?? '组件配置'
       : selectedItem?.label ?? '组件配置'
 
@@ -521,8 +556,8 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
           </button>
         )}
 
-        {/* 热区模式：返回全部配置 */}
-        {selectedItem?.componentId === 'slot' && activeZone && (
+        {/* 热区模式：返回全部配置（slot + coupon） */}
+        {isZoneMode && (
           <button onClick={onZoneClear}
             className="text-[10px] px-2 py-0.5 rounded transition-all hover:opacity-70"
             style={{ color: 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer' }}>
@@ -547,13 +582,17 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
         {/* 已在画布的组件配置 */}
         {!pendingComp && selectedItem && (
           <>
-            {/* slot + 热区激活 → 只显示对应配置，顶部加面包屑 */}
+            {/* slot / coupon 热区激活 → 只显示对应配置 */}
             {selectedItem.componentId === 'slot' && activeZone ? (
               <div className="pt-2">
                 <div className="px-4 py-2">
                   {activeZone === 'text'  && <InlineSlotTextConfig />}
                   {activeZone === 'prize' && <InlineSlotPrizeConfig />}
                 </div>
+              </div>
+            ) : selectedItem.componentId === 'coupon' && activeZone ? (
+              <div className="pt-2 px-4 py-3">
+                <CouponZoneInline zone={activeZone} />
               </div>
             ) : (
               <>
@@ -579,7 +618,14 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
                 <Suspense fallback={<PLoader />}>
                   {selectedItem.componentId === 'floor'  && <FloorPanel />}
                   {selectedItem.componentId === 'h-tab'  && <HTabInlinePanel sourceId={selectedItem.sourceId} />}
-                  {selectedItem.componentId === 'coupon' && <CouponPanel />}
+                  {selectedItem.componentId === 'coupon' && (
+                    <>
+                      <div className="px-4 pt-2 pb-1 text-[10px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                        双击预览文案/按钮可精准配置
+                      </div>
+                      <CouponPanel />
+                    </>
+                  )}
                 </Suspense>
               </>
             )}

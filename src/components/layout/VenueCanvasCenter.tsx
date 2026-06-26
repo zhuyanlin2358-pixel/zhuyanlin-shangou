@@ -16,10 +16,16 @@ const HEADER_SIZES: { key: VenueHeaderSize; h: number }[] = [
   { key: '274', h: 274 },
 ]
 
-// slot 预览热区配置（仅两处：标题文案 + 奖品图）
+// slot 预览热区（标题文案 / 奖品图）
 const SLOT_ZONES: { id: string; label: string; top: string; left: string; w: string; h: string }[] = [
-  { id: 'text',  label: '标题文案', top: '4%',  left: '3%',   w: '31%', h: '26%' },
-  { id: 'prize', label: '奖品图',   top: '29%', left: '5%',   w: '58%', h: '62%' },
+  { id: 'text',  label: '标题文案', top: '4%',  left: '3%',  w: '31%', h: '26%' },
+  { id: 'prize', label: '奖品图',   top: '29%', left: '5%',  w: '58%', h: '62%' },
+]
+
+// coupon 预览热区（主文案 / 按钮文案）
+const COUPON_ZONES: { id: string; label: string; top: string; left: string; w: string; h: string }[] = [
+  { id: 'title', label: '主文案', top: '5%',  left: '4%', w: '88%', h: '22%' },
+  { id: 'btn',   label: '按钮',   top: '73%', left: '6%', w: '88%', h: '22%' },
 ]
 
 // 缩放级别（由 VenuePage 顶栏统一控制，通过 props 传入）
@@ -290,7 +296,7 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
                 onPointerUp={handlePointerUp}
                 onDoubleClick={e => {
                   e.stopPropagation()
-                  if (!isSlot) return
+                  if (!isSlot && !isCoupon) return
 
                   // 根据双击位置检测热区，直接切换右侧配置
                   const imgEl = (e.currentTarget as HTMLElement).querySelector('img')
@@ -299,12 +305,16 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
                   const xPct = ((e.clientX - rect.left) / rect.width)  * 100
                   const yPct = ((e.clientY - rect.top)  / rect.height) * 100
 
-                  // 只检测两处热区（标题文案 / 奖品图）
                   let zone = ''
-                  if (xPct >= 3  && xPct <= 34 && yPct >= 4  && yPct <= 30) zone = 'text'
-                  else if (xPct >= 5  && xPct <= 63 && yPct >= 29 && yPct <= 91) zone = 'prize'
+                  if (isSlot) {
+                    if      (xPct >= 3  && xPct <= 34 && yPct >= 4  && yPct <= 30) zone = 'text'
+                    else if (xPct >= 5  && xPct <= 63 && yPct >= 29 && yPct <= 91) zone = 'prize'
+                  } else if (isCoupon) {
+                    if      (yPct >= 5  && yPct <= 27) zone = 'title'
+                    else if (yPct >= 73 && yPct <= 95) zone = 'btn'
+                  }
 
-                  if (!zone) return  // 点在热区外（背景/按钮）→ 不触发双击模式
+                  if (!zone) return
 
                   setDblClickId(item.id)
                   onSelectLayer(item.id)
@@ -338,49 +348,33 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
                       style={{ width: '100%', height: 'auto', display: 'block', borderRadius: r }}
                     />
 
-                    {/* slot 双击后显示热区 overlay */}
-                    {isSlot && isDblActive && (
+                    {/* slot / coupon 双击后显示热区 overlay（共用样式） */}
+                    {((isSlot && isDblActive) || (isCoupon && isDblActive)) && (
                       <>
-                        {SLOT_ZONES.map(z => {
+                        {(isSlot ? SLOT_ZONES : COUPON_ZONES).map(z => {
                           const isActive = activeZone === z.id
                           return (
                             <div
                               key={z.id}
-                              onClick={e => {
-                                e.stopPropagation()
-                                onZoneSelect?.(item.id, z.id)
-                              }}
+                              onClick={e => { e.stopPropagation(); onZoneSelect?.(item.id, z.id) }}
                               title={z.label}
                               style={{
                                 position: 'absolute',
                                 top: z.top, left: z.left, width: z.w, height: z.h,
                                 cursor: 'pointer',
-                                border: isActive
-                                  ? '2px solid rgba(255,200,0,1)'
-                                  : '1.5px dashed rgba(255,200,0,0.4)',
+                                border: isActive ? '2px solid rgba(255,200,0,1)' : '1.5px dashed rgba(255,200,0,0.4)',
                                 borderRadius: 4,
                                 background: isActive ? 'rgba(255,200,0,0.18)' : 'transparent',
                                 zIndex: 10,
-                                display: 'flex',
-                                alignItems: 'flex-end',
-                                paddingBottom: 3,
-                                paddingLeft: 3,
+                                display: 'flex', alignItems: 'flex-end',
+                                paddingBottom: 3, paddingLeft: 3,
                                 transition: 'all 0.12s',
                               }}
-                              onMouseEnter={e => {
-                                if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255,200,0,0.1)'
-                              }}
-                              onMouseLeave={e => {
-                                if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent'
-                              }}
+                              onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255,200,0,0.1)' }}
+                              onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
                             >
                               {isActive && (
-                                <span style={{
-                                  fontSize: 8, fontWeight: 700, color: '#1a0a00',
-                                  background: 'rgba(255,200,0,0.9)',
-                                  borderRadius: 2, padding: '1px 4px',
-                                  lineHeight: 1.5,
-                                }}>
+                                <span style={{ fontSize: 8, fontWeight: 700, color: '#1a0a00', background: 'rgba(255,200,0,0.9)', borderRadius: 2, padding: '1px 4px', lineHeight: 1.5 }}>
                                   {z.label} ✓
                                 </span>
                               )}
