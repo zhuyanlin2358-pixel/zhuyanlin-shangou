@@ -1,6 +1,6 @@
 # 闪购会场组件自助设计工具 — Claude Code 上下文文档
 
-> 最后更新：2026-06-18
+> 最后更新：2026-06-26
 
 ---
 
@@ -258,26 +258,54 @@ git checkout main && git merge feature/venue-preview && git push origin main && 
 bash scripts/sync-obsidian.sh
 ```
 
-## 当前分支状态（2026-06-23）
+## 当前分支状态（2026-06-26）
 
 | 分支 | 用途 | 状态 |
 |------|------|------|
 | `main` | 线上稳定版，GitHub Pages 自动部署 | ✅ 当前线上版 |
-| `feature/toolbar-optimize` | 工具栏优化（老虎机 inline 配置、Figma 精确还原、字体子集化）| 🚧 开发中，未发布 |
-| `feature/ui-redesign` | UI 改版专用，等设计师方案后开工 | ⏳ 待启动 |
-| `feature/venue-preview` | 历史分支，功能已合并 main | 📦 归档 |
+| `feature/ui-redesign` | UI改版+新功能主力开发分支 | 🚧 持续开发，每次改完直接 merge main |
 
-> ⚠️ **提醒**：设计师确认配置区方案后，切换到 `feature/ui-redesign` 分支再动工。
-> 改版前先 merge `feature/toolbar-optimize` 的优化内容，避免冲突。
+**发布流程**（已固定）：
+```bash
+git add -A && git commit -m "描述"
+git checkout main && git merge feature/ui-redesign && git push origin main && git checkout feature/ui-redesign
+```
+
+---
+
+## 2026-06-26 主要改动
+
+### UI 规范（Ant Design 对齐）
+- FileItem 行高 34→**40px**，间距 1→**3px**
+- CTA 按钮圆角 12→**10px**，顶栏高度 48→**56px**
+- 面包屑去掉"页面结构"，缩放档位5→3档（75/100/150）
+- **阴影系统**：`--shadow-topbar/panel-r/panel-l/popover/card`（index.css + ui-tokens.html）
+- **Spinner 组件**：`src/components/ui/Spinner.tsx`，sm/md/lg 三档
+
+### 工作室功能
+- HTab 工作室：颜色药丸+Tab数量+文案输入，图层感知右侧面板
+- Floor 工作室：新增楼层标题文案输入（之前缺失）
+- 老虎机：新增 `slotBtnText` 字段（按钮文案可编辑），新增 button 热区
+- 红包：新增 title/btn 热区，修复热区对齐 bug（zones 改为相对 img 元素定位）
+
+### 新功能
+- **删除撤销**：`showToastWithUndo` + `restoreItem`，5秒撤销
+- **App.tsx 重构**：5处重复 toast 合并为 `<AppToast>` 组件
+
+### 对外文档（public/ 目录，随 main 分支发布）
+- `ui-tokens.html` — UI设计令牌手册（含阴影/Spinner/行高）
+- `component-spec.html` — 组件接入规范
+- `component-template.html` — HTML组件开发模板
 
 ---
 
 ## 待做
 
-- **UI 改版**：等产品设计师确认配置区方案（候选A/B/C），在 `feature/ui-redesign` 分支开发
-- **工具栏优化合并**：`feature/toolbar-optimize` 确认无问题后发布
-- **一拖四**：规范确认后开发
-- **N4/N2 加入会场**：需 captureElement → previewUrl 方案
-- **头图动效库**：协作方提供动效代码后接入（VenueManager 占位已预留）
-- **设计规则引擎**：等字体规范文档，填入 Obsidian 后转化为产品推荐逻辑
-- **Skill AI 出图**：等 zhuxiangyu04 API 方案
+- **有 tab 类红包** → 等 Figma 设计稿
+- **配置另存为模板** → Task #8
+- **版本号/历史记录** → Task #9
+- **Tooltip 悬停提示** → 图标独立按钮（删除×、加入↺）
+- **Empty 空状态图标** → 会场空状态加小图标
+- **Vercel 部署** → 隐藏 GitHub 仓库地址（用户有意向）
+- **一拖四** → 规范确认后开发
+- **头图动效接入** → 等同事 HTML 文件（按 component-spec.html 规范）
