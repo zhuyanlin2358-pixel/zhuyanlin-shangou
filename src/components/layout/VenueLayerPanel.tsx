@@ -152,7 +152,9 @@ export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: P
         height: '100%',
         background: 'var(--sl-panel)',
         borderRight: '1px solid var(--sl-border)',
+        boxShadow: 'var(--shadow-panel-r)',
         flexShrink: 0,
+        zIndex: 5, position: 'relative',
       }}
     >
       <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '10px 6px 8px' }}>

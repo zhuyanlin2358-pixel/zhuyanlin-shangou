@@ -674,7 +674,7 @@ export default function SlotStudio({ onBack }: { onBack: () => void }) {
     <div className="flex flex-col h-screen" style={{ background: 'var(--sl-bg)' }}>
       {/* 顶栏 */}
       <div className="flex items-center gap-3 px-5 h-12 shrink-0 border-b"
-        style={{ background: 'var(--sl-panel)', borderColor: 'var(--sl-border)' }}>
+        style={{ background: 'var(--sl-panel)', borderColor: 'var(--sl-border)', boxShadow: 'var(--shadow-topbar)', zIndex: 10, position: 'relative' }}>
         <button onClick={onBack}
           className="flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-xl hover:opacity-90"
           style={{ background: 'var(--sl-primary-grad)', color: 'var(--sl-cta-text)', border: 'none', cursor: 'pointer' }}>
@@ -699,7 +699,7 @@ export default function SlotStudio({ onBack }: { onBack: () => void }) {
 
         {/* 左20%：结构树 */}
         <div className="flex flex-col border-r overflow-y-auto shrink-0"
-          style={{ width: '20%', minWidth: 160, maxWidth: 215, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)' }}>
+          style={{ width: '20%', minWidth: 160, maxWidth: 215, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)', boxShadow: 'var(--shadow-panel-r)', zIndex: 5, position: 'relative' }}>
           <div style={{
             fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
             color: 'rgba(255,255,255,0.2)',
@@ -719,7 +719,7 @@ export default function SlotStudio({ onBack }: { onBack: () => void }) {
 
         {/* 右40% */}
         <div className="flex flex-col border-l overflow-hidden shrink-0"
-          style={{ width: '40%', minWidth: 280, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)' }}>
+          style={{ width: '40%', minWidth: 280, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)', boxShadow: 'var(--shadow-panel-l)', zIndex: 5, position: 'relative' }}>
           <div className="h-11 flex items-center px-4 border-b shrink-0"
             style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
             <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>{currentLabel}</span>

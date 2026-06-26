@@ -498,7 +498,7 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
 
   return (
     <div className="flex flex-col h-full shrink-0 border-l"
-      style={{ width: 360, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)' }}>
+      style={{ width: 360, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)', boxShadow: 'var(--shadow-panel-l)', zIndex: 5, position: 'relative' }}>
 
       {/* 标题栏 */}
       <div className="h-11 flex items-center px-4 border-b shrink-0 gap-2"

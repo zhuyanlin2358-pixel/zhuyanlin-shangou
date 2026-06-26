@@ -348,6 +348,13 @@ body.dark-mode *:hover,
   --radius-sm:  4px;
   --radius-md:  8px;
   --radius-lg:  12px;
+
+  /* 阴影系统（深色主题调整版，参考 Ant Design Shadow spec × 深色不透明度 ×2）*/
+  --shadow-topbar:   0 1px 0 rgba(0,0,0,0.55), 0 2px 10px rgba(0,0,0,0.28); /* 顶栏底边阴影 */
+  --shadow-panel-r:  2px 0 10px rgba(0,0,0,0.38);  /* 左侧面板 → 画布分隔 */
+  --shadow-panel-l: -2px 0 10px rgba(0,0,0,0.38);  /* 右侧面板 ← 画布分隔 */
+  --shadow-popover:  0 6px 20px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.35); /* 下拉/浮层 */
+  --shadow-card:     0 2px 16px rgba(0,0,0,0.45);  /* canvas 预览卡片 */
 }
 
 /* ── Linear / Vercel 精致深色系设计 token ── */

@@ -449,6 +449,7 @@ export default function ComponentStudio({ compId, onBack }: Props) {
         display: 'flex', alignItems: 'center', gap: 12, padding: '0 20px',
         height: 48, flexShrink: 0, background: 'var(--sl-panel)',
         borderBottom: '1px solid var(--sl-border)',
+        boxShadow: 'var(--shadow-topbar)', zIndex: 10, position: 'relative',
       }}>
         <button onClick={onBack} style={{
           display: 'flex', alignItems: 'center', gap: 8, padding: '6px 16px',
@@ -473,6 +474,7 @@ export default function ComponentStudio({ compId, onBack }: Props) {
           width: 200, flexShrink: 0,
           display: 'flex', flexDirection: 'column',
           background: 'var(--sl-panel)', borderRight: '1px solid var(--sl-border)',
+          boxShadow: 'var(--shadow-panel-r)', zIndex: 5, position: 'relative',
           overflowY: 'auto',
         }}>
           <div style={{
@@ -553,6 +555,7 @@ export default function ComponentStudio({ compId, onBack }: Props) {
           width: 360, flexShrink: 0,
           display: 'flex', flexDirection: 'column',
           background: 'var(--sl-panel)', borderLeft: '1px solid var(--sl-border)',
+          boxShadow: 'var(--shadow-panel-l)', zIndex: 5, position: 'relative',
           overflow: 'hidden',
         }}>
           <div style={{
