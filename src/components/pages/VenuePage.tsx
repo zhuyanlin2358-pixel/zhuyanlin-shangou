@@ -4,7 +4,7 @@
  * 两种模式：
  *
  * ① 画布布局模式（默认三列）
- *   [图层面板 220px] | [手机画布 flex-1] | [核心属性面板 340px]
+ *   [图层面板 216px] | [手机画布 flex-1] | [核心属性面板 360px]
  *   右侧面板：只放当前选中组件的核心属性 + 底部「高级设置 →」按钮
  *
  * ② 高级设置模式（点击「高级设置」进入）
@@ -94,9 +94,9 @@ export default function VenuePage() {
       <div className="flex items-center shrink-0 border-b"
         style={{ height: 48, background: 'var(--sl-panel)', borderColor: 'var(--sl-border)', padding: 0, gap: 0 }}>
 
-        {/* 左段：220px，与侧边栏等宽，← 首页 + 页面结构 */}
+        {/* 左段：216px（27×8），与侧边栏等宽，← 首页 + 页面结构 */}
         <div style={{
-          width: 220, flexShrink: 0, height: '100%',
+          width: 216, flexShrink: 0, height: '100%',
           display: 'flex', alignItems: 'center',
           padding: '0 10px',
           borderRight: '1px solid var(--sl-border)',
@@ -152,9 +152,9 @@ export default function VenuePage() {
           ))}
         </div>
 
-        {/* 右段：340px，与右侧配置面板等宽，包含 CTA */}
+        {/* 右段：360px（45×8），与右侧配置面板等宽，包含 CTA */}
         <div style={{
-          width: 340, flexShrink: 0, height: '100%',
+          width: 360, flexShrink: 0, height: '100%',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
           padding: '0 16px',
           borderLeft: '1px solid var(--sl-border)',

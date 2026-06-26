@@ -290,10 +290,10 @@ export default function ComponentStudio({ compId, onBack }: Props) {
       {/* ── 三栏主体 ── */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
-        {/* 左 20%：结构树 */}
+        {/* 左 200px（25×8）：结构树 */}
         <div style={{
-          width: '20%', minWidth: 160, maxWidth: 215,
-          display: 'flex', flexDirection: 'column', flexShrink: 0,
+          width: 200, flexShrink: 0,
+          display: 'flex', flexDirection: 'column',
           background: 'var(--sl-panel)', borderRight: '1px solid var(--sl-border)',
           overflowY: 'auto',
         }}>
@@ -370,10 +370,10 @@ export default function ComponentStudio({ compId, onBack }: Props) {
           )}
         </div>
 
-        {/* 右 40%：配置面板 */}
+        {/* 右 360px（45×8）：配置面板 */}
         <div style={{
-          width: '40%', minWidth: 280, maxWidth: 370,
-          display: 'flex', flexDirection: 'column', flexShrink: 0,
+          width: 360, flexShrink: 0,
+          display: 'flex', flexDirection: 'column',
           background: 'var(--sl-panel)', borderLeft: '1px solid var(--sl-border)',
           overflow: 'hidden',
         }}>

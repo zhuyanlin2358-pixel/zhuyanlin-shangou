@@ -57,7 +57,7 @@ export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: P
   return (
     <aside
       style={{
-        width: 220,
+        width: 216,
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
