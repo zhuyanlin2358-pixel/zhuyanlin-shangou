@@ -41,49 +41,8 @@ function PLoader() {
   return <div className="flex items-center justify-center h-24 text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>加载中…</div>
 }
 
-// ── 生成各组件的预览 URL ───────────────────────────────────────────────────────
-
-async function genFloorUrl(cfg: Parameters<typeof drawFloorCanvas>[0]): Promise<string> {
-  await preloadFonts()
-  const c = await drawFloorCanvas(cfg)
-  return c.toDataURL('image/png')
-}
-
-async function genHTabUrl(cfg: Parameters<typeof drawHTabCanvas>[0]): Promise<string> {
-  await preloadFonts()
-  const c = await drawHTabCanvas(cfg)
-  return c.toDataURL('image/png')
-}
-
-async function genCouponUrl(cfg: Parameters<typeof drawCouponPreview>[0]): Promise<string> {
-  await preloadFonts()
-  const c = await drawCouponPreview(cfg)
-  return c.toDataURL('image/png')
-}
-
-async function genSlotUrl(config: SlotConfig): Promise<string> {
-  await preloadFonts()
-  const prizeCanvases = await Promise.all(
-    config.prizes.map((p, i) =>
-      drawPrizeCanvas(p as PrizeInfo, config.prizeTransforms[i] as XfTransform, config.slotStyle)
-    )
-  )
-  const bannerCfg: BannerConfig = {
-    slotTintFrom: config.slotTintFrom,
-    slotTintTo:   config.slotTintTo,
-    slotRect7From: config.slotRect7From,
-    slotRect7To:   config.slotRect7To,
-    titleText:    config.titleText,
-    titleColor:   config.titleColor,
-    linksColor:   config.linksColor,
-    btnActiveFrom: config.btnActiveFrom,
-    btnActiveTo:   config.btnActiveTo,
-    btnTextColor:  config.btnTextColor,
-    slotStyle:     config.slotStyle,
-  }
-  const c = await drawSlotBannerCanvas(bannerCfg, prizeCanvases)
-  return c.toDataURL('image/png')
-}
+// ── 生成各组件预览 URL（从共享文件导入）──────────────────────────────────────
+import { genFloorUrl, genHTabUrl, genCouponUrl, genSlotUrl } from '@/utils/venuePreviewUrls'
 
 // ── 自动同步 canvas（所有组件，debounce）─────────────────────────────────────
 
@@ -733,12 +692,7 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
         </div>
       )}
 
-      {/* 底部：「加入会场」（pending 模式）*/}
-      {pendingComp && (
-        <div className="shrink-0 p-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-          <AddToCanvasButton compId={pendingComp} onDone={onPendingDone} />
-        </div>
-      )}
+      {/* 「加入会场」已移至左侧侧边栏行内按钮，右侧不再重复显示 */}
     </div>
   )
 }
