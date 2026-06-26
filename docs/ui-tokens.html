@@ -175,21 +175,23 @@ h2 {
 /* ── 按钮 ── */
 .btn {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 16px; border-radius: 10px; border: none;  /* CTA按钮统一10px，Ant Design large=8px，比标准略圆 */
+  padding: 7px 16px; border-radius: 10px; border: none;
   font-size: 12px; font-weight: 700; cursor: pointer;
+  font-family: inherit; outline: none; appearance: none;  /* 重置浏览器默认样式 */
   transition: opacity 0.12s;
+  /* CTA主按钮10px，Ant Design large=8px，比标准略圆一点保持品牌感 */
 }
 .btn:hover { opacity: 0.88; }
 .btn-primary { background: var(--sl-primary-grad); color: var(--sl-cta-text); }
 .btn-ghost {
   background: rgba(255,255,255,0.06);
   color: var(--sl-text-2);
-  border: 1px solid var(--sl-border-md);
+  border: 1px solid rgba(235,233,252,0.12);
 }
 .btn-danger {
-  background: rgba(255,48,80,0.12);
-  color: #FF8FAA;
-  border: 1px solid rgba(255,48,80,0.3);
+  background: rgba(239,68,68,0.1);
+  color: rgba(239,68,68,0.8);
+  border: 1px solid rgba(239,68,68,0.2);
 }
 
 /* ── 配色药丸（PresetPill）── */
@@ -478,10 +480,31 @@ h2 {
 <!-- ── 5. 按钮 ── -->
 <h2>按钮</h2>
 <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-  <button class="btn btn-primary">↓ 完成 · 下载素材</button>
-  <button class="btn btn-ghost">更新画布预览</button>
-  <button class="btn btn-ghost">← 首页</button>
-  <button class="btn btn-danger">× 删除</button>
+  <!-- CTA主按钮：SVG图标 + 文字，圆角10px -->
+  <button class="btn btn-primary">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+    完成 · 下载素材
+  </button>
+  <!-- Ghost按钮：刷新图标 -->
+  <button class="btn btn-ghost">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+      <path d="M3 3v5h5"/>
+    </svg>
+    更新画布预览
+  </button>
+  <!-- 返回按钮：back arrow SVG -->
+  <button class="btn btn-primary">
+    <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+      <path d="M10 4L6 8l4 4"/>
+    </svg>
+    完成并返回画布
+  </button>
+  <!-- 删除（danger，纯文字，比 × 更清晰）-->
+  <button class="btn btn-danger">删除</button>
 </div>
 <div style="margin-top:12px;display:flex;gap:24px;">
   <div class="token-row" style="flex:1;"><div class="token-name">CTA主按钮</div><div class="token-val">background: var(--sl-primary-grad) · color: var(--sl-cta-text)</div></div>
