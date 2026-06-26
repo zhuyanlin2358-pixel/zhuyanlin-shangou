@@ -46,13 +46,13 @@ export function FileItem({
       onMouseLeave={() => setHovered(false)}
       className="relative flex items-center gap-2 select-none cursor-pointer"
       style={{
-        height: 34,
+        height: 40,
         paddingLeft: 10 + depth * 16,
         paddingRight: 6,
         borderRadius: 8,
         background: active ? T.activeBg : hovered ? T.hoverBg : 'transparent',
         color: active ? T.activeText : T.mutedText,
-        marginBottom: 1,
+        marginBottom: 3,
         transition: 'background 0.12s, color 0.12s',
       }}
     >
@@ -145,13 +145,13 @@ export function FolderItem({
         onMouseLeave={() => setHovered(false)}
         className="relative flex items-center gap-2 select-none cursor-pointer"
         style={{
-          height: 34,
+          height: 40,
           paddingLeft: 10 + depth * 16,
           paddingRight: 6,
           borderRadius: 8,
           background: activeFolder ? T.activeBg : hovered ? T.hoverBg : 'transparent',
           color: activeFolder ? T.activeText : T.mutedText,
-          marginBottom: 1,
+          marginBottom: 3,
           transition: 'background 0.12s, color 0.12s',
         }}
       >
