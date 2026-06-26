@@ -11,7 +11,7 @@ interface CouponCtx {
 const Ctx = createContext<CouponCtx | null>(null)
 
 const DEFAULT_CONFIG: CouponConfig = {
-  colorKey: 'green',
+  colorKey: 'red',
   titleText: '领618好店券 下单更优惠',
   btnText: '一键领取',
 }

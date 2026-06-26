@@ -11,7 +11,6 @@ import {
   PF, PanelInput,
   ColorField,
 } from '@/components/ui/PanelField'
-import { SLOT_STYLE_LIST } from '@/utils/slotStyles'
 
 /* ── 配色预设常量 ── */
 export const LIGHT_PRESETS = ['qinrenfen','dacuhong','huang','ju','lan','lv','qing']
@@ -74,27 +73,6 @@ export function SlotColorConfig() {
 
   return (
     <div className="space-y-3">
-      {/* 风格版本 */}
-      <div>
-        <div className="text-[10.5px] font-medium text-white/40 mb-1.5">风格版本</div>
-        <div className="flex flex-wrap gap-1.5">
-          {SLOT_STYLE_LIST.filter(s => s.id !== 'minimal').map(style => {
-            const isActive = config.slotStyle === style.id
-            return (
-              <button key={style.id} onClick={() => setConfig({ slotStyle: style.id })}
-                className="px-3 py-1 rounded-full text-xs border transition-all"
-                style={{
-                  borderColor: isActive ? 'rgba(255,48,96,0.6)' : 'rgba(255,255,255,0.1)',
-                  background:  isActive ? 'rgba(255,48,96,0.12)' : 'rgba(255,255,255,0.04)',
-                  color:       isActive ? '#FF8FAA' : 'rgba(255,255,255,0.45)',
-                  fontWeight:  isActive ? 600 : 400,
-                }}
-              >{style.label}</button>
-            )
-          })}
-        </div>
-      </div>
-
       {/* 配色预设（按会场背景色智能推荐） */}
       <div>
         <div className="text-[10.5px] font-medium text-white/40 mb-1.5">
