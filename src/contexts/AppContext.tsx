@@ -22,6 +22,9 @@ interface AppContextValue {
   registerExportAll: (fn: (() => void) | null) => void
   triggerExportAll: () => void
   hasExportAll: boolean
+  // 场景方案库：待应用的模板 key
+  pendingTemplate: string | null
+  setPendingTemplate: (key: string | null) => void
 }
 
 const AppContext = createContext<AppContextValue | null>(null)
@@ -34,6 +37,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState('')
   const exportAllRef = useRef<(() => void) | null>(null)
   const [hasExportAll, setHasExportAll] = useState(false)
+  const [pendingTemplate, setPendingTemplate] = useState<string | null>(null)
 
   useEffect(() => {
     localStorage.setItem('theme', darkMode ? 'dark' : 'light')
@@ -117,6 +121,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       goHome, enterComp, goAssets, goReview, goVenue, goStudio, goDelivery,
       toast, showToast,
       registerExportAll, triggerExportAll, hasExportAll,
+      pendingTemplate, setPendingTemplate,
     }}>
       {children}
     </AppContext.Provider>

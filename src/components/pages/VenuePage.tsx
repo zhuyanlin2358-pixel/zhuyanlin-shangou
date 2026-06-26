@@ -11,13 +11,89 @@
  *   [返回条 40px] | [组件完整配置页 flex-1] | [手机预览 380px]
  *   包含：弹窗、导出、Tab文案、奖品图等深度配置
  */
-import { Suspense, lazy, useState } from 'react'
-import { useApp }   from '@/contexts/AppContext'
-import { useVenue } from '@/contexts/VenueContext'
+import { Suspense, lazy, useState, useEffect } from 'react'
+import { useApp }    from '@/contexts/AppContext'
+import { useVenue }  from '@/contexts/VenueContext'
+import { useSlot }   from '@/contexts/SlotContext'
+import { useHTab }   from '@/contexts/HTabContext'
+import { useCoupon } from '@/contexts/CouponContext'
 import type { ComponentId } from '@/types'
 import type { ZoomOpt } from '@/components/layout/VenueCanvasCenter'
+import { SCENE_TEMPLATES } from '@/utils/sceneTemplates'
+import { GLOBAL_THEMES }   from '@/utils/globalThemes'
+import { genFloorUrl, genHTabUrl, genCouponUrl, genSlotUrl } from '@/utils/venuePreviewUrls'
+import { useFloor } from '@/contexts/FloorContext'
+import { COUPON_COLORS } from '@/types'
 
 const ZOOM_OPTS: ZoomOpt[] = [50, 75, 100, 125, 150]
+
+// ── 场景方案库应用器（无 UI，监听 pendingTemplate 并异步执行）────────────────
+function TemplateApplier() {
+  const { pendingTemplate, setPendingTemplate, showToast } = useApp()
+  const { addItem, clearItems } = useVenue()
+  const { applyPreset } = useSlot()
+  const { setColor }    = useHTab()
+  const { setColorKey } = useCoupon()
+  const { config: floorCfg, floors } = useFloor()
+
+  useEffect(() => {
+    if (!pendingTemplate) return
+    const tpl = SCENE_TEMPLATES.find(t => t.key === pendingTemplate)
+    if (!tpl) { setPendingTemplate(null); return }
+
+    const run = async () => {
+      // ① 清空画布
+      clearItems()
+      // ② 应用全局主题
+      const theme = GLOBAL_THEMES.find(t => t.key === tpl.themeKey)
+      if (theme) {
+        applyPreset(theme.slotPreset)
+        setColor(theme.htabColor)
+        setColorKey(theme.couponColor)
+      }
+      // ③ 逐个加入组件（生成预览 URL）
+      for (const compId of tpl.components) {
+        try {
+          switch (compId) {
+            case 'slot': {
+              // slot config 已由 applyPreset 更新，但 state 可能未 flush
+              // 直接用 genSlotUrl 会用旧 config，所以用 setTimeout 等一帧
+              await new Promise(r => setTimeout(r, 100))
+              // 简化：用占位预览，用户可在工作室里更新
+              addItem({ componentId: 'slot', label: '老虎机', previewUrl: '', origW: 750, origH: 242 })
+              break
+            }
+            case 'floor': {
+              const fi = floors[0]
+              const text = fi?.text ?? '领好店券 下单更优惠'
+              const url = await genFloorUrl({ ...floorCfg, text })
+              addItem({ componentId: 'floor', label: text, previewUrl: url, origW: 750, origH: 60, sourceId: fi?.id })
+              break
+            }
+            case 'h-tab': {
+              const url = await genHTabUrl({ colorKey: theme?.htabColor ?? 'yellow', tabs: ['分类一', '分类二', '分类三'], activeIndex: 0 })
+              addItem({ componentId: 'h-tab', label: 'Tab 1', previewUrl: url, origW: 750, origH: 88 })
+              break
+            }
+            case 'coupon': {
+              const url = await genCouponUrl({ colorKey: theme?.couponColor ?? 'red', titleText: '领好店券 下单更优惠', btnText: '一键领取' })
+              const colorName = COUPON_COLORS[theme?.couponColor ?? 'red'].name
+              addItem({ componentId: 'coupon', label: `券红包·${colorName}`, previewUrl: url, origW: 702, origH: 352 })
+              break
+            }
+          }
+        } catch { /* 单个组件失败不中断 */ }
+      }
+      showToast(`✅ 「${tpl.name}」方案已加载`)
+      setPendingTemplate(null)
+    }
+
+    run()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingTemplate])
+
+  return null
+}
 
 import VenueLayerPanel   from '@/components/layout/VenueLayerPanel'
 import VenueCanvasCenter from '@/components/layout/VenueCanvasCenter'
@@ -90,6 +166,8 @@ export default function VenuePage() {
   // ── 画布布局模式（默认三列） ────────────────────────────────────────────────
   return (
     <div className="flex flex-col h-screen" style={{ background: 'var(--sl-bg)' }}>
+      {/* 场景方案库模板应用器（无 UI） */}
+      <TemplateApplier />
 
       {/* ── 统一顶栏（Figma风格：左固定 + 中绝对居中 + 右固定）── */}
       <div className="flex items-center shrink-0 border-b"
