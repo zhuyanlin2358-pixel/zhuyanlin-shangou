@@ -22,6 +22,7 @@ const ZOOM_OPTS: ZoomOpt[] = [50, 75, 100, 125, 150]
 import VenueLayerPanel   from '@/components/layout/VenueLayerPanel'
 import VenueCanvasCenter from '@/components/layout/VenueCanvasCenter'
 import VenueDynamicPanel from '@/components/layout/VenueDynamicPanel'
+import GlobalThemePills  from '@/components/ui/GlobalThemePills'
 
 const SlotStudio      = lazy(() => import('./SlotStudio'))
 const ComponentStudio = lazy(() => import('./ComponentStudio'))
@@ -135,6 +136,13 @@ export default function VenuePage() {
             }}>
               {items.length}
             </span>
+          )}
+          {/* 全局主题色：有组件时显示 */}
+          {items.length > 0 && (
+            <>
+              <div style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.08)', flexShrink: 0 }} />
+              <GlobalThemePills />
+            </>
           )}
           <div style={{ flex: 1 }} />
           {ZOOM_OPTS.map(z => (
