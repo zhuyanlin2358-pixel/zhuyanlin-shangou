@@ -32,6 +32,41 @@ const GenericPage = lazy(() => import('@/components/pages/GenericPage'))
 const AssetsPage  = lazy(() => import('@/components/pages/AssetsPage'))
 const ReviewPage  = lazy(() => import('@/components/pages/ReviewPage'))
 
+// ── 全局 Toast（支持撤销按钮）────────────────────────────────────────────────
+function AppToast() {
+  const { toast, toastUndo, showToast } = useApp()
+  if (!toast) return null
+  return (
+    <div
+      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+      style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '8px 16px', borderRadius: 24,
+        background: '#1a1a1a', color: '#fff',
+        fontSize: 13, whiteSpace: 'nowrap',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+        animation: 'fadeUp 0.2s ease both',
+      }}
+    >
+      <span>{toast}</span>
+      {toastUndo && (
+        <>
+          <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.2)' }} />
+          <button
+            onClick={() => { toastUndo(); showToast('✅ 已撤销') }}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 12, fontWeight: 600, color: '#fad900', padding: 0,
+            }}
+          >
+            撤销
+          </button>
+        </>
+      )}
+    </div>
+  )
+}
+
 // 全局滚动检测：给正在滚动的元素加 is-scrolling，900ms 后移除
 function useGlobalScrollVisible() {
   useEffect(() => {
@@ -61,7 +96,7 @@ function PageLoader() {
 }
 
 function MainContent() {
-  const { page, currentComp, toast, hasPreview } = useApp()
+  const { page, currentComp, hasPreview } = useApp()
   useGlobalScrollVisible()
 
   // 首页：全屏独立布局，跳过 Sidebar + TopBar
@@ -69,12 +104,7 @@ function MainContent() {
     return (
       <>
         <HomePage />
-        {toast && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 text-sm px-4 py-2 rounded-full shadow-lg z-50"
-            style={{ background: '#1a1a1a', color: '#fff', whiteSpace: 'nowrap' }}>
-            {toast}
-          </div>
-        )}
+        <AppToast />
       </>
     )
   }
@@ -84,12 +114,7 @@ function MainContent() {
     return (
       <>
         <Suspense fallback={<PageLoader />}><VenuePage /></Suspense>
-        {toast && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 text-sm px-4 py-2 rounded-full shadow-lg z-50"
-            style={{ background: '#1a1a1a', color: '#fff', whiteSpace: 'nowrap' }}>
-            {toast}
-          </div>
-        )}
+        <AppToast />
       </>
     )
   }
@@ -99,7 +124,7 @@ function MainContent() {
     return (
       <>
         <Suspense fallback={<PageLoader />}><DeliveryPage /></Suspense>
-        {toast && <div className="fixed bottom-6 left-1/2 -translate-x-1/2 text-sm px-4 py-2 rounded-full shadow-lg z-50" style={{ background: '#1a1a1a', color: '#fff', whiteSpace: 'nowrap' }}>{toast}</div>}
+        <AppToast />
       </>
     )
   }
@@ -109,12 +134,7 @@ function MainContent() {
     return (
       <>
         <Suspense fallback={<PageLoader />}><MaterialStudioPage /></Suspense>
-        {toast && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 text-sm px-4 py-2 rounded-full shadow-lg z-50"
-            style={{ background: '#1a1a1a', color: '#fff', whiteSpace: 'nowrap' }}>
-            {toast}
-          </div>
-        )}
+        <AppToast />
       </>
     )
   }
@@ -166,14 +186,7 @@ function MainContent() {
       {hasPreview && <PreviewPanel />}
 
       {/* Toast */}
-      {toast && (
-        <div
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 text-sm px-4 py-2 rounded-full shadow-lg z-50"
-          style={{ background: '#1a1a1a', color: '#fff', whiteSpace: 'nowrap' }}
-        >
-          {toast}
-        </div>
-      )}
+      <AppToast />
     </div>
   )
 }

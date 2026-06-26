@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useRef, useCallback, type ReactNode } from 'react'
 import { VENUE_COMP_IDS } from '@/types'
 import type { ComponentId, PageId } from '@/types'
 
@@ -17,7 +17,9 @@ interface AppContextValue {
   goStudio: () => void
   goDelivery: () => void
   toast: string
+  toastUndo: (() => void) | null
   showToast: (msg: string) => void
+  showToastWithUndo: (msg: string, undo: () => void, duration?: number) => void
   // 当前组件页注册的导出全部回调
   registerExportAll: (fn: (() => void) | null) => void
   triggerExportAll: () => void
@@ -35,6 +37,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [page, setPage] = useState<PageId>('home')
   const [currentComp, setCurrentComp] = useState<ComponentId | null>(null)
   const [toast, setToast] = useState('')
+  const [toastUndo, setToastUndo] = useState<(() => void) | null>(null)
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const exportAllRef = useRef<(() => void) | null>(null)
   const [hasExportAll, setHasExportAll] = useState(false)
   const [pendingTemplate, setPendingTemplate] = useState<string | null>(null)
@@ -101,10 +105,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setHasPreview(false)
   }
 
-  const showToast = (msg: string) => {
+  const showToast = useCallback((msg: string) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
     setToast(msg)
-    setTimeout(() => setToast(''), 2500)
-  }
+    setToastUndo(null)
+    toastTimerRef.current = setTimeout(() => { setToast(''); setToastUndo(null) }, 2500)
+  }, [])
+
+  const showToastWithUndo = useCallback((msg: string, undo: () => void, duration = 5000) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+    setToast(msg)
+    setToastUndo(() => undo)   // 用箭头函数包裹，防止 React 将其当作 state updater
+    toastTimerRef.current = setTimeout(() => { setToast(''); setToastUndo(null) }, duration)
+  }, [])
 
   const registerExportAll = (fn: (() => void) | null) => {
     exportAllRef.current = fn
@@ -119,7 +132,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       hasPreview, setHasPreview,
       page, currentComp,
       goHome, enterComp, goAssets, goReview, goVenue, goStudio, goDelivery,
-      toast, showToast,
+      toast, toastUndo, showToast, showToastWithUndo,
       registerExportAll, triggerExportAll, hasExportAll,
       pendingTemplate, setPendingTemplate,
     }}>

@@ -141,7 +141,8 @@ interface Props {
 }
 
 export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: Props) {
-  const { items, removeItem } = useVenue()
+  const { items, removeItem, restoreItem } = useVenue()
+  const { showToastWithUndo } = useApp()
 
   return (
     <aside
@@ -179,8 +180,14 @@ export default function VenueLayerPanel({ selectedLayer, onSelect, onAddNew }: P
               action={
                 <DeleteBtn onClick={e => {
                   e.stopPropagation()
+                  const savedItem = item
+                  const savedIdx  = idx
                   removeItem(item.id)
                   if (selectedLayer === item.id) onSelect(null)
+                  showToastWithUndo(
+                    `「${item.label}」已从画布移除`,
+                    () => restoreItem(savedItem, savedIdx),
+                  )
                 }} />
               }
             />

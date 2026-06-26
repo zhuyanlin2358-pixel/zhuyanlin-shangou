@@ -10,6 +10,7 @@ interface VenueCtx {
   items: VenueItem[]
   addItem: (item: Omit<VenueItem, 'id' | 'spacingAbove'>) => void
   removeItem: (id: string) => void
+  restoreItem: (item: VenueItem, atIndex: number) => void
   clearItems: () => void
   moveItem: (id: string, dir: 'up' | 'down') => void
   reorderItems: (fromId: string, toId: string) => void
@@ -48,6 +49,15 @@ export function VenueProvider({ children }: { children: ReactNode }) {
 
   const removeItem = useCallback((id: string) => {
     setItems(prev => prev.filter(it => it.id !== id))
+  }, [])
+
+  // 撤销删除：将完整 item（含原 id）插回指定位置
+  const restoreItem = useCallback((item: VenueItem, atIndex: number) => {
+    setItems(prev => {
+      const next = [...prev]
+      next.splice(Math.min(atIndex, next.length), 0, item)
+      return next
+    })
   }, [])
 
   const updatePreview = useCallback(
@@ -96,7 +106,7 @@ export function VenueProvider({ children }: { children: ReactNode }) {
 
   return (
     <Ctx.Provider value={{
-      items, addItem, removeItem, clearItems, moveItem, reorderItems, updatePreview, getSourceTag, setSpacing,
+      items, addItem, removeItem, restoreItem, clearItems, moveItem, reorderItems, updatePreview, getSourceTag, setSpacing,
       headerUrl, setHeaderUrl,
       headerSize, setHeaderSize,
       bgColor, setBgColor,
