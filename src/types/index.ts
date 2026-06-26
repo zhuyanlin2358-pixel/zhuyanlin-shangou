@@ -208,6 +208,7 @@ export interface SlotConfig {
   titleColor: string
   btnTextColor: string
   titleText: string
+  slotBtnText: string   // 抽奖按钮文案（默认"立即抽奖"）
   emptyText: string
   emptyImageUrl: string
   emptyTransform: ImgTransform

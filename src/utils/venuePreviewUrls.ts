@@ -42,6 +42,7 @@ export async function genSlotUrl(config: SlotConfig): Promise<string> {
     btnActiveFrom: config.btnActiveFrom,
     btnActiveTo:   config.btnActiveTo,
     btnTextColor:  config.btnTextColor,
+    slotBtnText:   config.slotBtnText,
     slotStyle:     config.slotStyle,
   }
   return (await drawSlotBannerCanvas(bannerCfg, prizeCanvases)).toDataURL('image/png')

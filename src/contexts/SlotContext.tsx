@@ -99,6 +99,7 @@ const INITIAL_CONFIG: SlotConfig = {
   titleColor: '#770101',
   btnTextColor: '#FFFFFF',
   titleText: '惊喜抽奖',
+  slotBtnText: '立即抽奖',
   emptyText: '活动太火爆，请稍后重试...',
   emptyImageUrl: `${BASE}empty-illus.png`,
   emptyTransform: { offsetX: 0, offsetY: 0, scale: 1 },

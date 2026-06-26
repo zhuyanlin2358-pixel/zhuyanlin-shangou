@@ -143,6 +143,7 @@ export interface BannerConfig {
   linksColor: string
   btnActiveFrom: string; btnActiveTo: string
   btnTextColor?: string  // 按钮文字颜色，默认 #fff
+  slotBtnText?: string   // 抽奖按钮文案，默认「立即抽奖」
   slotStyle?: string
 }
 
@@ -237,7 +238,7 @@ export async function drawSlotBannerCanvas(
   ctx.fillStyle = cfg.btnTextColor ?? '#fff'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillText('立即抽奖', btnX + 97, 144)
+  ctx.fillText(cfg.slotBtnText || '立即抽奖', btnX + 97, 144)
 
   // 剩余次数 FZLanTingHei-M-GBK
   ctx.font = `400 20px ${F}`

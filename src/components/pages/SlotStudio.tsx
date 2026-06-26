@@ -87,7 +87,7 @@ function CanvasRow({ url, label, onDl }: { url: string; label: string; onDl: () 
 
 // ── 右侧：按层级显示素材 + 配置 ───────────────────────────────────────────────
 function RightPanel({ selected }: { selected: LayerId | null }) {
-  const { config, setPrize, addPrize, removePrize } = useSlot()
+  const { config, setConfig, setPrize, addPrize, removePrize } = useSlot()
   const [state, setState] = useState<Record<string, string>>({})
 
   // 生成素材 urls
@@ -99,7 +99,7 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
       const next: Record<string, string> = {}
       try {
         if (selected === 'button') {
-          next.btnA = drawButtonCanvas('立即抽奖',   config.btnActiveFrom,   config.btnActiveTo,   config.btnTextColor).toDataURL()
+          next.btnA = drawButtonCanvas(config.slotBtnText || '立即抽奖', config.btnActiveFrom, config.btnActiveTo, config.btnTextColor).toDataURL()
           next.btnD = drawButtonCanvas('活动已结束', config.btnDisabledFrom, config.btnDisabledTo, config.btnTextColor).toDataURL()
         }
         if (selected === 'links') {
@@ -138,7 +138,7 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
   }, [
     selected,
     config.btnActiveFrom, config.btnActiveTo, config.btnDisabledFrom, config.btnDisabledTo,
-    config.linksColor, config.slotTintFrom, config.slotTintTo, config.titleColor,
+    config.slotBtnText, config.linksColor, config.slotTintFrom, config.slotTintTo, config.titleColor,
     config.emptyText, config.emptyImageUrl, config.slotStyle,
     config.prizes, config.prizeTransforms,
   ])
@@ -279,13 +279,23 @@ function RightPanel({ selected }: { selected: LayerId | null }) {
     )
   }
 
-  // ── 抽奖按钮：只显示按钮素材，无配色预设 ──
+  // ── 抽奖按钮：按钮文案输入 + 素材预览 ──
   if (selected === 'button') {
+    const inp = {
+      width: '100%', boxSizing: 'border-box' as const,
+      background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+      borderRadius: 8, padding: '7px 10px', fontSize: 12,
+      color: '#ebe9fc', outline: 'none', marginBottom: 16,
+    }
     return (
       <div className="p-3">
+        <SectionHead label="按钮文案" />
+        <input style={inp} value={config.slotBtnText} maxLength={8}
+          onChange={e => setConfig({ slotBtnText: e.target.value })}
+          placeholder="立即抽奖" />
         <SectionHead label="抽奖按钮素材" />
-        {state.btnA && <CanvasRow url={state.btnA} label="立即抽奖"
-          onDl={() => { const a = document.createElement('a'); a.href = state.btnA; a.download = '按钮_立即抽奖.png'; a.click() }} />}
+        {state.btnA && <CanvasRow url={state.btnA} label={config.slotBtnText || '立即抽奖'}
+          onDl={() => { const a = document.createElement('a'); a.href = state.btnA; a.download = `按钮_${config.slotBtnText || '立即抽奖'}.png`; a.click() }} />}
         {state.btnD && <CanvasRow url={state.btnD} label="活动已结束"
           onDl={() => { const a = document.createElement('a'); a.href = state.btnD; a.download = '按钮_活动结束.png'; a.click() }} />}
         <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginTop: 8 }}>
@@ -658,7 +668,7 @@ export default function SlotStudio({ onBack }: { onBack: () => void }) {
         slotRect7From: config.slotRect7From, slotRect7To: config.slotRect7To,
         titleText: config.titleText, titleColor: config.titleColor, linksColor: config.linksColor,
         btnActiveFrom: config.btnActiveFrom, btnActiveTo: config.btnActiveTo,
-        btnTextColor: config.btnTextColor, slotStyle: config.slotStyle,
+        btnTextColor: config.btnTextColor, slotBtnText: config.slotBtnText, slotStyle: config.slotStyle,
       }
       setBannerUrl((await drawSlotBannerCanvas(sc, pcs)).toDataURL())
     } catch {}

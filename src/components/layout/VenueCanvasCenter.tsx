@@ -16,16 +16,19 @@ const HEADER_SIZES: { key: VenueHeaderSize; h: number }[] = [
   { key: '274', h: 274 },
 ]
 
-// slot 预览热区（标题文案 / 奖品图）
+// slot 预览热区（标题文案 / 奖品图 / 抽奖按钮）
+// 坐标基于 img 元素（750×242 画布），不含外层 padding
 const SLOT_ZONES: { id: string; label: string; top: string; left: string; w: string; h: string }[] = [
-  { id: 'text',  label: '标题文案', top: '4%',  left: '3%',  w: '31%', h: '26%' },
-  { id: 'prize', label: '奖品图',   top: '29%', left: '5%',  w: '58%', h: '62%' },
+  { id: 'text',   label: '标题文案', top: '4%',  left: '3%',  w: '31%', h: '26%' },
+  { id: 'prize',  label: '奖品图',   top: '29%', left: '5%',  w: '58%', h: '62%' },
+  { id: 'button', label: '按钮文案', top: '29%', left: '64%', w: '31%', h: '63%' },
 ]
 
 // coupon 预览热区（主文案 / 按钮文案）
+// 坐标基于 img 元素（702×352 画布），不含外层 padding
 const COUPON_ZONES: { id: string; label: string; top: string; left: string; w: string; h: string }[] = [
-  { id: 'title', label: '主文案', top: '5%',  left: '4%', w: '88%', h: '22%' },
-  { id: 'btn',   label: '按钮',   top: '73%', left: '6%', w: '88%', h: '22%' },
+  { id: 'title', label: '主文案', top: '5%',  left: '5%', w: '82%', h: '23%' },
+  { id: 'btn',   label: '按钮',   top: '73%', left: '8%', w: '84%', h: '20%' },
 ]
 
 // 缩放级别（由 VenuePage 顶栏统一控制，通过 props 传入）
@@ -309,6 +312,7 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
                   if (isSlot) {
                     if      (xPct >= 3  && xPct <= 34 && yPct >= 4  && yPct <= 30) zone = 'text'
                     else if (xPct >= 5  && xPct <= 63 && yPct >= 29 && yPct <= 91) zone = 'prize'
+                    else if (xPct >= 64 && xPct <= 96 && yPct >= 29 && yPct <= 92) zone = 'button'
                   } else if (isCoupon) {
                     if      (yPct >= 5  && yPct <= 27) zone = 'title'
                     else if (yPct >= 73 && yPct <= 95) zone = 'btn'
@@ -341,7 +345,9 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
                     position: 'relative',
                   }}
                 >
-                  <div style={{ padding: `0 ${pad}px`, background: bgColor, position: 'relative' }}>
+                  <div style={{ padding: `0 ${pad}px`, background: bgColor }}>
+                    {/* position:relative 独立包裹 img，让热区坐标以 img 为基准（不含 padding 偏移）*/}
+                    <div style={{ position: 'relative' }}>
                     <img
                       src={item.previewUrl} alt={item.label}
                       draggable={false}
@@ -383,6 +389,7 @@ export default function VenueCanvasCenter({ selectedLayer, onSelectLayer, onZone
                         })}
                       </>
                     )}
+                    </div>{/* end position:relative img wrapper */}
                   </div>
 
                   {/* 选中标签（单击蓝色，双击黄色） */}

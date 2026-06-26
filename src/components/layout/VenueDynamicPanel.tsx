@@ -44,6 +44,29 @@ function PLoader() {
   )
 }
 
+// ── 老虎机按钮文案内联编辑（模块顶层）────────────────────────────────────────
+function SlotBtnZoneInline() {
+  const { config, setConfig } = useSlot()
+  const inp = {
+    width: '100%', boxSizing: 'border-box' as const,
+    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: 8, padding: '7px 10px', fontSize: 12,
+    color: '#ebe9fc', outline: 'none',
+  }
+  return (
+    <div>
+      <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.3)',
+        textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>按钮文案</div>
+      <input style={inp} value={config.slotBtnText} maxLength={8}
+        onChange={e => setConfig({ slotBtnText: e.target.value })}
+        placeholder="立即抽奖" />
+      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>
+        默认：立即抽奖（最多 8 字）
+      </div>
+    </div>
+  )
+}
+
 // ── 红包热区内联编辑（模块顶层，防 re-mount 失焦）────────────────────────────
 function CouponZoneInline({ zone }: { zone: string }) {
   const { config, setTitleText, setBtnText } = useCoupon()
@@ -341,7 +364,7 @@ function ComponentPreviewCard({ compId }: { compId: ComponentId }) {
           slotRect7From: slot.slotRect7From, slotRect7To: slot.slotRect7To,
           titleText: slot.titleText, titleColor: slot.titleColor, linksColor: slot.linksColor,
           btnActiveFrom: slot.btnActiveFrom, btnActiveTo: slot.btnActiveTo,
-          btnTextColor: slot.btnTextColor, slotStyle: slot.slotStyle,
+          btnTextColor: slot.btnTextColor, slotBtnText: slot.slotBtnText, slotStyle: slot.slotStyle,
         }
         if (compId === 'slot') {
           const pcs = await Promise.all(slot.prizes.map((p, i) => drawPrizeCanvas(p as PrizeInfo, slot.prizeTransforms[i] as XfTransform, slot.slotStyle)))
@@ -523,7 +546,7 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
   const activeCompId: ComponentId | null = pendingComp ?? selectedItem?.componentId ?? null
 
   const ZONE_LABEL: Record<string, string> = {
-    text: '标题文案', prize: '奖品图设置',
+    text: '标题文案', prize: '奖品图设置', button: '按钮文案',
     title: '主文案',  btn: '按钮文案',
   }
   const isZoneMode = !!(activeZone && (selectedItem?.componentId === 'slot' || selectedItem?.componentId === 'coupon'))
@@ -586,8 +609,9 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
             {selectedItem.componentId === 'slot' && activeZone ? (
               <div className="pt-2">
                 <div className="px-4 py-2">
-                  {activeZone === 'text'  && <InlineSlotTextConfig />}
-                  {activeZone === 'prize' && <InlineSlotPrizeConfig />}
+                  {activeZone === 'text'   && <InlineSlotTextConfig />}
+                  {activeZone === 'prize'  && <InlineSlotPrizeConfig />}
+                  {activeZone === 'button' && <SlotBtnZoneInline />}
                 </div>
               </div>
             ) : selectedItem.componentId === 'coupon' && activeZone ? (
@@ -600,7 +624,7 @@ export default function VenueDynamicPanel({ selectedLayer, pendingComp, activeZo
                 {selectedItem.componentId === 'slot' && (
                   <div className="py-2">
                     <div className="px-4 pt-2 pb-1 text-[10px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
-                      双击预览标题/奖品图可精准配置
+                      双击预览标题 / 奖品图 / 按钮可精准配置
                     </div>
                     <div className="px-4 space-y-1">
                       <InlineConfigSection label="配色预设" badge="风格" defaultOpen>
