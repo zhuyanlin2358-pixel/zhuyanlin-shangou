@@ -2,6 +2,7 @@
  * 楼层条配置面板（读写 FloorContext）
  * 注意：所有子组件必须定义在模块顶层，不得在 FloorPanel 函数体内嵌套，避免 re-mount 导致失焦。
  */
+import type { CSSProperties } from 'react'
 import {
   PF, ColorField, DisclosureGroup,
 } from '@/components/ui/PanelField'
@@ -24,6 +25,30 @@ const DECO_STYLE_OPTIONS: { value: FloorDecoStyle; label: string }[] = [
   { value: 'heart', label: '爱心（情人节）' },
   { value: 'coin',  label: '钱币（年货节）' },
 ]
+
+// ── 文案输入（模块顶层，防 re-mount 失焦）─────────────────────────────────
+function FloorTextSection() {
+  const { floors, updateFloor } = useFloor()
+  const item = floors[0]
+  const inp: CSSProperties = {
+    width: '100%', boxSizing: 'border-box',
+    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: 8, padding: '7px 10px', fontSize: 12,
+    color: '#ebe9fc', outline: 'none',
+  }
+  return (
+    <div className="px-4 pb-3">
+      <input style={inp}
+        value={item?.text ?? ''}
+        maxLength={20}
+        onChange={e => item && updateFloor(item.id, e.target.value)}
+        placeholder="领好店券 下单更优惠" />
+      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>
+        默认：领好店券 下单更优惠
+      </div>
+    </div>
+  )
+}
 
 // ── 主面板 ───────────────────────────────────────────────────────────────────
 export default function FloorPanel() {
@@ -49,7 +74,12 @@ export default function FloorPanel() {
         </div>
       </DisclosureGroup>
 
-      {/* ② 预览背景色（导出始终透明底，背景色仅用于页面预览） */}
+      {/* ② 文案设置 */}
+      <DisclosureGroup title="文案设置" defaultOpen>
+        <FloorTextSection />
+      </DisclosureGroup>
+
+      {/* ④ 预览背景色（导出始终透明底，背景色仅用于页面预览） */}
       <DisclosureGroup title="预览背景色" defaultOpen>
         <div className="px-4 pb-3 space-y-3">
           <p className="text-[10px] text-white/30 leading-snug">
@@ -80,7 +110,7 @@ export default function FloorPanel() {
         </div>
       </DisclosureGroup>
 
-      {/* ③ 文字颜色 */}
+      {/* ⑤ 文字颜色 */}
       <DisclosureGroup title="文字颜色" defaultOpen>
         <div className="px-4 pb-3">
           <ColorField
@@ -91,7 +121,7 @@ export default function FloorPanel() {
         </div>
       </DisclosureGroup>
 
-      {/* ④ 装饰图形 */}
+      {/* ⑥ 装饰图形 */}
       <DisclosureGroup title="装饰图形" badge={config.showDeco ? '开' : '关'}>
         <div className="px-4 pb-3 space-y-3">
           {/* 开关 */}

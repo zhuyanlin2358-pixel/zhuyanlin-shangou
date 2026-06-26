@@ -277,6 +277,146 @@ function CouponRightPanel({ activeLayer }: { activeLayer: string | null }) {
   )
 }
 
+// ── 楼层条素材面板 ────────────────────────────────────────────────────────────
+function FloorAssetPanel() {
+  const { config, floors } = useFloor()
+  const [previewUrl, setPreviewUrl] = useState('')
+  const text = floors[0]?.text || '领好店券 下单更优惠'
+
+  useEffect(() => {
+    let cancelled = false
+    setPreviewUrl('')
+    preloadFonts()
+      .then(() => drawFloorCanvas({ ...config, text }))
+      .then(c => { if (!cancelled) setPreviewUrl(c.toDataURL()) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config, floors])
+
+  const handleDownload = async () => {
+    try {
+      await preloadFonts()
+      const c = await drawFloorCanvas({ ...config, text })
+      downloadCanvas(c, `楼层条_${config.variant}_750x60.png`)
+    } catch {}
+  }
+
+  return (
+    <div>
+      <div style={{
+        margin: '12px 16px 0', borderRadius: 10, overflow: 'hidden',
+        background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+        minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {previewUrl ? (
+          <img src={previewUrl} alt="楼层条"
+            style={{ width: '100%', height: 'auto', display: 'block' }} />
+        ) : (
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', padding: 12 }}>渲染中…</div>
+        )}
+      </div>
+      <div style={{ padding: '12px 16px' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#ebe9fc', marginBottom: 4 }}>楼层条</div>
+        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 12 }}>750 × 60 px · PNG</div>
+        <button onClick={handleDownload} style={{
+          width: '100%', padding: '8px 0', borderRadius: 8, cursor: 'pointer',
+          background: 'var(--sl-primary-grad)', color: 'var(--sl-cta-text)',
+          border: 'none', fontSize: 12, fontWeight: 700,
+        }}>↓ 导出此素材</button>
+      </div>
+    </div>
+  )
+}
+
+// ── 楼层条右侧面板 ────────────────────────────────────────────────────────────
+function FloorRightPanel({ activeLayer }: { activeLayer: string | null }) {
+  return (
+    <div>
+      {activeLayer === 'export' && (
+        <>
+          <FloorAssetPanel />
+          <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0 0' }} />
+        </>
+      )}
+      <Suspense fallback={<Loader />}>
+        <FloorPanel />
+      </Suspense>
+    </div>
+  )
+}
+
+// ── Tab 素材面板 ───────────────────────────────────────────────────────────────
+function HTabAssetPanel() {
+  const { config, items } = useHTab()
+  const tabs = items[0]?.tabs ?? ['Tab 1', 'Tab 2', 'Tab 3']
+  const [previewUrl, setPreviewUrl] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    setPreviewUrl('')
+    drawHTabCanvas({ colorKey: config.colorKey, tabs, activeIndex: 0 })
+      .then(c => { if (!cancelled) setPreviewUrl(c.toDataURL()) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.colorKey, items])
+
+  const tabW = tabs.length === 2 ? '336' : tabs.length === 3 ? '226' : '180'
+
+  const handleDownload = async () => {
+    try {
+      const c = await drawHTabCanvas({ colorKey: config.colorKey, tabs, activeIndex: 0 })
+      downloadCanvas(c, `横滑Tab_${config.colorKey}_${tabs.length}tab_${tabW}x88.png`)
+    } catch {}
+  }
+
+  return (
+    <div>
+      <div style={{
+        margin: '12px 16px 0', borderRadius: 10, overflow: 'hidden',
+        background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+        minHeight: 60, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {previewUrl ? (
+          <img src={previewUrl} alt="Tab切图"
+            style={{ maxWidth: '100%', height: 'auto', display: 'block' }} />
+        ) : (
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', padding: 12 }}>渲染中…</div>
+        )}
+      </div>
+      <div style={{ padding: '12px 16px' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#ebe9fc', marginBottom: 4 }}>Tab 切图</div>
+        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 12 }}>
+          {tabW} × 88 px · PNG
+        </div>
+        <button onClick={handleDownload} style={{
+          width: '100%', padding: '8px 0', borderRadius: 8, cursor: 'pointer',
+          background: 'var(--sl-primary-grad)', color: 'var(--sl-cta-text)',
+          border: 'none', fontSize: 12, fontWeight: 700,
+        }}>↓ 导出此素材</button>
+      </div>
+    </div>
+  )
+}
+
+// ── Tab 右侧面板 ───────────────────────────────────────────────────────────────
+function HTabRightPanel({ activeLayer }: { activeLayer: string | null }) {
+  return (
+    <div>
+      {activeLayer === 'export' && (
+        <>
+          <HTabAssetPanel />
+          <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0 0' }} />
+        </>
+      )}
+      <Suspense fallback={<Loader />}>
+        <HTabPanel />
+      </Suspense>
+    </div>
+  )
+}
+
 // ── 工具函数 ──────────────────────────────────────────────────────────────────
 function Ic(d: string) {
   return (
@@ -424,11 +564,9 @@ export default function ComponentStudio({ compId, onBack }: Props) {
             </span>
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            <Suspense fallback={<Loader />}>
-              {compId === 'floor'  && <FloorPanel />}
-              {compId === 'h-tab'  && <HTabPanel />}
-              {compId === 'coupon' && <CouponRightPanel activeLayer={activeLayer} />}
-            </Suspense>
+            {compId === 'floor'  && <FloorRightPanel  activeLayer={activeLayer} />}
+            {compId === 'h-tab'  && <HTabRightPanel   activeLayer={activeLayer} />}
+            {compId === 'coupon' && <CouponRightPanel  activeLayer={activeLayer} />}
           </div>
         </div>
       </div>
