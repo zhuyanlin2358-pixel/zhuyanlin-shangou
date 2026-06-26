@@ -46,7 +46,7 @@ const COMP_META: Record<string, {
     layers: [
       { id: 'style',  label: '款式配色', sub: '7种配色' },
       { id: 'tabs',   label: 'Tab 文案', sub: '各 Tab 名称' },
-      { id: 'export', label: 'Tab 切图', sub: '2/3/4 Tab' },
+      { id: 'export', label: 'Tab 数量', sub: '2/3/4 Tab' },
     ],
   },
   coupon: {
@@ -413,7 +413,7 @@ function HTabRightPanel({ activeLayer }: { activeLayer: string | null }) {
         </>
       )}
       <Suspense fallback={<Loader />}>
-        <HTabPanel />
+        <HTabPanel activeLayer={activeLayer} />
       </Suspense>
     </div>
   )
@@ -429,7 +429,7 @@ function Ic(d: string) {
   )
 }
 
-const ZOOM_LEVELS = [50, 75, 100, 150] as const
+const ZOOM_LEVELS = [75, 100, 150] as const
 type ZoomLevel = typeof ZOOM_LEVELS[number]
 
 // ── 主组件 ────────────────────────────────────────────────────────────────────

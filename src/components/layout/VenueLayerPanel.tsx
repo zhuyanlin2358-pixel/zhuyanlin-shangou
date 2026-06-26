@@ -23,7 +23,7 @@ function DeleteBtn({ onClick }: { onClick: (e: React.MouseEvent) => void }) {
       title="从画布移除"
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        width: 20, height: 20, borderRadius: 5, flexShrink: 0,
+        width: 20, height: 20, borderRadius: 6, flexShrink: 0,
         background: 'rgba(239,68,68,0.1)',
         color: 'rgba(239,68,68,0.65)',
         border: 'none', cursor: 'pointer',
