@@ -679,8 +679,8 @@ export default function SlotStudio({ onBack }: { onBack: () => void }) {
       <div className="flex items-center gap-3 px-5 h-14 shrink-0 border-b"
         style={{ background: 'var(--sl-panel)', borderColor: 'var(--sl-border)', boxShadow: 'var(--shadow-topbar)', zIndex: 10, position: 'relative' }}>
         <button onClick={onBack}
-          className="flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-xl hover:opacity-90"
-          style={{ background: 'var(--sl-primary-grad)', color: 'var(--sl-cta-text)', border: 'none', cursor: 'pointer' }}>
+          className="flex items-center gap-2 px-4 py-1.5 text-xs font-bold hover:opacity-90"
+          style={{ background: 'var(--sl-primary-grad)', color: 'var(--sl-cta-text)', border: 'none', cursor: 'pointer', borderRadius: 10 }}>
           <Icons.back /> 完成并返回画布
         </button>
         <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)' }} />

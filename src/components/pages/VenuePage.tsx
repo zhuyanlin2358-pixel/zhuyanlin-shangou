@@ -269,8 +269,8 @@ export default function VenuePage() {
         }}>
           <button
             onClick={goDelivery}
-            className="flex items-center gap-2 text-[12px] font-bold rounded-xl transition-all hover:opacity-90"
-            style={{ background: 'var(--sl-primary-grad)', color: 'var(--sl-cta-text)', padding: '7px 16px', border: 'none', cursor: 'pointer' }}
+            className="flex items-center gap-2 text-[12px] font-bold transition-all hover:opacity-90"
+            style={{ background: 'var(--sl-primary-grad)', color: 'var(--sl-cta-text)', padding: '7px 16px', border: 'none', cursor: 'pointer', borderRadius: 10 }}
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>

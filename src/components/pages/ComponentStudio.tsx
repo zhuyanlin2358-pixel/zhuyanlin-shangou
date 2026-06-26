@@ -455,7 +455,7 @@ export default function ComponentStudio({ compId, onBack }: Props) {
       }}>
         <button onClick={onBack} style={{
           display: 'flex', alignItems: 'center', gap: 8, padding: '6px 16px',
-          fontSize: 12, fontWeight: 700, borderRadius: 12, color: 'var(--sl-cta-text)',
+          fontSize: 12, fontWeight: 700, borderRadius: 10, color: 'var(--sl-cta-text)',
           background: 'var(--sl-primary-grad)', border: 'none', cursor: 'pointer',
         }}>
           {Ic('M10 4L6 8l4 4')}
