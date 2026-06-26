@@ -21,6 +21,7 @@ export default defineConfig({
           'vendor-gsap':   ['gsap'],
           'vendor-ui':     ['@headlessui/react', 'lucide-react'],
           'vendor-jszip':  ['jszip'],
+          'vendor-ogl':    ['ogl'],      // Aurora WebGL，懒加载后独立 chunk
         },
       },
     },

@@ -11,9 +11,8 @@ export interface SceneTemplate {
   tag: string           // 角标标签（大促 / 日常 / 节日）
   themeKey: string      // 对应 GLOBAL_THEMES 的 key
   components: ComponentId[]  // 按顺序加入画布
-  bgColor: string       // 首页卡片背景渐变起色
+  bgColor: string       // 首页卡片色条颜色
   bgColor2: string      // 渐变终色
-  emoji: string         // 卡片图标
 }
 
 export const SCENE_TEMPLATES: SceneTemplate[] = [
@@ -26,7 +25,6 @@ export const SCENE_TEMPLATES: SceneTemplate[] = [
     components: ['slot', 'floor', 'h-tab', 'coupon'],
     bgColor: '#FF3048',
     bgColor2: '#FF6B6B',
-    emoji: '🎰',
   },
   {
     key: 'daily-coupon',
@@ -37,7 +35,6 @@ export const SCENE_TEMPLATES: SceneTemplate[] = [
     components: ['coupon', 'floor'],
     bgColor: '#FFD000',
     bgColor2: '#FFA203',
-    emoji: '🎁',
   },
   {
     key: 'category-tab',
@@ -48,7 +45,6 @@ export const SCENE_TEMPLATES: SceneTemplate[] = [
     components: ['h-tab', 'floor'],
     bgColor: '#0598FE',
     bgColor2: '#06AFFE',
-    emoji: '📑',
   },
   {
     key: 'holiday-full',
@@ -59,6 +55,5 @@ export const SCENE_TEMPLATES: SceneTemplate[] = [
     components: ['slot', 'coupon'],
     bgColor: '#F952FF',
     bgColor2: '#FF443C',
-    emoji: '🎉',
   },
 ]

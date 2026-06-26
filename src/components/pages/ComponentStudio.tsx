@@ -86,12 +86,8 @@ function useCanvasPreview(compId: ComponentId, activeLayer: string | null) {
             colorKey: hTabCfg.colorKey, tabs: hi?.tabs ?? ['Tab 1', 'Tab 2'], activeIndex: 0,
           })
         } else if (compId === 'coupon') {
-          // 按选中图层渲染对应素材
-          if (activeLayer === 'bg')     canvas = await drawCouponBg(couponCfg)
-          else if (activeLayer === 'waist')  canvas = await drawCouponWaistband(couponCfg)
-          else if (activeLayer === 'btn')    canvas = await drawCouponButton(couponCfg)
-          else if (activeLayer === 'single') canvas = await drawCouponSingleBg(couponCfg)
-          else                               canvas = await drawCouponPreview(couponCfg)
+          // 中间画布始终显示完整预览（与老虎机一致）
+          canvas = await drawCouponPreview(couponCfg)
         }
         if (canvas) setUrl(canvas.toDataURL())
       } catch {}
@@ -176,6 +172,7 @@ function CouponTextPanel() {
 // ── 红包素材图层面板（bg / waist / btn / single）──────────────────────────────
 function CouponAssetPanel({ layer }: { layer: string }) {
   const { config } = useCoupon()
+  const [previewUrl, setPreviewUrl] = useState('')
 
   const META: Record<string, { label: string; size: string; fn: () => Promise<HTMLCanvasElement>; filename: string }> = {
     bg:     { label: '领取前无tab-背景图', size: '702 × 352 px', fn: () => drawCouponBg(config),       filename: `券红包_${COUPON_COLORS[config.colorKey].name}_领取前无tab背景图_702x352.png` },
@@ -185,6 +182,17 @@ function CouponAssetPanel({ layer }: { layer: string }) {
   }
 
   const m = META[layer]
+
+  // 右侧顶部预览图（与老虎机风格一致）
+  useEffect(() => {
+    if (!m) return
+    let cancelled = false
+    setPreviewUrl('')
+    m.fn().then(c => { if (!cancelled) setPreviewUrl(c.toDataURL()) }).catch(() => {})
+    return () => { cancelled = true }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [layer, config.colorKey, config.titleText, config.btnText])
+
   if (!m) return null
 
   const handleDownload = async () => {
@@ -192,26 +200,36 @@ function CouponAssetPanel({ layer }: { layer: string }) {
   }
 
   return (
-    <div style={{ padding: '16px' }}>
-      <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.3)',
-        textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>素材信息</div>
+    <div>
+      {/* 素材预览图（右侧顶部，与老虎机配置预览位置一致）*/}
       <div style={{
-        background: 'rgba(255,255,255,0.04)', borderRadius: 10,
-        border: '1px solid rgba(255,255,255,0.08)', padding: '14px',
-        display: 'flex', flexDirection: 'column', gap: 8,
+        margin: '12px 16px 0',
+        borderRadius: 10, overflow: 'hidden',
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        minHeight: 72, display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#ebe9fc' }}>{m.label}</div>
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>{m.size} · PNG</div>
+        {previewUrl ? (
+          <img src={previewUrl} alt={m.label}
+            style={{ width: '100%', height: 'auto', display: 'block' }} />
+        ) : (
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', padding: 12 }}>渲染中…</div>
+        )}
+      </div>
+
+      {/* 素材信息 + 下载 */}
+      <div style={{ padding: '12px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: '#ebe9fc' }}>{m.label}</div>
+        </div>
+        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 12 }}>{m.size} · PNG</div>
         <button onClick={handleDownload} style={{
-          marginTop: 4, padding: '8px 0', borderRadius: 8, cursor: 'pointer',
+          width: '100%', padding: '8px 0', borderRadius: 8, cursor: 'pointer',
           background: 'var(--sl-primary-grad)', color: 'var(--sl-cta-text)',
           border: 'none', fontSize: 12, fontWeight: 700,
         }}>
           ↓ 导出此素材
         </button>
-      </div>
-      <div style={{ marginTop: 12, fontSize: 12, color: 'rgba(255,255,255,0.2)', lineHeight: 1.6 }}>
-        左侧图层对应画布已切换至当前素材预览。
       </div>
     </div>
   )
@@ -219,22 +237,42 @@ function CouponAssetPanel({ layer }: { layer: string }) {
 
 // ── 红包配置右面板（根据 activeLayer 切换内容）────────────────────────────────
 function CouponRightPanel({ activeLayer }: { activeLayer: string | null }) {
-  if (activeLayer === 'color')  return <CouponColorPanel />
-  if (activeLayer === 'text')   return <CouponTextPanel />
-  if (activeLayer === 'bg' || activeLayer === 'waist' || activeLayer === 'btn' || activeLayer === 'single')
-    return <CouponAssetPanel layer={activeLayer} />
-  // 默认：全部展开（颜色 + 文案）
+  const isAsset = activeLayer === 'bg' || activeLayer === 'waist' || activeLayer === 'btn' || activeLayer === 'single'
+
   return (
     <div>
-      <div style={{ padding: '10px 16px 0',
-        fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.25)',
-        textTransform: 'uppercase', letterSpacing: '0.1em' }}>款式配色</div>
-      <CouponColorPanel />
-      <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0 16px' }} />
-      <div style={{ padding: '10px 16px 0',
-        fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.25)',
-        textTransform: 'uppercase', letterSpacing: '0.1em' }}>文案设置</div>
-      <CouponTextPanel />
+      {/* 素材层：顶部显示该素材预览 + 导出，下面跟配置 */}
+      {isAsset && (
+        <>
+          <CouponAssetPanel layer={activeLayer!} />
+          <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0 0' }} />
+        </>
+      )}
+
+      {/* 配色 */}
+      {(activeLayer === 'color' || activeLayer === null || isAsset) && (
+        <>
+          <div style={{ padding: '10px 16px 0',
+            fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.25)',
+            textTransform: 'uppercase', letterSpacing: '0.1em' }}>款式配色</div>
+          <CouponColorPanel />
+        </>
+      )}
+
+      {/* 分割线 */}
+      {(activeLayer === null || isAsset) && (
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0 16px' }} />
+      )}
+
+      {/* 文案 */}
+      {(activeLayer === 'text' || activeLayer === null || isAsset) && (
+        <>
+          <div style={{ padding: '10px 16px 0',
+            fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.25)',
+            textTransform: 'uppercase', letterSpacing: '0.1em' }}>文案设置</div>
+          <CouponTextPanel />
+        </>
+      )}
     </div>
   )
 }

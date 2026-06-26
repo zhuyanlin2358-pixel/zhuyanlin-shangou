@@ -1,7 +1,10 @@
+import { lazy, Suspense } from 'react'
 import { useApp } from '@/contexts/AppContext'
-import Aurora    from '@/components/ui/Aurora'
 import TiltedCard from '@/components/ui/TiltedCard'
 import { SCENE_TEMPLATES } from '@/utils/sceneTemplates'
+
+// Aurora WebGL 懒加载 — 不阻塞首次渲染，背景在内容之后出现
+const Aurora = lazy(() => import('@/components/ui/Aurora'))
 
 export default function HomePage() {
   const { goVenue, goStudio, setPendingTemplate } = useApp()
@@ -14,14 +17,16 @@ export default function HomePage() {
   return (
     <div style={{ minHeight: '100vh', width: '100%', position: 'relative', overflow: 'hidden', background: '#08010f' }}>
 
-      {/* ── Aurora 全屏背景 ── */}
+      {/* ── Aurora 全屏背景（懒加载，不阻塞内容渲染）── */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-        <Aurora
-          colorStops={['#ffe100', '#8449ff', '#ff27b2']}
-          amplitude={1.0}
-          blend={1.0}
-          speed={0.8}
-        />
+        <Suspense fallback={null}>
+          <Aurora
+            colorStops={['#ffe100', '#8449ff', '#ff27b2']}
+            amplitude={1.0}
+            blend={1.0}
+            speed={0.8}
+          />
+        </Suspense>
       </div>
 
       {/* ── 内容层 ── */}
@@ -179,7 +184,7 @@ export default function HomePage() {
                 }} />
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{t.emoji} {t.name}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{t.name}</span>
                     <span style={{
                       fontSize: 10, padding: '1px 5px', borderRadius: 3,
                       background: `${t.bgColor}22`, color: t.bgColor,
