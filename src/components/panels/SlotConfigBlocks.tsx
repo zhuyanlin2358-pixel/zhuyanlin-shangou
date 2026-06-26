@@ -60,7 +60,7 @@ export function PresetGrid({ keys, active, onSelect }: {
 
 /* ── 风格 + 配色预设（Section 1 下方）── */
 export function SlotColorConfig() {
-  const { config, activePreset, setConfig, applyPreset } = useSlot()
+  const { activePreset, applyPreset } = useSlot()
   const { bgColor: venueBgColor } = useVenue()
 
   const darkBgSet  = new Set(BG_SWATCHES_DARK)

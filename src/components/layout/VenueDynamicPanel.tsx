@@ -18,7 +18,6 @@ import { useFloor }  from '@/contexts/FloorContext'
 import { useHTab }   from '@/contexts/HTabContext'
 import { useCoupon } from '@/contexts/CouponContext'
 import { useSlot }   from '@/contexts/SlotContext'
-import { useApp }    from '@/contexts/AppContext'
 import type { ComponentId, VenueHeaderSize, VenueItem, HTabColorKey } from '@/types'
 import { H_TAB_COLORS } from '@/types'
 import {
@@ -26,7 +25,6 @@ import {
   drawSlotBannerCanvas, drawPrizeCanvas, preloadFonts,
 } from '@/utils/exportUtils'
 import type { PrizeInfo, XfTransform, BannerConfig } from '@/utils/exportUtils'
-import type { SlotConfig } from '@/types'
 import {
   SlotColorConfig  as InlineSlotColorConfig,
   SlotTextConfig   as InlineSlotTextConfig,
@@ -226,86 +224,6 @@ function PageSettings() {
         </div>
       </div>
     </div>
-  )
-}
-
-// ── 「加入会场」按钮（pending 状态）─────────────────────────────────────────
-function AddToCanvasButton({ compId, onDone }: { compId: ComponentId; onDone: () => void }) {
-  const { addItem, items } = useVenue()
-  const { config: floorCfg, floors } = useFloor()
-  const { config: hTabCfg, items: hTabItems } = useHTab()
-  const { config: couponCfg } = useCoupon()
-  const { config: slotCfg } = useSlot()
-  const { showToast } = useApp()
-  const [loading, setLoading] = useState(false)
-
-  // 已加入判断
-  const isAdded = items.some(it => it.componentId === compId)
-
-  const handle = async () => {
-    setLoading(true)
-    try {
-      let url = ''; let label = ''; let origH = 100
-      switch (compId) {
-        case 'floor': {
-          const fi = floors[0]
-          if (!fi) { showToast('请先在楼层配置里添加至少一条楼层'); setLoading(false); return }
-          url   = await genFloorUrl({ ...floorCfg, text: fi.text })
-          label = fi.text || '楼层条'
-          origH = 60
-          addItem({ componentId: 'floor', label, previewUrl: url, origW: 750, origH, sourceId: fi.id })
-          showToast(`✅ 「${label}」已加入会场`)
-          break
-        }
-        case 'h-tab': {
-          const hi = hTabItems[0]
-          if (!hi) { showToast('请先配置 Tab 内容'); setLoading(false); return }
-          const tabCount = items.filter(it => it.componentId === 'h-tab').length
-          label = `Tab ${tabCount + 1}`
-          url   = await genHTabUrl({ colorKey: hTabCfg.colorKey, tabs: hi.tabs, activeIndex: 0 })
-          origH = 88
-          addItem({ componentId: 'h-tab', label, previewUrl: url, origW: 750, origH, sourceId: hi.id })
-          showToast(`✅ 「${label}」已加入会场`)
-          break
-        }
-        case 'coupon': {
-          url   = await genCouponUrl(couponCfg)
-          label = '一键领券红包'
-          origH = 352
-          addItem({ componentId: 'coupon', label, previewUrl: url, origW: 702, origH })
-          showToast('✅ 「一键领券红包」已加入会场')
-          break
-        }
-        case 'slot': {
-          url   = await genSlotUrl(slotCfg)
-          label = '老虎机'
-          origH = 242
-          addItem({ componentId: 'slot', label, previewUrl: url, origW: 750, origH })
-          showToast('✅ 「老虎机」已加入会场')
-          break
-        }
-      }
-      onDone()
-    } catch (e) {
-      showToast('预览生成失败，请重试')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <button
-      onClick={handle}
-      disabled={loading}
-      className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-semibold rounded-xl transition-all"
-      style={{
-        background: loading ? 'rgba(250,217,0,0.2)' : 'var(--sl-primary-grad)',
-        color: loading ? 'rgba(235,233,252,0.4)' : 'var(--sl-cta-text)',
-        border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
-      }}
-    >
-      {loading ? '生成预览中…' : isAdded ? '再次加入会场' : '加入会场'}
-    </button>
   )
 }
 

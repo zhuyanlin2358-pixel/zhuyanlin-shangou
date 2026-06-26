@@ -575,7 +575,7 @@ export default function DeliveryPage() {
   }, [showToast])
 
   // 为每个 VenueItem 构建素材列表（id = `${item.id}_${label}` 用于选中跟踪）
-  const buildAssets = useCallback((item: typeof items[0]) => {
+  const buildAssets = useCallback((item: typeof items[0]): { assetList: AssetDef[]; downloadAll: () => Promise<void> } => {
     const mk = (label: string) => `${item.id}_${label}`  // 生成唯一 id
 
     const slot = slotCtx.config
@@ -715,7 +715,7 @@ export default function DeliveryPage() {
       return { assetList, downloadAll }
     }
 
-    return { assetList: [] as Parameters<typeof AssetRow>[], downloadAll: async () => {} }
+    return { assetList: [] as AssetDef[], downloadAll: async () => {} }
   }, [slotCtx, couponCtx, hTabCtx, floorCtx])
 
   // ── 选中状态：正向集合，默认空（用户手动选择）────────────────────────────────
