@@ -62,7 +62,7 @@ const Icons = {
 
 // ── 层级定义 ───────────────────────────────────────────────────────────────────
 type LayerId = string   // 支持动态 prize1/prize2/... 任意数量
-interface Layer { id: string; label: string; sub: string; icon: ()=>JSX.Element; children?: Layer[] }
+interface Layer { id: string; label: string; sub: string; children?: Layer[] }
 
 
 // ── 画布行（预览图 + 名称 + 下载）─────────────────────────────────────────────
@@ -412,7 +412,6 @@ function LayerItem({ layer, selected, onSelect, depth, expanded, onToggle }: {
   const active  = selected === layer.id
   const hasKids = !!layer.children?.length
   const isOpen  = expanded.has(layer.id)
-  const Icon    = layer.icon
 
   return (
     <div>
@@ -422,11 +421,11 @@ function LayerItem({ layer, selected, onSelect, depth, expanded, onToggle }: {
         onMouseLeave={() => setHovered(false)}
         className="relative flex items-center gap-2 select-none cursor-pointer"
         style={{
-          height: 36,
+          height: 40,
           paddingLeft: 10 + depth * 16,
           paddingRight: 6,
           borderRadius: 8,
-          marginBottom: 1,
+          marginBottom: 3,
           background: active ? 'rgba(235,233,252,0.09)' : hovered ? 'rgba(255,255,255,0.05)' : 'transparent',
           color: active ? '#ebe9fc' : hovered ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.55)',
           transition: 'background 0.12s, color 0.12s',
@@ -453,11 +452,6 @@ function LayerItem({ layer, selected, onSelect, depth, expanded, onToggle }: {
             </svg>
           </motion.span>
         )}
-
-        {/* 图标 */}
-        <span style={{ flexShrink: 0, display: 'flex', opacity: active ? 1 : 0.45 }}>
-          <Icon />
-        </span>
 
         {/* 文字 */}
         <div className="flex-1 min-w-0">
@@ -637,20 +631,19 @@ export default function SlotStudio({ onBack }: { onBack: () => void }) {
 
   // 动态图层树（奖品子节点随 prizes 数量变化）
   const layers = useMemo<Layer[]>(() => [
-    { id:'bg',     label:'背景层',   sub:'渐变配色',       icon: Icons.bg     },
-    { id:'title',  label:'主标题',   sub:'文案 · 字色',    icon: Icons.title  },
-    { id:'drum',   label:'转盘区',   sub:`奖品图 × ${config.prizes.length}`, icon: Icons.drum,
+    { id:'bg',     label:'背景层',   sub:'渐变配色'                          },
+    { id:'title',  label:'主标题',   sub:'文案 · 字色'                       },
+    { id:'drum',   label:'转盘区',   sub:`奖品图 × ${config.prizes.length}`,
       children: config.prizes.map((p, i) => ({
         id: `prize${i + 1}`,
         label: `奖品图 ${i + 1}`,
         sub: p.tag || (p.type === 'thanks' ? '谢谢参与' : '商品图标'),
-        icon: Icons.image,
       }))
     },
-    { id:'button', label:'抽奖按钮', sub:'文案 · 渐变色', icon: Icons.button },
-    { id:'links',  label:'链接文字', sub:'奖品 · 规则',   icon: Icons.link   },
-    { id:'empty',  label:'空态页',   sub:'插图 · 文案',   icon: Icons.empty  },
-    { id:'dialog', label:'弹窗层',   sub:'结果页 · 按钮', icon: Icons.dialog },
+    { id:'button', label:'抽奖按钮', sub:'文案 · 渐变色'                     },
+    { id:'links',  label:'链接文字', sub:'奖品 · 规则'                       },
+    { id:'empty',  label:'空态页',   sub:'插图 · 文案'                       },
+    { id:'dialog', label:'弹窗层',   sub:'结果页 · 按钮'                     },
   ], [config.prizes])
 
   const buildBanner = useCallback(async () => {

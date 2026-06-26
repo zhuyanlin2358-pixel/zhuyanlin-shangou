@@ -89,9 +89,6 @@ export default function GlobalThemePills() {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', flexShrink: 0, letterSpacing: '0.05em' }}>
-        主题
-      </span>
       {GLOBAL_THEMES.map(t => (
         <button
           key={t.key}

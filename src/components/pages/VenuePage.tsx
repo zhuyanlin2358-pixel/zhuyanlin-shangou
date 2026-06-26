@@ -25,7 +25,7 @@ import { SCENE_TEMPLATES } from '@/utils/sceneTemplates'
 import { GLOBAL_THEMES }   from '@/utils/globalThemes'
 import { genFloorUrl, genHTabUrl, genCouponUrl, genSlotUrl } from '@/utils/venuePreviewUrls'
 
-const ZOOM_OPTS: ZoomOpt[] = [50, 75, 100, 125, 150]
+const ZOOM_OPTS: ZoomOpt[] = [75, 100, 150]
 
 // ── 场景方案库应用器（无 UI，监听 pendingTemplate 并异步执行）────────────────
 function TemplateApplier() {
