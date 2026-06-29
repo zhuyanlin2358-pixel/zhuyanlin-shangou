@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
-  base: process.env.GITHUB_ACTIONS ? '/zhuyanlin-tool/' : '/',
+  base: process.env.GITHUB_ACTIONS ? '/zhuyanlin-shangou/' : '/',
   plugins: [react()],
   resolve: {
     alias: {
