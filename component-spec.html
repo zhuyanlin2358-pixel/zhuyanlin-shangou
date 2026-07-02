@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>闪购工作台 · 组件接入规范</title>
+<style>
+:root {
+  --bg:      #010104;
+  --panel:   #08080e;
+  --surface: #0f0f1a;
+  --border:  rgba(235,233,252,0.07);
+  --text-1:  #ebe9fc;
+  --text-2:  rgba(235,233,252,0.60);
+  --text-3:  rgba(235,233,252,0.38);
+  --text-4:  rgba(235,233,252,0.20);
+  --yellow:  #fad900;
+  --orange:  #ffa203;
+  --grad:    linear-gradient(90deg, #fad900, #ffa203);
+  --green:   #4ade80;
+  --red:     rgba(239,68,68,0.8);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--text-1);
+  font-family: -apple-system, 'PingFang SC', sans-serif;
+  font-size: 14px; line-height: 1.6; padding: 48px 56px 80px;
+}
+h1 { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+.sub { color: var(--text-3); font-size: 13px; margin-bottom: 48px; }
+.sub a { color: var(--yellow); text-decoration: none; }
+
+h2 {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-4);
+  margin: 44px 0 18px;
+  padding-bottom: 10px; border-bottom: 1px solid var(--border);
+}
+.card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 14px; padding: 24px;
+}
+.step-row {
+  display: flex; align-items: flex-start; gap: 20px;
+  padding: 18px 20px; border-radius: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  margin-bottom: 10px;
+}
+.step-num {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: var(--grad); color: #1a0a00;
+  font-size: 13px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+.step-title { font-size: 14px; font-weight: 700; color: var(--text-1); margin-bottom: 4px; }
+.step-desc  { font-size: 12px; color: var(--text-3); line-height: 1.6; }
+
+code, .mono {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px; color: var(--yellow);
+  background: rgba(250,217,0,0.08);
+  padding: 1px 6px; border-radius: 4px;
+}
+.tag-required {
+  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px;
+  background: rgba(239,68,68,0.12); color: rgba(239,68,68,0.8);
+  border: 1px solid rgba(239,68,68,0.2); margin-left: 6px; vertical-align: middle;
+}
+.tag-optional {
+  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px;
+  background: rgba(255,255,255,0.05); color: var(--text-3);
+  border: 1px solid var(--border); margin-left: 6px; vertical-align: middle;
+}
+.tag-auto {
+  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px;
+  background: rgba(74,222,128,0.1); color: var(--green);
+  border: 1px solid rgba(74,222,128,0.2); margin-left: 6px; vertical-align: middle;
+}
+
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.1em; color: var(--text-4);
+  padding: 10px 14px; background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--border);
+}
+td {
+  padding: 12px 14px; border-bottom: 1px solid rgba(235,233,252,0.04);
+  font-size: 13px; vertical-align: top;
+}
+td:first-child { font-family: 'SF Mono', monospace; font-size: 12px; color: var(--yellow); }
+td.desc { color: var(--text-2); }
+td.example { color: var(--text-3); font-family: monospace; font-size: 11px; }
+
+pre {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px 24px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px; line-height: 1.8; color: var(--text-2);
+  overflow-x: auto; margin: 12px 0;
+}
+pre .k  { color: #c084fc; }  /* keyword */
+pre .s  { color: #86efac; }  /* string */
+pre .n  { color: var(--yellow); } /* name */
+pre .c  { color: var(--text-4); } /* comment */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.msg-row {
+  display: flex; align-items: baseline; gap: 12px;
+  padding: 10px 14px; border-radius: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+.msg-type { font-family: monospace; font-size: 12px; color: var(--yellow); min-width: 200px; }
+.msg-desc { font-size: 12px; color: var(--text-3); }
+
+.size-card {
+  padding: 16px 20px; border-radius: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  display: flex; align-items: center; gap: 16px;
+}
+.size-thumb {
+  flex-shrink: 0; border-radius: 4px;
+  background: rgba(250,217,0,0.08); border: 1px solid rgba(250,217,0,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; color: var(--yellow); font-family: monospace;
+}
+.checklist { list-style: none; }
+.checklist li { padding: 6px 0; font-size: 13px; color: var(--text-2); }
+.checklist li::before { content: '✓ '; color: var(--green); font-weight: 700; }
+.checklist li.warn::before { content: '! '; color: var(--orange); }
+
+.tip {
+  padding: 14px 18px; border-radius: 10px;
+  background: rgba(250,217,0,0.05); border: 1px solid rgba(250,217,0,0.12);
+  font-size: 12px; color: rgba(250,217,0,0.6); margin: 16px 0;
+}
+</style>
+</head>
+<body>
+
+<h1>组件接入规范</h1>
+<div class="sub">
+  闪购营销设计工作台 · v1.0 · 有问题找朱彦霖 ·
+  <a href="component-template.html">下载模板文件 →</a>
+</div>
+
+<!-- ── 流程 ── -->
+<h2>接入流程</h2>
+<div class="step-row">
+  <div class="step-num">1</div>
+  <div>
+    <div class="step-title">下载模板</div>
+    <div class="step-desc">复制 <code>component-template.html</code>，改成你自己的组件。模板里有完整注释，按提示填写即可。</div>
+  </div>
+</div>
+<div class="step-row">
+  <div class="step-num">2</div>
+  <div>
+    <div class="step-title">按规范开发</div>
+    <div class="step-desc">看下面的「必填信息」和「尺寸规范」，画布宽度统一 750px。颜色尽量用 config 接收，不要写死。</div>
+  </div>
+</div>
+<div class="step-row">
+  <div class="step-num">3</div>
+  <div>
+    <div class="step-title">发给朱彦霖</div>
+    <div class="step-desc">把 HTML 文件发过来，我来对接接入工具。你不需要懂 React，我会处理所有工程部分。</div>
+  </div>
+</div>
+<div class="step-row">
+  <div class="step-num">4</div>
+  <div>
+    <div class="step-title">更新迭代</div>
+    <div class="step-desc">接入后想改效果，直接改你的 HTML 重新发即可。接口不变的话工具侧基本不需要改动。</div>
+  </div>
+</div>
+
+<!-- ── 必填 meta 标签 ── -->
+<h2>必填 Meta 标签</h2>
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>标签</th><th>说明</th><th>示例值</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>sg-component</td>
+        <td class="desc">固定填 <code>true</code>，用于识别这是个工具组件 <span class="tag-required">必填</span></td>
+        <td class="example">true</td>
+      </tr>
+      <tr>
+        <td>sg-name</td>
+        <td class="desc">组件中文名，会显示在工具界面里 <span class="tag-required">必填</span></td>
+        <td class="example">头图动效</td>
+      </tr>
+      <tr>
+        <td>sg-id</td>
+        <td class="desc">组件英文 ID，小写 + 短横线，全局唯一 <span class="tag-required">必填</span></td>
+        <td class="example">header-anim</td>
+      </tr>
+      <tr>
+        <td>sg-canvas-width</td>
+        <td class="desc">画布宽度（px），通常固定 750 <span class="tag-required">必填</span></td>
+        <td class="example">750</td>
+      </tr>
+      <tr>
+        <td>sg-canvas-height</td>
+        <td class="desc">画布高度（px），见下方尺寸表 <span class="tag-required">必填</span></td>
+        <td class="example">424</td>
+      </tr>
+      <tr>
+        <td>sg-version</td>
+        <td class="desc">你的版本号，改动时递增 <span class="tag-optional">选填</span></td>
+        <td class="example">1.0.0</td>
+      </tr>
+      <tr>
+        <td>sg-author</td>
+        <td class="desc">你的名字 <span class="tag-optional">选填</span></td>
+        <td class="example">张三</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<pre>&lt;<span class="k">meta</span> <span class="n">name</span>=<span class="s">"sg-component"</span>    <span class="n">content</span>=<span class="s">"true"</span>&gt;
+&lt;<span class="k">meta</span> <span class="n">name</span>=<span class="s">"sg-name"</span>         <span class="n">content</span>=<span class="s">"头图动效"</span>&gt;
+&lt;<span class="k">meta</span> <span class="n">name</span>=<span class="s">"sg-id"</span>           <span class="n">content</span>=<span class="s">"header-anim"</span>&gt;
+&lt;<span class="k">meta</span> <span class="n">name</span>=<span class="s">"sg-canvas-width"</span>  <span class="n">content</span>=<span class="s">"750"</span>&gt;
+&lt;<span class="k">meta</span> <span class="n">name</span>=<span class="s">"sg-canvas-height"</span> <span class="n">content</span>=<span class="s">"424"</span>&gt;</pre>
+
+<!-- ── 尺寸规范 ── -->
+<h2>画布尺寸规范（宽度统一 750px）</h2>
+<div style="display:flex;flex-direction:column;gap:10px;">
+
+  <div class="size-card">
+    <div class="size-thumb" style="width:75px;height:42px;">750×424</div>
+    <div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:3px;">头图 · 大图版</div>
+      <div style="font-size:12px;color:var(--text-3);">750 × 424 px · 会场最常用，展示面积最大</div>
+    </div>
+  </div>
+
+  <div class="size-card">
+    <div class="size-thumb" style="width:75px;height:62px;">750×624</div>
+    <div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:3px;">头图 · 超高版</div>
+      <div style="font-size:12px;color:var(--text-3);">750 × 624 px · 内容多时使用</div>
+    </div>
+  </div>
+
+  <div class="size-card">
+    <div class="size-thumb" style="width:75px;height:27px;">750×274</div>
+    <div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:3px;">头图 · 窄版</div>
+      <div style="font-size:12px;color:var(--text-3);">750 × 274 px · 搭配楼层组件时节省空间</div>
+    </div>
+  </div>
+
+  <div class="size-card">
+    <div class="size-thumb" style="width:75px;height:24px;font-size:8px;">750×242</div>
+    <div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:3px;">老虎机主视觉</div>
+      <div style="font-size:12px;color:var(--text-3);">750 × 242 px · 抽奖组件固定尺寸</div>
+    </div>
+  </div>
+
+  <div class="size-card">
+    <div class="size-thumb" style="width:70px;height:35px;font-size:8px;">702×352</div>
+    <div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:3px;">券红包背景</div>
+      <div style="font-size:12px;color:var(--text-3);">702 × 352 px · 注意宽度不是 750，有边距</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── 配置结构 ── -->
+<h2>配置数据结构（config 对象）</h2>
+<div class="tip">💡 工具会通过 <code>SG_SET_CONFIG</code> 消息把这个对象发给你的组件。用到哪些字段就读哪些，不需要全部用。</div>
+<pre>{
+  <span class="c">// ── 主题色（跟随会场全局换色联动）──────────────────────</span>
+  <span class="n">theme</span>: {
+    primaryColor:  <span class="s">'#fad900'</span>,   <span class="c">// 美团黄</span>
+    accentColor:   <span class="s">'#ffa203'</span>,   <span class="c">// 暖橙</span>
+    bgColor:       <span class="s">'#FFD9E5'</span>,   <span class="c">// 当前会场背景色</span>
+  },
+
+  <span class="c">// ── 文案（工具配置面板的输入框内容）────────────────────</span>
+  texts: {
+    title:    <span class="s">'节日限定花'</span>,   <span class="c">// 主标题</span>
+    subtitle: <span class="s">'心意即刻达'</span>,   <span class="c">// 副标题</span>
+    desc:     <span class="s">'直降低至5折起'</span>, <span class="c">// 描述</span>
+  },
+
+  <span class="c">// ── 图片（用户上传后的 base64 或 URL）────────────────</span>
+  images: {
+    main: <span class="s">''</span>,   <span class="c">// 主图</span>
+    logo: <span class="s">''</span>,   <span class="c">// Logo</span>
+  },
+
+  <span class="c">// ── 你自己定义的参数（自由扩展）─────────────────────</span>
+  custom: {
+    animSpeed: <span class="s">1.0</span>,   <span class="c">// 动效速度倍率</span>
+    loop:      <span class="s">true</span>,  <span class="c">// 是否循环</span>
+  },
+}</pre>
+
+<!-- ── 消息 API ── -->
+<h2>消息接口（postMessage API）</h2>
+<div class="grid-2">
+  <div>
+    <div style="font-size:11px;color:var(--text-4);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;">工具 → 组件（你需要监听的）</div>
+    <div class="msg-row"><div class="msg-type">SG_SET_CONFIG</div><div class="msg-desc">更新配置数据，触发重新渲染</div></div>
+    <div class="msg-row"><div class="msg-type">SG_EXPORT</div><div class="msg-desc">请求导出 PNG，需要回传 dataUrl</div></div>
+    <div class="msg-row"><div class="msg-type">SG_PREVIEW</div><div class="msg-desc">请求刷新预览图，需要回传 dataUrl</div></div>
+  </div>
+  <div>
+    <div style="font-size:11px;color:var(--text-4);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;">组件 → 工具（你需要发送的）</div>
+    <div class="msg-row"><div class="msg-type">SG_READY</div><div class="msg-desc">页面加载完成后发送，告知工具准备就绪</div></div>
+    <div class="msg-row"><div class="msg-type">SG_EXPORT_RESULT</div><div class="msg-desc">响应导出请求，携带 PNG dataUrl</div></div>
+    <div class="msg-row"><div class="msg-type">SG_PREVIEW_RESULT</div><div class="msg-desc">响应预览请求，携带预览图 dataUrl</div></div>
+  </div>
+</div>
+
+<pre><span class="c">// 监听工具发来的消息（必须）</span>
+<span class="k">window</span>.addEventListener(<span class="s">'message'</span>, (event) => {
+  <span class="k">const</span> { type, payload } = event.data || {}
+
+  <span class="k">switch</span> (type) {
+    <span class="k">case</span> <span class="s">'SG_SET_CONFIG'</span>: render(payload); <span class="k">break</span>
+    <span class="k">case</span> <span class="s">'SG_EXPORT'</span>:
+      <span class="k">window</span>.parent.postMessage({ type: <span class="s">'SG_EXPORT_RESULT'</span>, dataUrl: exportPNG() }, <span class="s">'*'</span>)
+      <span class="k">break</span>
+  }
+})
+
+<span class="c">// 告知工具已就绪（必须，在 load 事件里发）</span>
+<span class="k">window</span>.addEventListener(<span class="s">'load'</span>, () => {
+  render(config) <span class="c">// 先渲染一次默认状态</span>
+  <span class="k">window</span>.parent.postMessage({ type: <span class="s">'SG_READY'</span>, meta: { name: <span class="s">'头图动效'</span>, id: <span class="s">'header-anim'</span> } }, <span class="s">'*'</span>)
+})</pre>
+
+<!-- ── 注意事项 ── -->
+<h2>注意事项</h2>
+<ul class="checklist">
+  <li>画布宽度必须 750px（手机端展示标准宽度）</li>
+  <li>导出的 PNG 分辨率建议 @2x（canvas 内部 1500px 再缩回 750px）</li>
+  <li>颜色、文案用 config 接收，不要写死，方便工具面板调节</li>
+  <li>尽量不依赖外部 CDN（网络不稳定会加载失败），把资源内联进 HTML</li>
+  <li>如果用 GSAP，工具里已有 GSAP 3，可以直接用（告知我版本）</li>
+  <li class="warn">不要用 alert / confirm / prompt，会阻塞工具主界面</li>
+  <li class="warn">动效组件记得在 SG_EXPORT 触发时暂停动画，抓静态帧导出</li>
+</ul>
+
+<div style="margin-top:40px;padding:18px 22px;background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.15);border-radius:12px;font-size:13px;color:rgba(74,222,128,0.7);">
+  ✅ 只需要把 HTML 文件发给朱彦霖，不需要自己改工具代码。<br>
+  规范里的接口我会在工具侧统一实现，你只负责组件的视觉效果。
+</div>
+
+<div style="margin-top:48px;font-size:11px;color:var(--text-4);">
+  闪购营销设计工作台组件接入规范 v1.0 ·
+  <a href="ui-tokens.html" style="color:var(--yellow);text-decoration:none;">查看 UI 设计令牌 →</a>
+</div>
+
+</body>
+</html>

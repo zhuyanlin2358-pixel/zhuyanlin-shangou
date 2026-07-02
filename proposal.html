@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>闪购营销设计工作台 · Product Proposal 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#000;font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;-webkit-font-smoothing:antialiased}
+
+:root{
+  --bg:#000;
+  --ink:#fff;
+  --accent:#E8481C;
+  --muted:rgba(255,255,255,.45);
+  --faint:rgba(255,255,255,.25);
+  --card:#111;
+  --card-border:rgba(255,255,255,.09);
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+
+/* ── Stage ────────────────────────────────────────── */
+#stage{
+  position:fixed;top:50%;left:50%;
+  width:1440px;height:810px;
+  transform:translate(-50%,-50%) scale(1);
+  transform-origin:center center;
+  background:var(--bg);overflow:hidden;
+}
+
+/* ── Slides ───────────────────────────────────────── */
+.slide{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  padding:72px 96px;
+  background:var(--bg);color:var(--ink);
+  opacity:0;pointer-events:none;
+  transform:translateX(40px);
+  transition:opacity .55s var(--ease),transform .55s var(--ease);
+  overflow:hidden;
+}
+.slide.active{opacity:1;pointer-events:auto;transform:translateX(0)}
+.slide.prev{transform:translateX(-40px)}
+
+/* ── Chrome: top label ─────────────────────────────── */
+.chrome-top{
+  position:absolute;top:32px;left:96px;right:96px;
+  font-size:11px;font-weight:700;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--faint);
+  text-align:center;pointer-events:none;
+}
+
+/* ── Chrome: bottom ───────────────────────────────── */
+.chrome-bot{
+  position:absolute;bottom:28px;left:64px;right:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:11px;color:var(--faint);letter-spacing:.06em;
+  pointer-events:none;
+}
+.slide-num{font-size:13px;font-weight:700;color:rgba(255,255,255,.18)}
+.slide-num .cur{color:var(--accent);font-size:15px}
+
+/* ── Version switcher ─────────────────────────────── */
+.version-switcher{
+  position:fixed;top:20px;right:24px;
+  display:flex;gap:8px;z-index:9999;
+}
+.version-switcher a{
+  padding:6px 14px;border-radius:6px;
+  font-size:12px;font-weight:500;text-decoration:none;
+  transition:all .2s;
+}
+.version-switcher a.active{
+  background:#E8481C;color:#fff;
+}
+.version-switcher a:not(.active){
+  background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);
+}
+.version-switcher a:not(.active):hover{
+  background:rgba(255,255,255,.15);color:#fff;
+}
+
+/* ── Entrance animations · CSS keyframes (Hermes style) ── */
+@keyframes rise {
+  from{opacity:0;transform:translateY(20px)}
+  to  {opacity:1;transform:none}
+}
+@keyframes fade-in {
+  from{opacity:0}
+  to  {opacity:1}
+}
+
+/* 基础：所有 data-a 元素默认不可见（保证每次进入都能重播） */
+[data-a]{opacity:0;transform:translateY(20px)}
+
+/* 入场动效：longhand 写法，避免 shorthand + var() 解析问题 */
+.slide.active [data-a]{
+  animation-name:rise;
+  animation-duration:.65s;
+  animation-timing-function:cubic-bezier(.16,1,.3,1);
+  animation-fill-mode:forwards;
+}
+.slide.active [data-a="2"]{animation-delay:.10s}
+.slide.active [data-a="3"]{animation-delay:.20s}
+.slide.active [data-a="4"]{animation-delay:.30s}
+.slide.active [data-a="5"]{animation-delay:.40s}
+.slide.active [data-a="6"]{animation-delay:.50s}
+
+/* chrome 元素：fade only，不上移 */
+.chrome-top,.chrome-bot,.foot-caption{opacity:0}
+.slide.active .chrome-top,
+.slide.active .chrome-bot,
+.slide.active .foot-caption{
+  animation-name:fade-in;
+  animation-duration:.45s;
+  animation-timing-function:cubic-bezier(.16,1,.3,1);
+  animation-fill-mode:forwards;
+}
+
+/* ── Typography ───────────────────────────────────── */
+.eyebrow{
+  font-size:12px;font-weight:700;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:10px;
+}
+.kicker{font-size:13px;font-weight:700;letter-spacing:.14em;color:var(--accent);text-transform:uppercase}
+.tag{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--accent);background:rgba(232,72,28,.1);border:1px solid rgba(232,72,28,.25);
+  padding:5px 14px;border-radius:4px;margin-bottom:20px;
+}
+.h1{font-size:80px;font-weight:900;line-height:1.05;letter-spacing:-.03em}
+.h2{font-size:62px;font-weight:900;line-height:1.1;letter-spacing:-.02em}
+.h3{font-size:38px;font-weight:900;line-height:1.15}
+.sub{font-size:18px;font-weight:400;color:var(--muted);margin-top:10px;line-height:1.6}
+.foot-caption{
+  position:absolute;bottom:60px;left:0;right:0;text-align:center;
+  font-size:12px;color:var(--faint);letter-spacing:.06em;pointer-events:none;
+}
+
+/* ── Cards ────────────────────────────────────────── */
+.card{
+  background:var(--card);border:1px solid var(--card-border);
+  border-radius:6px;padding:28px 30px;
+}
+.card.active-card{
+  background:rgba(232,72,28,.1);
+  border-color:rgba(232,72,28,.4);
+  border-left:3px solid var(--accent);
+}
+.card-label{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
+.card-title{font-size:32px;font-weight:900;line-height:1.15;margin-bottom:8px}
+.card-body{font-size:14px;color:var(--muted);line-height:1.65}
+
+/* ── Grid ─────────────────────────────────────────── */
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:32px}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+
+/* ── List items ───────────────────────────────────── */
+.list-item{
+  padding:22px 0;border-top:1px solid var(--card-border);
+  display:flex;align-items:baseline;gap:12px;
+}
+.list-item:last-child{border-bottom:1px solid var(--card-border)}
+.list-num{font-size:18px;font-weight:900;color:var(--accent);min-width:32px}
+.list-title{font-size:32px;font-weight:900;flex:1}
+.list-sub{font-size:13px;color:var(--muted);margin-left:auto;min-width:80px;text-align:right}
+
+/* ── Step cards ───────────────────────────────────── */
+.step-card{background:var(--card);border:1px solid var(--card-border);border-radius:6px;padding:24px 26px}
+.step-label{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px}
+.step-label .phase{color:var(--accent)}
+.step-bullet{font-size:13px;color:var(--muted);line-height:1.7;padding-left:14px;position:relative}
+.step-bullet::before{content:'·';position:absolute;left:0;color:var(--accent)}
+
+/* ── Bar comparison ───────────────────────────────── */
+.vs-section{margin-bottom:28px}
+.vs-label{font-size:15px;font-weight:700;color:rgba(255,255,255,.6);margin-bottom:12px}
+.vs-row{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.vs-tag{font-size:12px;font-weight:700;letter-spacing:.06em;min-width:72px;color:var(--muted)}
+.vs-bar-wrap{flex:1;height:18px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden}
+.vs-bar{height:100%;border-radius:99px;transition:width 1.2s var(--ease)}
+.vs-bar.win{background:var(--accent)}
+.vs-bar.lose{background:rgba(255,255,255,.18)}
+.vs-val{font-size:14px;font-weight:700;min-width:60px}
+
+/* ── Browser mock ─────────────────────────────────── */
+.browser{
+  background:#1a1a1a;border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;overflow:hidden;
+  margin-top:16px;
+}
+.browser-chrome{
+  background:#242424;padding:10px 14px;
+  display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.08);
+}
+.browser-dot{width:10px;height:10px;border-radius:50%}
+.browser-dot.r{background:#ff5f57}
+.browser-dot.y{background:#febc2e}
+.browser-dot.g{background:#28c840}
+.browser-url{
+  flex:1;background:rgba(255,255,255,.07);border-radius:4px;
+  padding:4px 10px;font-size:11px;font-family:'JetBrains Mono',monospace;
+  color:rgba(255,255,255,.4);margin:0 12px;
+}
+.browser-body{padding:24px;min-height:300px}
+
+/* ── Code block ───────────────────────────────────── */
+.code-block{
+  background:#111;border:1px solid rgba(255,255,255,.08);
+  border-radius:6px;padding:18px 20px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;
+  color:rgba(255,255,255,.5);line-height:1.8;margin-top:12px;
+}
+.code-block .kw{color:#569cd6}
+.code-block .str{color:#ce9178}
+.code-block .cm{color:#6a9955}
+.code-block .attr{color:#9cdcfe}
+
+/* ── Token row ────────────────────────────────────── */
+.token-row{
+  display:flex;align-items:center;gap:14px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:6px;padding:12px 16px;margin-bottom:8px;
+}
+.token-swatch{width:24px;height:24px;border-radius:4px;flex-shrink:0}
+.token-name{font-family:'JetBrains Mono',monospace;font-size:13px;color:#9cdcfe;min-width:150px}
+.token-desc{font-size:12px;color:var(--muted)}
+
+/* ── Pill tags ────────────────────────────────────── */
+.pills{display:flex;gap:8px;margin-top:24px;flex-wrap:wrap}
+.pill{
+  display:inline-block;padding:6px 16px;
+  border:1px solid rgba(255,255,255,.18);border-radius:99px;
+  font-size:13px;color:rgba(255,255,255,.6);letter-spacing:.04em;
+}
+
+/* ── Feature badge ────────────────────────────────── */
+.feat-badge{
+  display:inline-block;padding:2px 10px;border-radius:4px;
+  font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  margin-right:8px;
+}
+.feat-badge.anim{background:rgba(232,72,28,.2);color:var(--accent)}
+.feat-badge.same{background:rgba(255,255,255,.08);color:var(--muted)}
+.feat-badge.note{background:rgba(254,188,46,.15);color:#febc2e}
+
+/* ── Progress bar ─────────────────────────────────── */
+#progress{
+  position:fixed;left:0;bottom:0;right:0;height:2px;
+  background:transparent;z-index:99;
+}
+#progress span{
+  display:block;height:100%;background:var(--accent);
+  transition:width .4s var(--ease);
+}
+
+/* ── Slide-specific helpers ───────────────────────── */
+.big-stat{
+  font-size:260px;font-weight:900;line-height:.9;
+  letter-spacing:-.04em;color:var(--ink);
+}
+.stat-unit{font-size:56px;font-weight:900;color:var(--accent);vertical-align:super;margin-left:8px}
+.stat-sub{font-size:22px;font-weight:400;color:var(--muted);margin-top:20px}
+
+/* ── Cover accent square ─────────────────────────── */
+.sq{
+  display:inline-block;width:70px;height:70px;
+  background:var(--accent);vertical-align:middle;
+  margin-left:8px;border-radius:4px;
+  transform:translateY(-8px);
+}
+
+/* ── Slide 09 mock screenshots ───────────────────── */
+.demo-card{
+  background:linear-gradient(135deg,#1a1a2e,#16213e);
+  border:1px solid rgba(255,255,255,.1);border-radius:8px;
+  overflow:hidden;
+}
+.demo-card .demo-header{
+  background:#242424;padding:8px 12px;
+  display:flex;gap:6px;align-items:center;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.demo-card .demo-body{
+  padding:20px;height:220px;
+  display:flex;align-items:center;justify-content:center;
+}
+.demo-label{font-size:22px;font-weight:900;margin-top:14px}
+.demo-sub{font-size:13px;color:var(--muted);margin-top:4px}
+
+/* ── Misc ─────────────────────────────────────────── */
+.divider{height:1px;background:var(--card-border);width:100%;margin:24px 0}
+.accent{color:var(--accent)}
+.mono{font-family:'JetBrains Mono',monospace}
+.center{text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center}
+</style>
+</head>
+<body>
+
+<!-- Version Switcher -->
+<div class="version-switcher">
+  <a href="./proposal.html" class="active">汇报版</a>
+  <a href="./proposal-full.html">完整版</a>
+</div>
+
+<div id="stage">
+
+<!-- ── 01 · Cover ──────────────────────────────────── -->
+<section class="slide" id="s1">
+  <div class="chrome-top">PRODUCT PROPOSAL · 2026</div>
+
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <div style="font-size:108px;font-weight:900;line-height:1.0;letter-spacing:-.03em;margin-bottom:0" data-a="1">
+      闪购营销<br>设计工作台<span class="sq"></span>
+    </div>
+    <div style="font-size:20px;color:var(--muted);margin-top:40px;letter-spacing:.04em" data-a="2">
+      延续美境的创意，30 分钟高效落地
+    </div>
+  </div>
+
+  <div class="chrome-bot">
+    <span style="letter-spacing:.14em;font-size:11px;font-weight:700;color:var(--faint)">← / → · SPACE</span>
+    <span class="slide-num"><span class="cur">01</span> / 11</span>
+  </div>
+  <div class="foot-caption">
+    品牌规范可控 · 业务自助设计 · 30 分钟上线 · 复用节省上百小时
+  </div>
+</section>
+
+<!-- ── 02 · 与美境的协同关系 ────────────────────────── -->
+<section class="slide" id="s2">
+  <div class="chrome-top">生态定位 · 接力赛式协同</div>
+
+  <div style="margin-top:40px">
+    <div class="h2" data-a="1">与美境的协同关系</div>
+    <div class="sub" data-a="2">接力赛式协同 · 高速落地</div>
+
+    <div class="g3" style="margin-top:36px">
+      <div class="card" data-a="3">
+        <div class="card-label">01 · 美境</div>
+        <div class="card-title">创意激发</div>
+        <div class="card-body">输入想法，美境生成视觉灵感，快速探索方向，降低创意门槛。</div>
+      </div>
+      <div class="card active-card" data-a="4">
+        <div class="card-label" style="color:var(--accent)">02 · 关键协作</div>
+        <div class="card-title">选择模板</div>
+        <div class="card-body">设计师选择最匹配的模板，承接美境成果，高质批量生产。</div>
+      </div>
+      <div class="card" data-a="5">
+        <div class="card-label">03 · 本工具</div>
+        <div class="card-title">规范生产</div>
+        <div class="card-body">模板 + 内容 → 可上线代码，高确定性，目标 30 分钟完成。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bot">
+    <span style="letter-spacing:.14em;font-size:11px;font-weight:700;color:var(--faint)">← / → · SPACE</span>
+    <span class="slide-num"><span class="cur">02</span> / 11</span>
+  </div>
+  <div class="foot-caption">与美境协同，为业务打造从创意到上线的「高速路」</div>
+</section>
+
+<!-- ── 03 · 核心理念 ────────────────────────────────── -->
+<section class="slide" id="s3">
+  <div class="chrome-top">核心理念</div>
+
+  <div style="margin-top:40px">
+    <div class="h2" data-a="1">我们的核心：三大<span class="accent">节流</span></div>
+    <div class="sub" data-a="2">将美境的创意，稳定、高效地固化为页面</div>
+
+    <div style="background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:32px 36px;margin-top:32px" data-a="3">
+      <div class="list-item">
+        <span class="list-num">01</span>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:6px">视觉节流 · UI 设计令牌</div>
+          <div style="font-size:24px;font-weight:900"><span class="accent">$</span> 承接品牌资产，确保创意落地不走样</div>
+        </div>
+      </div>
+      <div class="list-item">
+        <span class="list-num">02</span>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:6px">组件节流 · 封装式模板</div>
+          <div style="font-size:24px;font-weight:900"><span class="accent">$</span> 沉淀业务模块，让优秀创意可复用</div>
+        </div>
+      </div>
+      <div class="list-item">
+        <span class="list-num">03</span>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:6px">流程节流 · 结构化配置</div>
+          <div style="font-size:24px;font-weight:900"><span class="accent">$</span> 简化生产动作，让团队聚焦创意而非实现</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pills" data-a="4">
+      <span class="pill">品牌规范可控</span>
+      <span class="pill">组件沉淀复用</span>
+      <span class="pill">流程结构化</span>
+    </div>
+  </div>
+
+  <div class="chrome-bot">
+    <span style="letter-spacing:.14em;font-size:11px;font-weight:700;color:var(--faint)">← / → · SPACE</span>
+    <span class="slide-num"><span class="cur">03</span> / 11</span>
+  </div>
+  <div class="foot-caption">将美境的创意，稳定、高效地固化为页面</div>
+</section>
+
+<!-- ── 04 · L1 UI Design Tokens ────────────────────── -->
+<section class="slide" id="s4">
+  <div class="chrome-top">L1 设计基石 · UI 设计令牌</div>
+
+  <div style="margin-top:20px">
+    <div class="tag" data-a="1">
+      // L1 · <span class="accent">UI DESIGN TOKENS</span> &nbsp;可在线查阅的设计令牌库
+    </div>
+
+    <div class="browser" data-a="2">
+      <div class="browser-chrome">
+        <div class="browser-dot r"></div>
+        <div class="browser-dot y"></div>
+        <div class="browser-dot g"></div>
+        <div class="browser-url">zhuyanlin2358-pixel.github.io/zhuyanlin-shangou/ui-tokens.html</div>
+      </div>
+      <div class="browser-body" style="padding:28px 32px">
+        <div style="font-size:22px;font-weight:900;margin-bottom:4px">闪购营销设计工作台</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:24px">UI 设计令牌手册 · 最小的来集 · 更新：2026-06-26</div>
+
+        <div style="font-size:12px;color:var(--faint);margin-bottom:10px">背景层次</div>
+        <div class="g3" style="gap:10px;margin-bottom:20px">
+          <div class="token-row"><div class="token-swatch" style="background:#010104"></div><span class="token-name">--sl-bg</span><span class="token-desc">#010104 · 主画布</span></div>
+          <div class="token-row"><div class="token-swatch" style="background:#08080e"></div><span class="token-name">--sl-panel</span><span class="token-desc">#08080e · 侧边栏/顶栏</span></div>
+          <div class="token-row"><div class="token-swatch" style="background:#0f0f1a"></div><span class="token-name">--sl-surface</span><span class="token-desc">#0f0f1a · 区块/卡片</span></div>
+        </div>
+
+        <div style="font-size:12px;color:var(--faint);margin-bottom:10px">品牌色</div>
+        <div class="g3" style="gap:10px">
+          <div class="token-row"><div class="token-swatch" style="background:#fad900"></div><span class="token-name">--sl-primary</span><span class="token-desc">#fad900 · 美团黄</span></div>
+          <div class="token-row"><div class="token-swatch" style="background:#ffa203"></div><span class="token-name">--sl-accent</span><span class="token-desc">#ffa203 · 橙框</span></div>
+          <div class="token-row"><div class="token-swatch" style="background:linear-gradient(90deg,#fad900,#ffa203)"></div><span class="token-name">--sl-primary-grad</span><span class="token-desc">渐变 · CTA按钮</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bot">
+    <span style="letter-spacing:.14em;font-size:11px;font-weight:700;color:var(--faint)">← / → · SPACE</span>
+    <span class="slide-num"><span class="cur">04</span> / 11</span>
+  </div>
+  <div class="foot-caption">颜色 · 字体 · 间距 · 圆角 — 团队的设计宪法，一次定义，全局生效</div>
+</section>
+
+<!-- ── 05 · L2 Static Component Templates ─────────── -->
+<section class="slide" id="s5">
+  <div class="chrome-top">L2 生产积木 · 静态组件模板</div>
+
+  <div style="margin-top:20px">
+    <div class="tag" data-a="1">
+      // L2 · <span class="accent">STATIC COMPONENT TEMPLATES</span> &nbsp;静态 HTML 组件模板库
+    </div>
+
+    <div class="browser" data-a="2">
+      <div class="browser-chrome">
+        <div class="browser-dot r"></div>
+        <div class="browser-dot y"></div>
+        <div class="browser-dot g"></div>
+        <div class="browser-url">zhuyanlin2358-pixel.github.io/zhuyanlin-shangou/component-template.html</div>
+      </div>
+      <div class="browser-body" style="padding:28px 32px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div>
+            <div style="font-size:22px;font-weight:900;margin-bottom:4px">组件开发模板</div>
+            <div style="font-size:12px;color:var(--muted)">闪购营销设计工作台 · v1.0</div>
+          </div>
+          <div style="display:flex;gap:10px">
+            <div style="padding:7px 16px;border:1px solid rgba(255,255,255,.2);border-radius:4px;font-size:12px;cursor:pointer">← 查看完整规范</div>
+            <div style="padding:7px 16px;background:#fad900;color:#000;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer">↓ 下载模板文件</div>
+          </div>
+        </div>
+        <div style="background:rgba(250,217,0,.08);border:1px solid rgba(250,217,0,.2);border-radius:6px;padding:14px 18px;margin-bottom:18px;font-size:13px;color:rgba(250,217,0,.8);line-height:1.6">
+          🐢 这是一个 HTML 模板文件，用于开发闪购工作台的外部组件。<br>
+          使用方法：点右上角「下载模板文件」→ 用代码编辑器打开 → 把 TODO 部分改成你的内容 → 发给朱彦霖接入工具。
+        </div>
+        <div style="font-size:13px;color:var(--faint);margin-bottom:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase">模板基本信息</div>
+        <div style="display:grid;grid-template-columns:1fr;gap:6px">
+          <div style="display:flex;background:rgba(255,255,255,.04);border-radius:4px;padding:10px 14px;font-size:13px;gap:16px"><span style="color:var(--faint);min-width:80px">画布尺寸</span><span>750 × 424 px（头图标准尺寸，可改）</span></div>
+          <div style="display:flex;background:rgba(255,255,255,.04);border-radius:4px;padding:10px 14px;font-size:13px;gap:16px"><span style="color:var(--faint);min-width:80px">通信方式</span><span class="mono">window.postMessage（SG_ 前缀）</span></div>
+          <div style="display:flex;background:rgba(255,255,255,.04);border-radius:4px;padding:10px 14px;font-size:13px;gap:16px"><span style="color:var(--faint);min-width:80px">导出格式</span><span class="mono">canvas.toDataURL() → PNG</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bot">
+    <span style="letter-spacing:.14em;font-size:11px;font-weight:700;color:var(--faint)">← / → · SPACE</span>
+    <span class="slide-num"><span class="cur">05</span> / 11</span>
+  </div>
+  <div class="foot-caption">开箱即用的 HTML 组件 — 实时预览 · 代码片段复制 · 设计源文件链接</div>
+</section>
+
+<!-- ── 06 · L3 Animation Templates ───────────────── -->
+<section class="slide" id="s6">
+  <div class="chrome-top">L3 业务解决方案 · 动效组件模板</div>
+
+  <div style="margin-top:20px">
+    <div class="tag" data-a="1">
+      // L3 · <span class="accent">ANIMATION TEMPLATES</span> &nbsp;动效与场景化模板库
+    </div>
+
+    <div class="browser" data-a="2">
+      <div class="browser-chrome">
+        <div class="browser-dot r"></div>
+        <div class="browser-dot y"></div>
+        <div class="browser-dot g"></div>
+        <div class="browser-url">zhuyanlin2358-pixel.github.io/zhuyanlin-shangou/animation-template.html</div>
+      </div>
+      <div class="browser-body" style="padding:28px 32px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div>
+            <div style="font-size:22px;font-weight:900;margin-bottom:4px">动效组件模板</div>
+            <div style="font-size:12px;color:var(--muted)">闪购营销设计工作台 · 专用于动效类组件</div>
+          </div>
+          <div style="display:flex;gap:10px">
+            <div style="padding:7px 16px;border:1px solid rgba(255,255,255,.2);border-radius:4px;font-size:12px">← 通用规范</div>
+            <div style="padding:7px 16px;border:1px solid rgba(255,255,255,.2);border-radius:4px;font-size:12px">静态组件模板</div>
+            <div style="padding:7px 16px;background:#fad900;color:#000;border-radius:4px;font-size:12px;font-weight:700">↓ 下载动效模板</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr;gap:8px">
+          <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.04);border-radius:6px;padding:12px 16px">
+            <span class="feat-badge anim">动效专有</span>
+            <div><div style="font-size:14px;font-weight:700;margin-bottom:4px" class="mono">requestAnimationFrame 动画循环</div><div style="font-size:12px;color:var(--muted)">需要维护一个持续运行的动画帧循环，并在需要时能暂停和恢复</div></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.04);border-radius:6px;padding:12px 16px">
+            <span class="feat-badge anim">动效专有</span>
+            <div><div style="font-size:14px;font-weight:700;margin-bottom:4px" class="mono">SG_EXPORT 必须先暂停再截图</div><div style="font-size:12px;color:var(--muted)">收到导出请求时，先停止动画 → canvas.toDataURL() → 恢复动画，否则截到的是空帧</div></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.04);border-radius:6px;padding:12px 16px">
+            <span class="feat-badge anim">动效专有</span>
+            <div><div style="font-size:14px;font-weight:700;margin-bottom:4px" class="mono">SG_SET_CONFIG 实时更新动效参数</div><div style="font-size:12px;color:var(--muted)">工具传来新配置（颜色/速度等），需要在不重启的情况下实时生效</div></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.04);border-radius:6px;padding:12px 16px">
+            <span class="feat-badge note">注意</span>
+            <div><div style="font-size:14px;font-weight:700;margin-bottom:4px">page 隐藏时自动暂停，恢复时继续</div><div style="font-size:12px;color:var(--muted)">监听 visibilitychange，标签切走时停止动画避免性能浪费</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bot">
+    <span style="letter-spacing:.14em;font-size:11px;font-weight:700;color:var(--faint)">← / → · SPACE</span>
+    <span class="slide-num"><span class="cur">06</span> / 11</span>
+  </div>
+  <div class="foot-caption">老虎机 · 红包雨 · 楼层 · Tab — 带完整交互动效的场景化样板间，零代码直接套用</div>
+</section>
+
+<!-- ── 07 · 如何与美境团队协作 ─────────────────────── -->
+<section class="slide" id="s7">
+  <div class="chrome-top">协作机制 · 如何与美境团队协作</div>
+
+  <div style="margin-top:40px;max-width:900px">
+    <div class="h2" data-a="1">如何与美境团队<span class="accent">协作</span></div>
+
+    <div style="margin-top:50px">
+      <div class="list-item" style="padding:32px 0" data-a="2">
+        <span class="list-num">01</span>
+        <div class="list-title">技术基础 · 已准备好</div>
+        <span class="list-sub" style="font-size:14px;color:var(--muted)">技术就绪</span>
+      </div>
+      <div class="list-item" style="padding:32px 0" data-a="3">
+        <span class="list-num">02</span>
+        <div class="list-title">流程建议 · 诚邀探讨</div>
+        <span class="list-sub" style="font-size:14px;color:var(--muted)">待共建</span>
+      </div>
+      <div class="list-item" style="padding:32px 0" data-a="4">
+        <span class="list-num">03</span>
+        <div class="list-title">共创邀请 · 核心目的</div>
+        <span class="list-sub" style="font-size:14px;color:var(--muted)">长期愿景</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bot">
+    <span style="letter-spacing:.14em;font-size:11px;font-weight:700;color:var(--faint)">← / → · SPACE</span>
+    <span class="slide-num"><span class="cur">07</span> / 11</span>
+  </div>
+  <div class="foot-caption">创意转译标准 · 智能模板匹配 · 更丝滑的协作</div>
+</section>
+
+<!-- ── 08 · 3步计划 ────────────────────────────────── -->
+<section class="slide" id="s8">
+  <div class="chrome-top">下一步计划 · 分三步成为营销基础设施</div>
+
+  <div style="margin-top:20px">
+    <div style="font-size:13px;font-weight:700;color:var(--accent);font-family:'JetBrains Mono',monospace;margin-bottom:20px" data-a="1">$ cat roadmap.md</div>
+
+    <div style="display:flex;align-items:baseline;gap:20px" data-a="2">
+      <div style="font-size:180px;font-weight:900;line-height:.9;letter-spacing:-.04em;color:var(--accent)">3</div>
+      <div>
+        <div style="font-size:56px;font-weight:900;letter-spacing:-.02em">步计划</div>
+        <div style="font-size:16px;color:var(--muted);margin-top:8px">分三步，成为营销基础设施 · 覆盖闪购全场景</div>
+      </div>
+    </div>
+
+    <div class="g3" style="margin-top:28px;gap:14px">
+      <div class="step-card" data-a="3">
+        <div class="step-label"><span class="phase">+ 1个月 · 验证核心价值</span><br><span style="color:var(--faint)">为业务团队</span></div>
+        <div style="margin-top:10px">
+          <div class="step-bullet" style="margin-bottom:6px">邀请业务团队试用 5 个核心模板</div>
+          <div class="step-bullet" style="margin-bottom:6px">验证"30 分钟上线"是否可行</div>
+          <div class="step-bullet">收集第一轮真实反馈</div>
+        </div>
+      </div>
+      <div class="step-card" data-a="4">
+        <div class="step-label"><span class="phase">+ 3个月 · 优化协作体验</span><br><span style="color:var(--faint)">为美境及设计伙伴</span></div>
+        <div style="margin-top:10px">
+          <div class="step-bullet" style="margin-bottom:6px">根据反馈迭代优化体验</div>
+          <div class="step-bullet" style="margin-bottom:6px">新增 10 个常用业务组件</div>
+          <div class="step-bullet">建立与美境的协作流程</div>
+        </div>
+      </div>
+      <div class="step-card" data-a="5">
+        <div class="step-label"><span class="phase">+ 6个月 · 成为标准工具</span><br><span style="color:var(--faint)">为整个营销体系</span></div>
+        <div style="margin-top:10px">
+          <div class="step-bullet" style="margin-bottom:6px">覆盖 50%+ 闪购活动需求</div>
+          <div class="step-bullet" style="margin-bottom:6px">设计资源释放 70%</div>
+          <div class="step-bullet">成为营销页面生产标准</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bot">
+    <span style="letter-spacing:.14em;font-size:11px;font-weight:700;color:var(--faint)">← / → · SPACE</span>
+    <span class="slide-num"><span class="cur">08</span> / 11</span>
+  </div>
+  <div class="foot-caption">覆盖 50%+ 闪购活动 · 设计资源释放 70% · 新同学 10 分钟完成第一页</div>
+</section>
+
+<!-- ── 09 · 功能演示 ────────────────────────────────── -->
+<section class="slide" id="s9">
+  <div class="chrome-top">功能演示 · 当前已实现的核心功能</div>
+
+  <div style="margin-top:28px">
+    <div class="g3" style="gap:20px;align-items:start">
+      <!-- 首页 -->
+      <div data-a="1">
+        <div style="background:#1a1a2e;border:1px solid rgba(255,255,255,.1);border-radius:8px;overflow:hidden">
+          <div style="background:#242424;padding:8px 12px;display:flex;gap:6px;border-bottom:1px solid rgba(255,255,255,.06)">
+            <div class="browser-dot r"></div><div class="browser-dot y"></div><div class="browser-dot g"></div>
+          </div>
+          <div style="padding:20px;height:240px;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(135deg,#0d0d1a 0%,#1a1a2e 100%)">
+            <div style="font-size:14px;font-weight:900;margin-bottom:16px;text-align:center">闪购营销设计工作台</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:12px;font-size:11px;text-align:center;color:var(--muted)">搭建活动页面</div>
+              <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:12px;font-size:11px;text-align:center;color:var(--muted)">设计切图素材</div>
+              <div style="background:rgba(250,217,0,.08);border:1px solid rgba(250,217,0,.2);border-radius:6px;padding:12px;font-size:11px;text-align:center;color:#fad900">大促换肤</div>
+              <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:12px;font-size:11px;text-align:center;color:var(--muted)">活动头图动效</div>
+            </div>
+          </div>
+        </div>
+        <div class="demo-label">首页 · 任务选择</div>
+        <div class="demo-sub">选择任务类型，进入搭建流程</div>
+      </div>
+
+      <!-- 会场搭建 -->
+      <div data-a="2">
+        <div style="background:#1a1a2e;border:1px solid rgba(255,255,255,.1);border-radius:8px;overflow:hidden">
+          <div style="background:#242424;padding:8px 12px;display:flex;gap:6px;border-bottom:1px solid rgba(255,255,255,.06)">
+            <div class="browser-dot r"></div><div class="browser-dot y"></div><div class="browser-dot g"></div>
+          </div>
+          <div style="height:240px;display:grid;grid-template-columns:80px 1fr 100px">
+            <div style="background:#0a0a12;border-right:1px solid rgba(255,255,255,.06);padding:8px;font-size:9px;color:var(--faint)">
+              <div style="margin-bottom:6px;color:rgba(255,255,255,.3)">老虎机</div>
+              <div style="margin-bottom:6px;color:rgba(255,255,255,.3)">楼层条</div>
+              <div style="background:rgba(250,217,0,.1);border:1px solid rgba(250,217,0,.2);border-radius:3px;padding:4px 6px;color:#fad900;margin-bottom:6px">横 Tab</div>
+              <div style="margin-bottom:6px;color:rgba(255,255,255,.3)">领券红包</div>
+              <div style="margin-bottom:6px;color:rgba(255,255,255,.3)">商品横滑</div>
+            </div>
+            <div style="background:#0d0d1a;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--faint);flex-direction:column;gap:8px">
+              <div style="width:100px;height:140px;background:linear-gradient(135deg,#ff6b9d,#ff4757);border-radius:4px;opacity:.7"></div>
+              <div style="font-size:9px;color:var(--faint)">预览区</div>
+            </div>
+            <div style="background:#0a0a12;border-left:1px solid rgba(255,255,255,.06);padding:8px;font-size:9px;color:var(--faint)">
+              <div style="margin-bottom:8px;font-weight:700;color:rgba(255,255,255,.4)">配置</div>
+              <div style="height:2px;background:rgba(255,255,255,.05);margin-bottom:8px"></div>
+              <div style="margin-bottom:4px">▾ 颜色</div>
+              <div style="margin-bottom:4px">▾ 文案</div>
+              <div style="margin-bottom:4px">▾ 素材</div>
+            </div>
+          </div>
+        </div>
+        <div class="demo-label">会场搭建 · 组件配置</div>
+        <div class="demo-sub">左侧组件 · 中心预览 · 右侧属性</div>
+      </div>
+
+      <!-- 头图动效 -->
+      <div data-a="3">
+        <div style="background:#1a1a2e;border:1px solid rgba(255,255,255,.1);border-radius:8px;overflow:hidden">
+          <div style="background:#242424;padding:8px 12px;display:flex;gap:6px;border-bottom:1px solid rgba(255,255,255,.06)">
+            <div class="browser-dot r"></div><div class="browser-dot y"></div><div class="browser-dot g"></div>
+          </div>
+          <div style="height:240px;display:grid;grid-template-columns:1fr 90px">
+            <div style="background:#0d0d1a;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+              <div style="width:100%;height:100%;background:linear-gradient(135deg,#ff6b9d44,#ff475722);position:absolute"></div>
+              <div style="text-align:center;z-index:1">
+                <div style="font-size:12px;font-weight:700;margin-bottom:6px">🌸 花瓣飘落</div>
+                <div style="font-size:9px;color:var(--muted)">动效预览中</div>
+              </div>
+              <!-- particles -->
+              <div id="particles-demo" style="position:absolute;inset:0;pointer-events:none"></div>
+            </div>
+            <div style="background:#0a0a12;border-left:1px solid rgba(255,255,255,.06);padding:10px;font-size:9px;color:var(--faint)">
+              <div style="margin-bottom:8px;font-weight:700;color:rgba(255,255,255,.4)">粒子动效</div>
+              <div style="height:2px;background:rgba(255,255,255,.05);margin-bottom:8px"></div>
+              <div style="margin-bottom:6px">花瓣飘落 ✓</div>
+              <div style="margin-bottom:6px;color:rgba(255,255,255,.2)">闪光粒子</div>
+              <div style="margin-bottom:6px;color:rgba(255,255,255,.2)">彩屑纸片</div>
+              <div style="height:1px;background:rgba(255,255,255,.05);margin:8px 0"></div>
+              <div style="margin-bottom:4px">速度 ██░░ 1.0</div>
+              <div style="margin-bottom:4px">密度 ████ 50</div>
+            </div>
+          </div>
+        </div>
+        <div class="demo-label">头图 · 动效配置</div>
+        <div class="demo-sub">粒子、浮动动效一键调节</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bot">
+    <span style="letter-spacing:.14em;font-size:11px;font-weight:700;color:var(--faint)">← / → · SPACE</span>
+    <span class="slide-num"><span class="cur">09</span> / 11</span>
+  </div>
+  <div class="foot-caption">老虎机 · 楼层条 · 横滑 Tab · 一键领券红包</div>
+</section>
+
+<!-- ── 10 · 效能数据 ────────────────────────────────── -->
+<section class="slide center" id="s10">
+  <div class="chrome-top">效能数据 · 数据说明一切</div>
+
+  <div style="width:100%;display:grid;grid-template-columns:auto 1fr;gap:80px;align-items:center;margin-top:20px">
+    <div data-a="1">
+      <div class="big-stat" id="bigNum">30</div>
+      <div class="stat-unit accent">分钟</div>
+      <div class="stat-sub">原来 2-3 天，现在 30 分钟</div>
+    </div>
+
+    <div data-a="2">
+      <div class="vs-section">
+        <div class="vs-label">生产耗时</div>
+        <div class="vs-row">
+          <span class="vs-tag">新流程</span>
+          <div class="vs-bar-wrap"><div class="vs-bar win" id="bar1" style="width:0%"></div></div>
+          <span class="vs-val">30 分钟</span>
+        </div>
+        <div class="vs-row">
+          <span class="vs-tag" style="color:var(--faint)">传统流程</span>
+          <div class="vs-bar-wrap"><div class="vs-bar lose" id="bar1b" style="width:0%"></div></div>
+          <span class="vs-val" style="color:var(--muted)">2-3 天</span>
+        </div>
+      </div>
+
+      <div class="vs-section">
+        <div class="vs-label">所需角色</div>
+        <div class="vs-row">
+          <span class="vs-tag">新流程</span>
+          <div class="vs-bar-wrap"><div class="vs-bar win" id="bar2" style="width:0%"></div></div>
+          <span class="vs-val">1 人</span>
+        </div>
+        <div class="vs-row">
+          <span class="vs-tag" style="color:var(--faint)">传统流程</span>
+          <div class="vs-bar-wrap"><div class="vs-bar lose" id="bar2b" style="width:0%"></div></div>
+          <span class="vs-val" style="color:var(--muted)">3 人</span>
+        </div>
+      </div>
+
+      <div class="vs-section">
+        <div class="vs-label">设计资源依赖</div>
+        <div class="vs-row">
+          <span class="vs-tag">新流程</span>
+          <div class="vs-bar-wrap"><div class="vs-bar win" id="bar3" style="width:0%"></div></div>
+          <span class="vs-val">仅 30%</span>
+        </div>
+        <div class="vs-row">
+          <span class="vs-tag" style="color:var(--faint)">传统流程</span>
+          <div class="vs-bar-wrap"><div class="vs-bar lose" id="bar3b" style="width:0%"></div></div>
+          <span class="vs-val" style="color:var(--muted)">100%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chrome-bot">
+    <span style="letter-spacing:.14em;font-size:11px;font-weight:700;color:var(--faint)">← / → · SPACE</span>
+    <span class="slide-num"><span class="cur">10</span> / 11</span>
+  </div>
+</section>
+
+<!-- ── 11 · 结语 ───────────────────────────────────── -->
+<section class="slide center" id="s11">
+  <div class="chrome-top">未来愿景 · L1 设计基石 · L2 生产积木 · L3 业务解决方案</div>
+
+  <div style="text-align:center">
+    <div style="font-size:110px;font-weight:900;line-height:1.0;letter-spacing:-.03em" data-a="1">
+      越用<span class="accent">越</span>丰富<span class="accent">。</span>
+    </div>
+    <div style="font-size:20px;color:var(--muted);margin-top:32px;letter-spacing:.04em" data-a="2">
+      不止是工具，更是可生长的设计资产生态
+    </div>
+  </div>
+
+  <div class="chrome-bot">
+    <span style="letter-spacing:.14em;font-size:11px;font-weight:700;color:var(--faint)">← / → · SPACE</span>
+    <span class="slide-num"><span class="cur">11</span> / 11</span>
+  </div>
+  <div class="foot-caption">让每个人的优秀工作都被看见、被复用、被嘉奖 — 形成越协作越强大的正向循环</div>
+</section>
+
+</div><!-- /#stage -->
+
+<div id="progress"><span></span></div>
+
+<script>
+/* ── Stage scaling ─────────────────────────────────── */
+(function fit(){
+  var s=document.getElementById('stage');
+  function r(){var sc=Math.min(window.innerWidth/1440,window.innerHeight/810);s.style.transform='translate(-50%,-50%) scale('+sc+')';}
+  r();window.addEventListener('resize',r);
+})();
+
+/* ── Slide system ──────────────────────────────────── */
+var slides=Array.from(document.querySelectorAll('.slide'));
+var total=slides.length;
+var cur=0;
+var animating=false;
+var BARS=['bar1','bar1b','bar2','bar2b','bar3','bar3b'];
+
+function resetBars(){
+  BARS.forEach(function(id){var el=document.getElementById(id);if(el)el.style.width='0%';});
+}
+function triggerBars(){
+  setTimeout(function(){
+    var vals={bar1:'20%',bar1b:'100%',bar2:'33%',bar2b:'100%',bar3:'30%',bar3b:'100%'};
+    BARS.forEach(function(id){var el=document.getElementById(id);if(el)el.style.width=vals[id];});
+  },350);
+}
+
+function goTo(n,dir){
+  if(animating||n<0||n>=total)return;
+  animating=true;
+  var prev=slides[cur];
+  var next=slides[n];
+
+  /* ① 离场：prev 滑出 */
+  prev.classList.remove('active');
+  if(dir>0) prev.classList.add('prev');
+  else prev.style.transform='translateX(40px)';
+
+  /* ② 入场：reflow 重置 CSS animation，然后加 active 触发动画 */
+  next.style.transform=dir>0?'translateX(40px)':'translateX(-40px)';
+  void next.offsetWidth; /* reflow：让浏览器重置 CSS animation 状态 */
+  next.style.transform='';
+  next.classList.add('active');
+
+  /* ③ 清理 prev */
+  setTimeout(function(){
+    prev.classList.remove('prev');
+    prev.style.transform='';
+    animating=false;
+  },600);
+
+  if(next.id==='s10') triggerBars();
+  else resetBars();
+
+  cur=n;
+  updateChrome();
+}
+
+function updateChrome(){
+  document.querySelector('#progress span').style.width=((cur+1)/total*100)+'%';
+}
+
+/* 键盘导航 */
+document.addEventListener('keydown',function(e){
+  if(e.key==='ArrowRight'||e.key===' '||e.key==='ArrowDown'){e.preventDefault();goTo(cur+1,1);}
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();goTo(cur-1,-1);}
+});
+
+/* 点击区域 */
+document.getElementById('stage').addEventListener('click',function(e){
+  var x=e.clientX/window.innerWidth;
+  if(x>0.6)goTo(cur+1,1);
+  else if(x<0.4)goTo(cur-1,-1);
+});
+
+/* 初始化：JS 主动加 active，和 Hermes 一样，确保动画每次都能播 */
+updateChrome();
+requestAnimationFrame(function(){
+  requestAnimationFrame(function(){
+    slides[0].classList.add('active');
+  });
+});
+
+/* ── Slide 09 · simple particle effect ──────────────── */
+(function(){
+  var container=document.getElementById('particles-demo');
+  if(!container)return;
+  var pArr=[];
+  for(var i=0;i<12;i++){
+    var p=document.createElement('div');
+    p.style.cssText='position:absolute;width:6px;height:6px;border-radius:50%;background:rgba(255,150,180,.6);pointer-events:none;';
+    p.style.left=Math.random()*100+'%';
+    p.style.top=Math.random()*100+'%';
+    container.appendChild(p);
+    pArr.push({el:p,x:Math.random()*100,y:Math.random()*100,vy:0.3+Math.random()*0.4,vx:(Math.random()-.5)*0.3});
+  }
+  function tick(){
+    pArr.forEach(function(p){
+      p.y+=p.vy;p.x+=p.vx;
+      if(p.y>105){p.y=-5;p.x=Math.random()*100;}
+      p.el.style.left=p.x+'%';p.el.style.top=p.y+'%';
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+</body>
+</html>

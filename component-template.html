@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>闪购工作台 · 组件模板</title>
+<style>
+:root {
+  --bg:     #010104; --panel:   #08080e; --surface: #0f0f1a;
+  --border: rgba(235,233,252,0.07);
+  --text-1: #ebe9fc; --text-2:  rgba(235,233,252,0.6);
+  --text-3: rgba(235,233,252,0.38); --text-4: rgba(235,233,252,0.2);
+  --yellow: #fad900; --green: #4ade80; --orange: #ffa203;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--text-1);
+  font-family: -apple-system, 'PingFang SC', sans-serif;
+  font-size: 14px; line-height: 1.6;
+}
+
+/* ── 顶栏 ── */
+.topbar {
+  display: flex; align-items: center; gap: 16px;
+  height: 56px; padding: 0 32px;
+  background: var(--panel); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 10;
+}
+.topbar-title { font-size: 14px; font-weight: 700; }
+.topbar-sub   { font-size: 12px; color: var(--text-3); }
+.spacer { flex: 1; }
+.btn-dl {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 16px; border-radius: 10px; border: none;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  background: linear-gradient(90deg, #fad900, #ffa203); color: #1a0a00;
+  text-decoration: none;
+}
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 10px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  background: rgba(255,255,255,0.06); color: var(--text-2);
+  border: 1px solid rgba(235,233,252,0.12); text-decoration: none;
+}
+
+/* ── 主体 ── */
+.main { max-width: 900px; margin: 0 auto; padding: 40px 32px 80px; }
+h2 {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-4);
+  margin: 36px 0 14px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.info-row {
+  display: flex; align-items: baseline; gap: 12px;
+  padding: 10px 14px; border-radius: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+.info-k { font-size: 11px; color: var(--text-4); min-width: 80px; }
+.info-v { font-size: 13px; color: var(--text-1); font-weight: 600; }
+.tip {
+  padding: 14px 18px; border-radius: 10px; margin: 14px 0;
+  background: rgba(250,217,0,0.05); border: 1px solid rgba(250,217,0,0.12);
+  font-size: 12px; color: rgba(250,217,0,0.65);
+}
+
+/* ── 代码块 ── */
+.code-wrap {
+  position: relative; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 12px;
+  overflow: hidden;
+}
+.code-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+.code-lang { font-size: 11px; color: var(--text-4); font-family: monospace; }
+.btn-copy {
+  margin-left: auto; padding: 4px 12px; border-radius: 6px;
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  background: rgba(250,217,0,0.1); color: var(--yellow);
+  border: 1px solid rgba(250,217,0,0.2);
+}
+.btn-copy:hover { background: rgba(250,217,0,0.18); }
+pre {
+  padding: 20px 24px; font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px; line-height: 1.8; color: var(--text-2);
+  overflow-x: auto; white-space: pre; max-height: 480px; overflow-y: auto;
+}
+pre .c  { color: var(--text-4); }
+pre .k  { color: #c084fc; }
+pre .s  { color: #86efac; }
+pre .n  { color: var(--yellow); }
+pre .t  { color: #60a5fa; }
+
+/* ── 预览区 ── */
+.preview-frame {
+  border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--border); margin-top: 12px;
+  background: #fff;
+}
+.preview-label {
+  font-size: 10px; color: var(--text-4); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.preview-label::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+</style>
+</head>
+<body>
+
+<!-- ── 顶栏 ── -->
+<div class="topbar">
+  <div>
+    <div class="topbar-title">组件开发模板</div>
+    <div class="topbar-sub">闪购营销设计工作台 · v1.0</div>
+  </div>
+  <div class="spacer"></div>
+  <a class="btn-secondary" href="component-spec.html">← 查看完整规范</a>
+  <a class="btn-dl" href="component-template.html" download="sg-component-template.html">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+    下载模板文件
+  </a>
+</div>
+
+<!-- ── 主体 ── -->
+<div class="main">
+
+  <div class="tip">
+    👋 这是一个 HTML 模板文件，用于开发闪购工作台的外部组件。<br>
+    <strong>使用方法：</strong>点右上角「下载模板文件」→ 用代码编辑器打开 → 把 TODO 部分改成你的内容 → 发给朱彦霖接入工具。
+  </div>
+
+  <h2>模板基本信息</h2>
+  <div class="info-row"><div class="info-k">画布尺寸</div><div class="info-v">750 × 424 px（头图标准尺寸，可改）</div></div>
+  <div class="info-row"><div class="info-k">通信方式</div><div class="info-v">window.postMessage（SG_ 前缀）</div></div>
+  <div class="info-row"><div class="info-k">导出格式</div><div class="info-v">canvas.toDataURL() → PNG</div></div>
+  <div class="info-row"><div class="info-k">配置接收</div><div class="info-v">监听 SG_SET_CONFIG 消息，获取颜色/文案/图片</div></div>
+
+  <h2>模板代码（完整可复制）</h2>
+  <div class="code-wrap" id="codeWrap">
+    <div class="code-header">
+      <span class="code-lang">HTML · sg-component-template.html</span>
+      <button class="btn-copy" onclick="copyCode()">复制全部代码</button>
+    </div>
+    <pre id="codeBlock">&lt;!DOCTYPE html&gt;
+&lt;html lang=<span class="s">"zh-CN"</span>&gt;
+&lt;head&gt;
+&lt;meta charset=<span class="s">"UTF-8"</span>&gt;
+
+<span class="c">&lt;!-- 必填 meta（工具读取这些信息）--&gt;</span>
+&lt;meta name=<span class="s">"sg-component"</span>       content=<span class="s">"true"</span>&gt;
+&lt;meta name=<span class="s">"sg-name"</span>            content=<span class="s">"组件中文名"</span>&gt;      <span class="c">&lt;!-- 如：头图动效 --&gt;</span>
+&lt;meta name=<span class="s">"sg-id"</span>              content=<span class="s">"your-comp-id"</span>&gt;  <span class="c">&lt;!-- 英文，如：header-anim --&gt;</span>
+&lt;meta name=<span class="s">"sg-canvas-width"</span>    content=<span class="s">"750"</span>&gt;
+&lt;meta name=<span class="s">"sg-canvas-height"</span>   content=<span class="s">"424"</span>&gt;
+&lt;meta name=<span class="s">"sg-version"</span>         content=<span class="s">"1.0.0"</span>&gt;
+&lt;meta name=<span class="s">"sg-author"</span>          content=<span class="s">"你的名字"</span>&gt;
+
+&lt;title&gt;组件名称&lt;/title&gt;
+&lt;style&gt;
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; }
+
+  <span class="c">/* ↓↓↓ 你的样式写在这里 ↓↓↓ */</span>
+  #canvas { display: block; }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;<span class="t">canvas</span> id=<span class="s">"canvas"</span> width=<span class="s">"750"</span> height=<span class="s">"424"</span>&gt;&lt;/<span class="t">canvas</span>&gt;
+
+&lt;script&gt;
+<span class="c">// ── 当前配置（工具会通过 SG_SET_CONFIG 消息更新）──────────</span>
+<span class="k">let</span> config = {
+  theme:  { primaryColor: <span class="s">'#fad900'</span>, bgColor: <span class="s">'#FFD9E5'</span> },
+  texts:  { title: <span class="s">'主标题'</span>, subtitle: <span class="s">'副标题'</span> },
+  images: { main: <span class="s">''</span> },
+  custom: { <span class="c">/* 你自己的参数 */</span> },
+}
+
+<span class="c">// ── 渲染函数（核心逻辑写在这里）──────────────────────────</span>
+<span class="k">function</span> <span class="n">render</span>(cfg) {
+  config = { ...config, ...cfg }
+  <span class="k">const</span> canvas = document.getElementById(<span class="s">'canvas'</span>)
+  <span class="k">const</span> ctx = canvas.getContext(<span class="s">'2d'</span>)
+
+  <span class="c">// ↓↓↓ 你的绘制代码写在这里 ↓↓↓</span>
+  ctx.fillStyle = config.theme.bgColor
+  ctx.fillRect(0, 0, 750, 424)
+  ctx.fillStyle = <span class="s">'#333'</span>
+  ctx.font = <span class="s">'bold 48px PingFang SC, sans-serif'</span>
+  ctx.textAlign = <span class="s">'center'</span>
+  ctx.textBaseline = <span class="s">'middle'</span>
+  ctx.fillText(config.texts.title, 375, 212)
+}
+
+<span class="c">// ── 导出 PNG（不要改这个函数）─────────────────────────────</span>
+<span class="k">function</span> <span class="n">exportPNG</span>() {
+  <span class="k">return</span> document.getElementById(<span class="s">'canvas'</span>).toDataURL(<span class="s">'image/png'</span>)
+}
+
+<span class="c">// ── 监听工具消息（不要改这段）────────────────────────────</span>
+window.addEventListener(<span class="s">'message'</span>, (e) => {
+  <span class="k">const</span> { type, payload } = e.data || {}
+  <span class="k">if</span> (type === <span class="s">'SG_SET_CONFIG'</span>) render(payload)
+  <span class="k">if</span> (type === <span class="s">'SG_EXPORT'</span>)
+    window.parent.postMessage({ type: <span class="s">'SG_EXPORT_RESULT'</span>, dataUrl: exportPNG() }, <span class="s">'*'</span>)
+  <span class="k">if</span> (type === <span class="s">'SG_PREVIEW'</span>)
+    window.parent.postMessage({ type: <span class="s">'SG_PREVIEW_RESULT'</span>, dataUrl: exportPNG() }, <span class="s">'*'</span>)
+})
+
+<span class="c">// ── 通知工具已就绪（不要改这段）──────────────────────────</span>
+window.addEventListener(<span class="s">'load'</span>, () => {
+  render(config)
+  window.parent.postMessage({
+    type: <span class="s">'SG_READY'</span>,
+    meta: {
+      name:   document.querySelector(<span class="s">'meta[name="sg-name"]'</span>).content,
+      id:     document.querySelector(<span class="s">'meta[name="sg-id"]'</span>).content,
+      width:  750, height: 424,
+    },
+  }, <span class="s">'*'</span>)
+})
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+  </div>
+
+  <h2>效果预览（模板默认渲染）</h2>
+  <div class="preview-label">canvas 输出（750 × 424，会被嵌入工具手机预览）</div>
+  <div class="preview-frame">
+    <canvas id="demo" width="750" height="424" style="width:100%;height:auto;display:block;"></canvas>
+  </div>
+
+  <div style="margin-top:32px;padding:16px 20px;background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.15);border-radius:10px;font-size:12px;color:rgba(74,222,128,0.7);">
+    ✅ 做好后把 HTML 文件发给朱彦霖，接入工具不需要你改 React 代码。
+  </div>
+
+</div>
+
+<script>
+// ── 复制代码功能 ──
+function copyCode() {
+  const raw = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+
+<!-- 必填 meta（工具读取这些信息）-->
+<meta name="sg-component"       content="true">
+<meta name="sg-name"            content="组件中文名">
+<meta name="sg-id"              content="your-comp-id">
+<meta name="sg-canvas-width"    content="750">
+<meta name="sg-canvas-height"   content="424">
+<meta name="sg-version"         content="1.0.0">
+<meta name="sg-author"          content="你的名字">
+
+<title>组件名称</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; }
+  /* ↓↓↓ 你的样式写在这里 ↓↓↓ */
+  #canvas { display: block; }
+</style>
+</head>
+<body>
+
+<canvas id="canvas" width="750" height="424"></canvas>
+
+<script>
+// ── 当前配置（工具会通过 SG_SET_CONFIG 消息更新）
+let config = {
+  theme:  { primaryColor: '#fad900', bgColor: '#FFD9E5' },
+  texts:  { title: '主标题', subtitle: '副标题' },
+  images: { main: '' },
+  custom: { /* 你自己的参数 */ },
+}
+
+// ── 渲染函数（核心逻辑写在这里）
+function render(cfg) {
+  config = { ...config, ...cfg }
+  const canvas = document.getElementById('canvas')
+  const ctx = canvas.getContext('2d')
+  // ↓↓↓ 你的绘制代码写在这里 ↓↓↓
+  ctx.fillStyle = config.theme.bgColor
+  ctx.fillRect(0, 0, 750, 424)
+  ctx.fillStyle = '#333'
+  ctx.font = 'bold 48px PingFang SC, sans-serif'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(config.texts.title, 375, 212)
+}
+
+// ── 导出 PNG（不要改这个函数）
+function exportPNG() {
+  return document.getElementById('canvas').toDataURL('image/png')
+}
+
+// ── 监听工具消息（不要改这段）
+window.addEventListener('message', (e) => {
+  const { type, payload } = e.data || {}
+  if (type === 'SG_SET_CONFIG') render(payload)
+  if (type === 'SG_EXPORT')
+    window.parent.postMessage({ type: 'SG_EXPORT_RESULT', dataUrl: exportPNG() }, '*')
+  if (type === 'SG_PREVIEW')
+    window.parent.postMessage({ type: 'SG_PREVIEW_RESULT', dataUrl: exportPNG() }, '*')
+})
+
+// ── 通知工具已就绪（不要改这段）
+window.addEventListener('load', () => {
+  render(config)
+  window.parent.postMessage({
+    type: 'SG_READY',
+    meta: {
+      name:   document.querySelector('meta[name="sg-name"]').content,
+      id:     document.querySelector('meta[name="sg-id"]').content,
+      width:  750, height: 424,
+    },
+  }, '*')
+})
+<\/script>
+</body>
+</html>`
+  navigator.clipboard.writeText(raw).then(() => {
+    const btn = document.querySelector('.btn-copy')
+    const orig = btn.textContent
+    btn.textContent = '已复制 ✓'
+    btn.style.background = 'rgba(74,222,128,0.15)'
+    btn.style.color = '#4ade80'
+    btn.style.borderColor = 'rgba(74,222,128,0.3)'
+    setTimeout(() => {
+      btn.textContent = orig
+      btn.style.background = ''
+      btn.style.color = ''
+      btn.style.borderColor = ''
+    }, 2000)
+  })
+}
+
+// ── 底部 canvas 预览 ──
+const c = document.getElementById('demo')
+const ctx = c.getContext('2d')
+ctx.fillStyle = '#FFD9E5'
+ctx.fillRect(0, 0, 750, 424)
+ctx.fillStyle = '#333'
+ctx.font = 'bold 48px PingFang SC, -apple-system, sans-serif'
+ctx.textAlign = 'center'
+ctx.textBaseline = 'middle'
+ctx.fillText('主标题（你的内容替换这里）', 375, 212)
+ctx.font = '24px PingFang SC, -apple-system, sans-serif'
+ctx.fillStyle = '#666'
+ctx.fillText('副标题', 375, 280)
+</script>
+
+</body>
+</html>

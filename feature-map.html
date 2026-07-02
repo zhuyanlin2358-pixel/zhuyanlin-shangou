@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>闪购会场组件工具 · 功能架构图</title>
+<style>
+  :root {
+    --bg: #0A0C10;
+    --card: #12151C;
+    --border: rgba(255,255,255,0.07);
+    --yellow: #FAD900;
+    --blue: #3B82F6;
+    --green: #22C55E;
+    --red: #EF4444;
+    --purple: #A855F7;
+    --orange: #F97316;
+    --cyan: #06B6D4;
+    --text1: rgba(255,255,255,0.92);
+    --text2: rgba(255,255,255,0.5);
+    --text3: rgba(255,255,255,0.28);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text1); font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; line-height: 1.6; overflow-x: hidden; }
+
+  /* ── 顶部 Hero ── */
+  .hero { padding: 64px 48px 48px; text-align: center; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(250,217,0,0.06) 0%, transparent 70%); pointer-events: none; }
+  .hero-tag { display: inline-block; padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(250,217,0,0.3); background: rgba(250,217,0,0.08); color: var(--yellow); font-size: 12px; font-weight: 600; letter-spacing: 1px; margin-bottom: 16px; }
+  .hero h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 12px; }
+  .hero h1 span { color: var(--yellow); }
+  .hero-sub { font-size: 14px; color: var(--text2); max-width: 480px; margin: 0 auto 32px; }
+  .hero-stats { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
+  .stat { text-align: center; }
+  .stat-num { font-size: 28px; font-weight: 800; color: var(--yellow); line-height: 1; }
+  .stat-label { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  /* ── 内容区 ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px 80px; }
+  .section { margin-bottom: 56px; }
+  .section-title { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* ── 7大工作区 ── */
+  .workspace-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .workspace-card { border: 1px solid var(--border); border-radius: 14px; padding: 20px; background: var(--card); transition: border-color 0.2s, transform 0.2s; cursor: default; }
+  .workspace-card:hover { border-color: rgba(255,255,255,0.15); transform: translateY(-2px); }
+  .workspace-card.featured { border-color: rgba(250,217,0,0.25); background: linear-gradient(135deg, rgba(250,217,0,0.04), var(--card)); grid-column: span 2; }
+  .workspace-card.delivery { border-color: rgba(59,130,246,0.25); background: linear-gradient(135deg, rgba(59,130,246,0.04), var(--card)); grid-column: span 3; }
+  .ws-icon { font-size: 24px; margin-bottom: 10px; }
+  .ws-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .ws-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .ws-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
+  .ws-tag { padding: 2px 8px; border-radius: 4px; font-size: 10px; background: rgba(255,255,255,0.06); color: var(--text2); }
+
+  /* ── 已完成组件 ── */
+  .comp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .comp-card { border: 1px solid var(--border); border-radius: 12px; padding: 16px; background: var(--card); }
+  .comp-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+  .badge-done { background: rgba(34,197,94,0.12); color: #22C55E; border: 1px solid rgba(34,197,94,0.2); }
+  .badge-plan { background: rgba(249,115,22,0.12); color: #F97316; border: 1px solid rgba(249,115,22,0.2); }
+  .comp-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .comp-id { font-size: 10px; color: var(--text3); font-family: monospace; margin-bottom: 6px; }
+  .comp-assets { font-size: 11px; color: var(--text2); line-height: 1.6; }
+
+  /* ── 数据流 ── */
+  .flow-card { border: 1px solid var(--border); border-radius: 14px; padding: 24px; background: var(--card); }
+  .flow-title { font-size: 13px; font-weight: 700; color: var(--yellow); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .flow-steps { display: flex; flex-direction: column; gap: 0; }
+  .flow-step { display: flex; gap: 16px; align-items: flex-start; }
+  .flow-line { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+  .flow-num { width: 26px; height: 26px; border-radius: 50%; background: rgba(250,217,0,0.12); border: 1px solid rgba(250,217,0,0.25); color: var(--yellow); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .flow-connector { width: 1px; flex: 1; background: var(--border); min-height: 16px; margin: 3px 0; }
+  .flow-content { padding-bottom: 16px; flex: 1; }
+  .flow-content-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .flow-content-desc { font-size: 11px; color: var(--text2); }
+
+  /* ── Context 体系 ── */
+  .context-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .ctx-card { border: 1px solid var(--border); border-radius: 10px; padding: 14px; background: var(--card); }
+  .ctx-name { font-size: 12px; font-weight: 700; font-family: monospace; color: var(--cyan); margin-bottom: 4px; }
+  .ctx-items { font-size: 11px; color: var(--text2); line-height: 1.7; }
+
+  /* ── 规则 ── */
+  .rule-list { display: flex; flex-direction: column; gap: 8px; }
+  .rule-item { display: flex; gap: 12px; border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; background: var(--card); }
+  .rule-id { font-size: 10px; font-weight: 700; color: var(--text3); font-family: monospace; min-width: 40px; }
+  .rule-name { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+  .rule-desc { font-size: 11px; color: var(--text2); }
+
+  /* ── Roadmap ── */
+  .roadmap-list { display: flex; flex-direction: column; gap: 8px; }
+  .roadmap-item { display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; background: var(--card); }
+  .roadmap-priority { font-size: 14px; flex-shrink: 0; }
+  .roadmap-name { font-size: 13px; font-weight: 600; flex: 1; }
+  .roadmap-desc { font-size: 11px; color: var(--text2); }
+  .roadmap-status { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; flex-shrink: 0; }
+  .status-pending { background: rgba(249,115,22,0.12); color: #F97316; border: 1px solid rgba(249,115,22,0.2); }
+  .status-wait { background: rgba(255,255,255,0.05); color: var(--text3); border: 1px solid var(--border); }
+
+  /* ── exportUtils 拆分说明 ── */
+  .split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .split-before { border: 1px solid rgba(239,68,68,0.2); border-radius: 12px; padding: 20px; background: rgba(239,68,68,0.04); }
+  .split-after { border: 1px solid rgba(34,197,94,0.2); border-radius: 12px; padding: 20px; background: rgba(34,197,94,0.04); }
+  .split-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+  .split-label.red { color: #EF4444; }
+  .split-label.green { color: #22C55E; }
+  .split-file { display: flex; gap: 8px; align-items: baseline; margin-bottom: 6px; }
+  .split-filename { font-size: 12px; font-family: monospace; color: var(--cyan); }
+  .split-info { font-size: 11px; color: var(--text2); }
+
+  /* ── 底部 ── */
+  .footer { text-align: center; padding: 32px; border-top: 1px solid var(--border); color: var(--text3); font-size: 11px; }
+
+  @media (max-width: 768px) {
+    .workspace-grid, .comp-grid, .context-grid, .split-grid { grid-template-columns: 1fr; }
+    .workspace-card.featured, .workspace-card.delivery { grid-column: span 1; }
+    .hero-stats { gap: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-tag">INTERNAL TOOL · 美团闪购</div>
+  <h1>会场组件自助设计工具<br><span>功能架构图</span></h1>
+  <p class="hero-sub">运营/设计师无代码配置会场 → 一键导出切图素材，消除设计到研发的反复沟通</p>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">7</div><div class="stat-label">已完成组件</div></div>
+    <div class="stat"><div class="stat-num">9</div><div class="stat-label">Context 状态树</div></div>
+    <div class="stat"><div class="stat-num">30+</div><div class="stat-label">导出素材类型</div></div>
+    <div class="stat"><div class="stat-num">8色</div><div class="stat-label">日常+大促色系</div></div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 7大工作区 -->
+  <div class="section">
+    <div class="section-title"><div class="dot" style="background:var(--yellow)"></div>七大工作区</div>
+    <div class="workspace-grid">
+      <div class="workspace-card featured">
+        <div class="ws-icon">🏗️</div>
+        <div class="ws-name">会场搭建（主工作区）</div>
+        <div class="ws-desc">可视化拖拽搭建活动页：选背景色 → 上传头图 → 加入组件 → 调整排序 → 导出</div>
+        <div class="ws-tags">
+          <span class="ws-tag">背景色导航（8+3色）</span>
+          <span class="ws-tag">手机预览画布</span>
+          <span class="ws-tag">图层面板</span>
+          <span class="ws-tag">组件属性配置</span>
+          <span class="ws-tag">一键色彩串联</span>
+        </div>
+      </div>
+      <div class="workspace-card">
+        <div class="ws-icon">🎰</div>
+        <div class="ws-name">老虎机工作室</div>
+        <div class="ws-desc">深度配置抽奖组件：配色方案/奖品图/弹窗/空态等完整素材</div>
+        <div class="ws-tags">
+          <span class="ws-tag">9套配色预设</span>
+          <span class="ws-tag">8类切图</span>
+        </div>
+      </div>
+      <div class="workspace-card" style="border-color:rgba(168,85,247,0.2);background:linear-gradient(135deg,rgba(168,85,247,0.03),var(--card))">
+        <div class="ws-icon">🧩</div>
+        <div class="ws-name">通用组件工作室</div>
+        <div class="ws-desc">楼层条/横滑Tab/红包/商品横滑 各自的深度配置页</div>
+        <div class="ws-tags">
+          <span class="ws-tag">楼层条</span>
+          <span class="ws-tag">横滑Tab</span>
+          <span class="ws-tag">红包</span>
+          <span class="ws-tag">商品横滑</span>
+        </div>
+      </div>
+      <div class="workspace-card delivery">
+        <div class="ws-icon">📦</div>
+        <div class="ws-name">交付中心（素材导出）</div>
+        <div class="ws-desc">会场配置完成后，进入交付中心：按组件分类显示所有素材，逐一预览 + 单张下载 / 全套打包ZIP</div>
+        <div class="ws-tags">
+          <span class="ws-tag">老虎机 8类素材</span>
+          <span class="ws-tag">红包 5类素材</span>
+          <span class="ws-tag">横滑Tab ZIP分文件夹</span>
+          <span class="ws-tag">商品横滑卡片</span>
+          <span class="ws-tag">楼层条</span>
+          <span class="ws-tag">头图+衔接条</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 已完成组件 -->
+  <div class="section">
+    <div class="section-title"><div class="dot" style="background:var(--green)"></div>已完成组件（7个）</div>
+    <div class="comp-grid">
+      <div class="comp-card">
+        <div class="comp-badge badge-done">✓ 已上线</div>
+        <div class="comp-name">老虎机</div>
+        <div class="comp-id">slot</div>
+        <div class="comp-assets">背景 750×242<br>标题/奖品/按钮/链接<br>弹窗按钮×7/结果页×6<br>空态图</div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-badge badge-done">✓ 已上线</div>
+        <div class="comp-name">楼层条</div>
+        <div class="comp-id">floor</div>
+        <div class="comp-assets">750 × 60 px<br>透明底 PNG<br>3款预设 + 自定义<br>多条批量导出</div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-badge badge-done">✓ 已上线</div>
+        <div class="comp-name">横滑 Tab</div>
+        <div class="comp-id">h-tab</div>
+        <div class="comp-assets">2/3/4 Tab<br>每位置 选中+未选中<br>按尺寸分文件夹 ZIP<br>7种配色</div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-badge badge-done">✓ 已上线</div>
+        <div class="comp-name">一键领券红包</div>
+        <div class="comp-id">coupon</div>
+        <div class="comp-assets">背景710×352<br>有tab背景710×416<br>腰封710×168<br>按钮474×96<br>单券背景710×236</div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-badge badge-done">✓ 已上线</div>
+        <div class="comp-name">商品横滑卡片</div>
+        <div class="comp-id">goods-scroll</div>
+        <div class="comp-assets">196 × 384 px<br>7色×有/无按钮<br>商品图可上传</div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-badge badge-done">✓ 已上线</div>
+        <div class="comp-name">N4 文字标签</div>
+        <div class="comp-id">n4</div>
+        <div class="comp-assets">8种变体<br>240 × 156 px<br>透明底 PNG<br>Figma精确字号</div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-badge badge-done">✓ 已上线</div>
+        <div class="comp-name">N2 品牌 Logo</div>
+        <div class="comp-id">n2</div>
+        <div class="comp-assets">有底色/描边<br>内置素材库</div>
+      </div>
+      <div class="comp-card" style="border-color:rgba(249,115,22,0.15);background:rgba(249,115,22,0.02)">
+        <div class="comp-badge badge-plan">⏳ 待规划</div>
+        <div class="comp-name">有Tab类红包</div>
+        <div class="comp-id">coupon-tab</div>
+        <div class="comp-assets">等Figma设计稿<br>Tab切换版红包样式</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 背景色串联流程 -->
+  <div class="section">
+    <div class="section-title"><div class="dot" style="background:var(--blue)"></div>核心流程：背景色串联</div>
+    <div class="flow-card">
+      <div class="flow-title">🎨 一键切色，全局联动</div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-line"><div class="flow-num">1</div><div class="flow-connector"></div></div>
+          <div class="flow-content"><div class="flow-content-title">选择色系 + 深/浅</div><div class="flow-content-desc">日常活动8色（红/粉/黄/橙/绿/青绿/青蓝/蓝）× 深色/浅色背景，或大促&amp;夜间3色×组件版本</div></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-line"><div class="flow-num">2</div><div class="flow-connector"></div></div>
+          <div class="flow-content"><div class="flow-content-title">setBgColor → 手机预览背景色即刻变</div><div class="flow-content-desc">bgColor 写入 VenueContext，手机帧背景实时更新</div></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-line"><div class="flow-num">3</div><div class="flow-connector"></div></div>
+          <div class="flow-content"><div class="flow-content-title">applyPreset → 老虎机配色方案切换</div><div class="flow-content-desc">轮盘颜色/标题色/按钮色/链接色，全部从 SLOT_PRESETS 读取</div></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-line"><div class="flow-num">4</div><div class="flow-connector"></div></div>
+          <div class="flow-content"><div class="flow-content-title">楼层条自动串联</div><div class="flow-content-desc">深色背景→白字；浅色背景→slot 标题色；两侧图标色 = slotTintFrom</div></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-line"><div class="flow-num">5</div><div class="flow-connector"></div></div>
+          <div class="flow-content"><div class="flow-content-title">横滑Tab/红包/横滑卡片 colorKey 切换</div><div class="flow-content-desc">按色系映射表自动选对应配色</div></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-line"><div class="flow-num">6</div></div>
+          <div class="flow-content"><div class="flow-content-title">遍历所有会场组件 → 重绘预览图</div><div class="flow-content-desc">Canvas 重新绘制每个组件 → updatePreview → 手机画布所有组件全部刷新</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Context 状态体系 -->
+  <div class="section">
+    <div class="section-title"><div class="dot" style="background:var(--cyan)"></div>Context 状态体系（9 个）</div>
+    <div class="context-grid">
+      <div class="ctx-card" style="border-color:rgba(250,217,0,0.2)">
+        <div class="ctx-name">VenueContext</div>
+        <div class="ctx-items">bgColor · items[] · headerUrl<br>animationConfig · headerMode</div>
+      </div>
+      <div class="ctx-card">
+        <div class="ctx-name">SlotContext</div>
+        <div class="ctx-items">slotTintFrom/To · titleColor<br>btnActiveFrom/To · prizes[]<br>9套 preset（SLOT_PRESETS）</div>
+      </div>
+      <div class="ctx-card">
+        <div class="ctx-name">FloorContext</div>
+        <div class="ctx-items">textColor · decoColor1/2<br>floors[]{id, text} · variant<br>patchConfig（函数式更新）</div>
+      </div>
+      <div class="ctx-card">
+        <div class="ctx-name">HTabContext</div>
+        <div class="ctx-items">colorKey（7色）<br>items[]{tabs[], activeIndex}<br>addItem · updateItem</div>
+      </div>
+      <div class="ctx-card">
+        <div class="ctx-name">CouponContext</div>
+        <div class="ctx-items">colorKey（7色）<br>titleText · btnText</div>
+      </div>
+      <div class="ctx-card">
+        <div class="ctx-name">GoodsScrollContext</div>
+        <div class="ctx-items">colorKey（7色）· styleVariant<br>hasButton · productName<br>productImageUrl</div>
+      </div>
+      <div class="ctx-card">
+        <div class="ctx-name">AppContext</div>
+        <div class="ctx-items">page（路由）· currentComp<br>toast 通知</div>
+      </div>
+      <div class="ctx-card">
+        <div class="ctx-name">N4Context</div>
+        <div class="ctx-items">variant（8种）· contents{}<br>8种价格标签文案</div>
+      </div>
+      <div class="ctx-card">
+        <div class="ctx-name">N2Context</div>
+        <div class="ctx-items">Logo 上传/配置<br>底色/描边/素材库</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 关键规则 -->
+  <div class="section">
+    <div class="section-title"><div class="dot" style="background:var(--orange)"></div>关键设计规则（Code Rules）</div>
+    <div class="rule-list">
+      <div class="rule-item">
+        <div class="rule-id">R-001</div>
+        <div><div class="rule-name">Canvas @2x 超采样</div><div class="rule-desc">所有 Canvas 内部 2× 渲染，drawXxx 绘完后 downsample() 缩回 1× 输出 → 高清切图</div></div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-id">R-002</div>
+        <div><div class="rule-name">楼层颜色串联规则</div><div class="rule-desc">isDarkBg=true → 文字白色；isDarkBg=false → 文字跟 slot.titleColor；两侧 icon = slotTintFrom（单色）</div></div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-id">R-003</div>
+        <div><div class="rule-name">组件预览宽度规则</div><div class="rule-desc">满宽组件（老虎机/楼层/横滑Tab/商品）无侧边留白；红包有 24px 侧边距（Figma实际设计值）</div></div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-id">R-004</div>
+        <div><div class="rule-name">字体两遍渲染</div><div class="rule-desc">preloadFonts() 完成前先用占位色渲染一遍（不白屏），字体加载完后精渲一遍（精确文字）</div></div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-id">R-005</div>
+        <div><div class="rule-name">子组件必须在模块顶层</div><div class="rule-desc">不能在父组件函数体内定义子组件，否则每次 re-render 重建组件类型，input 必定失焦</div></div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-id">R-006</div>
+        <div><div class="rule-name">patchConfig 函数式更新</div><div class="rule-desc">所有 Context 用 prev =&gt; ({...prev,...patch}) 函数式更新，防色轮/滑块拖动时 stale closure 导致颜色卡住</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- exportUtils 拆分说明 -->
+  <div class="section">
+    <div class="section-title"><div class="dot" style="background:var(--red)"></div>待优化：exportUtils.ts 拆分（代码健康）</div>
+    <div class="split-grid">
+      <div class="split-before">
+        <div class="split-label red">⚠️ 当前（神文件问题）</div>
+        <div class="split-file">
+          <span class="split-filename">exportUtils.ts</span>
+          <span class="split-info">1701 行，所有组件绘制函数混在一起</span>
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.7">
+          问题：修改红包相关时要在 1700 行里搜索；AI 读文件超长；单个函数出错难定位。
+        </div>
+      </div>
+      <div class="split-after">
+        <div class="split-label green">✓ 拆分后（各司其职）</div>
+        <div class="split-file"><span class="split-filename">shared.ts</span><span class="split-info">preloadFonts / downsample / downloadCanvas</span></div>
+        <div class="split-file"><span class="split-filename">slotExport.ts</span><span class="split-info">drawSlotBannerCanvas / drawSlotBgCanvas / ...</span></div>
+        <div class="split-file"><span class="split-filename">couponExport.ts</span><span class="split-info">drawCouponBg / drawCouponWaistband / ...</span></div>
+        <div class="split-file"><span class="split-filename">floorExport.ts</span><span class="split-info">drawFloorCanvas</span></div>
+        <div class="split-file"><span class="split-filename">hTabExport.ts</span><span class="split-info">drawHTabCanvas / drawHTabSingleTabCanvas</span></div>
+        <div class="split-file"><span class="split-filename">goodsExport.ts</span><span class="split-info">drawGoodsScrollCard / drawGoodsScrollVenuePreview</span></div>
+        <div class="split-file"><span class="split-filename">index.ts</span><span class="split-info">re-export 所有函数 → 现有代码无需改动</span></div>
+        <div style="font-size:11px;color:#22C55E;margin-top:8px">✓ 现有所有 import 路径不变</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Roadmap -->
+  <div class="section">
+    <div class="section-title"><div class="dot" style="background:var(--purple)"></div>规划中功能（Roadmap）</div>
+    <div class="roadmap-list">
+      <div class="roadmap-item">
+        <div class="roadmap-priority">⭐⭐⭐</div>
+        <div class="roadmap-name">配置另存为模板</div>
+        <div class="roadmap-desc">一套配色配置可保存复用，切换不同活动主题时一键应用</div>
+        <div class="roadmap-status status-pending">待开发</div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-priority">⭐⭐⭐</div>
+        <div class="roadmap-name">版本号 / 历史记录</div>
+        <div class="roadmap-desc">每次导出打版本标记，可查看/回溯历史配置</div>
+        <div class="roadmap-status status-pending">待开发</div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-priority">⭐⭐</div>
+        <div class="roadmap-name">横滑Tab 浅色系版本</div>
+        <div class="roadmap-desc">选中=深色按钮色，未选中=浅色背景色（与深色系反向，适配浅色背景会场）</div>
+        <div class="roadmap-status status-pending">待开发</div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-priority">⭐⭐</div>
+        <div class="roadmap-name">日常活动深色背景 Preset</div>
+        <div class="roadmap-desc">8色系深色背景各自的老虎机配色方案，目前暂用浅色版</div>
+        <div class="roadmap-status status-pending">设计稿待定</div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-priority">⭐⭐</div>
+        <div class="roadmap-name">有Tab类红包</div>
+        <div class="roadmap-desc">带分类Tab的红包样式，需Figma设计稿</div>
+        <div class="roadmap-status status-wait">等设计稿</div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-priority">⭐</div>
+        <div class="roadmap-name">商品图素材库</div>
+        <div class="roadmap-desc">内置精选鲜花/商品图，直接在工具里挑选使用，无需自行准备图片</div>
+        <div class="roadmap-status status-wait">待规划</div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-priority">⭐</div>
+        <div class="roadmap-name">exportUtils 文件拆分</div>
+        <div class="roadmap-desc">1700行神文件→6个按组件分类的小文件，不影响任何功能，仅改善代码可维护性</div>
+        <div class="roadmap-status status-pending">技术优化</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  闪购会场组件自助设计工具 · 功能架构图 · 内部文档<br>
+  最后更新：2026-07-01 · <a href="/proposal.html" style="color:var(--yellow);text-decoration:none">→ 产品汇报PPT</a>
+</div>
+
+</body>
+</html>

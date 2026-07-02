@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>闪购工作台 · 动效组件模板</title>
+<style>
+:root {
+  --bg:     #010104; --panel:   #08080e; --surface: #0f0f1a;
+  --border: rgba(235,233,252,0.07);
+  --text-1: #ebe9fc; --text-2: rgba(235,233,252,0.6);
+  --text-3: rgba(235,233,252,0.38); --text-4: rgba(235,233,252,0.2);
+  --yellow: #fad900; --orange: #ffa203; --green: #4ade80; --red: rgba(239,68,68,0.8);
+  --grad: linear-gradient(90deg, #fad900, #ffa203);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--text-1);
+  font-family: -apple-system, 'PingFang SC', sans-serif;
+  font-size: 14px; line-height: 1.6;
+}
+.topbar {
+  display: flex; align-items: center; gap: 16px;
+  height: 56px; padding: 0 32px;
+  background: var(--panel); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 10;
+}
+.spacer { flex: 1; }
+.btn-dl {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 16px; border-radius: 10px; border: none;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  background: var(--grad); color: #1a0a00; text-decoration: none;
+  font-family: inherit;
+}
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 10px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  background: rgba(255,255,255,0.06); color: var(--text-2);
+  border: 1px solid rgba(235,233,252,0.12); text-decoration: none;
+  font-family: inherit;
+}
+.main { max-width: 900px; margin: 0 auto; padding: 40px 32px 80px; }
+h2 {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-4);
+  margin: 36px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.diff-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 16px; border-radius: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+.diff-tag {
+  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px;
+  white-space: nowrap; flex-shrink: 0; margin-top: 2px;
+}
+.tag-new { background: rgba(74,222,128,0.12); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+.tag-same { background: rgba(255,255,255,0.05); color: var(--text-3); border: 1px solid var(--border); }
+.tag-warn { background: rgba(250,217,0,0.1); color: var(--yellow); border: 1px solid rgba(250,217,0,0.2); }
+.code-wrap {
+  position: relative; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 12px 0;
+}
+.code-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+.code-lang { font-size: 11px; color: var(--text-4); font-family: monospace; }
+.btn-copy {
+  margin-left: auto; padding: 4px 12px; border-radius: 6px;
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  background: rgba(250,217,0,0.1); color: var(--yellow);
+  border: 1px solid rgba(250,217,0,0.2); font-family: inherit;
+}
+pre {
+  padding: 20px 24px; font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px; line-height: 1.8; color: var(--text-2);
+  overflow-x: auto; max-height: 560px; overflow-y: auto;
+}
+pre .c { color: var(--text-4); }
+pre .k { color: #c084fc; }
+pre .s { color: #86efac; }
+pre .n { color: var(--yellow); }
+pre .t { color: #60a5fa; }
+pre .w { color: var(--orange); }
+.tip {
+  padding: 14px 18px; border-radius: 10px; margin: 14px 0;
+  font-size: 12px;
+}
+.tip-yellow { background: rgba(250,217,0,0.05); border: 1px solid rgba(250,217,0,0.15); color: rgba(250,217,0,0.7); }
+.tip-green  { background: rgba(74,222,128,0.05); border: 1px solid rgba(74,222,128,0.15); color: rgba(74,222,128,0.7); }
+.tip-red    { background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.15); color: rgba(239,68,68,0.7); }
+
+/* 动效演示 canvas */
+.demo-wrap {
+  border-radius: 12px; overflow: hidden; border: 1px solid var(--border);
+  background: #000; margin-top: 12px;
+}
+.demo-label {
+  font-size: 10px; color: var(--text-4); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.demo-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+@keyframes btnSpin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- 顶栏 -->
+<div class="topbar">
+  <div>
+    <div style="font-size:14px;font-weight:700;">动效组件模板</div>
+    <div style="font-size:12px;color:var(--text-3);">闪购营销设计工作台 · 专用于动效类组件</div>
+  </div>
+  <div class="spacer"></div>
+  <a class="btn-secondary" href="component-spec.html">← 通用规范</a>
+  <a class="btn-secondary" href="component-template.html">静态组件模板</a>
+  <a class="btn-dl" href="animation-template.html" download="sg-animation-template.html">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+    下载动效模板
+  </a>
+</div>
+
+<div class="main">
+
+  <div class="tip tip-yellow">
+    ⚡ 这是动效组件专用模板，与静态组件模板的核心区别：<strong>动画循环管理</strong> 和 <strong>暂停后导出</strong>。
+    如果你做的是静态切图，用 <a href="component-template.html" style="color:var(--yellow)">静态模板</a> 即可。
+  </div>
+
+  <!-- 与静态模板的区别 -->
+  <h2>与静态组件模板的区别</h2>
+  <div class="diff-row">
+    <span class="diff-tag tag-new">动效专有</span>
+    <div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:3px;">requestAnimationFrame 动画循环</div>
+      <div style="font-size:12px;color:var(--text-3);">需要维护一个持续运行的动画帧循环，并在需要时能暂停和恢复</div>
+    </div>
+  </div>
+  <div class="diff-row">
+    <span class="diff-tag tag-new">动效专有</span>
+    <div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:3px;">SG_EXPORT 必须先暂停再截图</div>
+      <div style="font-size:12px;color:var(--text-3);">收到导出请求时，先停止动画 → canvas.toDataURL() → 恢复动画。否则截到的是空帧</div>
+    </div>
+  </div>
+  <div class="diff-row">
+    <span class="diff-tag tag-new">动效专有</span>
+    <div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:3px;">SG_SET_CONFIG 实时更新动效参数</div>
+      <div style="font-size:12px;color:var(--text-3);">工具传来新配置（颜色/速度等），需要在不重启的情况下实时生效</div>
+    </div>
+  </div>
+  <div class="diff-row">
+    <span class="diff-tag tag-same">与静态相同</span>
+    <div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:3px;">Meta 标签、SG_READY、画布尺寸</div>
+      <div style="font-size:12px;color:var(--text-3);">sg-component / sg-name / sg-id / sg-canvas-width / sg-canvas-height 完全一样</div>
+    </div>
+  </div>
+  <div class="diff-row">
+    <span class="diff-tag tag-warn">注意</span>
+    <div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:3px;">page 隐藏时自动暂停，恢复时继续</div>
+      <div style="font-size:12px;color:var(--text-3);">监听 visibilitychange，标签切走时停止动画避免性能浪费</div>
+    </div>
+  </div>
+
+  <!-- 完整模板代码 -->
+  <h2>完整模板代码</h2>
+  <div class="code-wrap" id="codeWrap">
+    <div class="code-header">
+      <span class="code-lang">HTML · sg-animation-template.html</span>
+      <button class="btn-copy" onclick="copyCode()">复制全部代码</button>
+    </div>
+    <pre>&lt;!DOCTYPE html&gt;
+&lt;html lang=<span class="s">"zh-CN"</span>&gt;
+&lt;head&gt;
+&lt;meta charset=<span class="s">"UTF-8"</span>&gt;
+
+<span class="c">&lt;!-- 必填 meta（与静态模板相同）--&gt;</span>
+&lt;meta name=<span class="s">"sg-component"</span>       content=<span class="s">"true"</span>&gt;
+&lt;meta name=<span class="s">"sg-name"</span>            content=<span class="s">"动效名称"</span>&gt;
+&lt;meta name=<span class="s">"sg-id"</span>              content=<span class="s">"your-anim-id"</span>&gt;
+&lt;meta name=<span class="s">"sg-canvas-width"</span>    content=<span class="s">"750"</span>&gt;
+&lt;meta name=<span class="s">"sg-canvas-height"</span>   content=<span class="s">"424"</span>&gt;
+&lt;meta name=<span class="s">"sg-version"</span>         content=<span class="s">"1.0.0"</span>&gt;
+&lt;meta name=<span class="s">"sg-author"</span>          content=<span class="s">"你的名字"</span>&gt;
+
+&lt;title&gt;动效名称&lt;/title&gt;
+&lt;style&gt;
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; }
+  #canvas { display: block; }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;<span class="t">canvas</span> id=<span class="s">"canvas"</span> width=<span class="s">"750"</span> height=<span class="s">"424"</span>&gt;&lt;/<span class="t">canvas</span>&gt;
+
+&lt;script&gt;
+<span class="c">// ── 画布 ────────────────────────────────────────────────────────────────</span>
+<span class="k">const</span> canvas = document.getElementById(<span class="s">'canvas'</span>)
+<span class="k">const</span> ctx    = canvas.getContext(<span class="s">'2d'</span>)
+
+<span class="c">// ── 当前配置（工具通过 SG_SET_CONFIG 更新）──────────────────────────────</span>
+<span class="k">let</span> config = {
+  theme: {
+    primaryColor: <span class="s">'#fad900'</span>,
+    bgColor:      <span class="s">'#FFD9E5'</span>,
+  },
+  custom: {
+    <span class="c">// ↓ 你的动效专属参数</span>
+    speed:    <span class="s">1.0</span>,
+    density:  <span class="s">50</span>,
+    color:    <span class="s">'#ff9ebc'</span>,
+    duration: <span class="s">3</span>,
+  },
+}
+
+<span class="c">// ── 动画状态 ─────────────────────────────────────────────────────────────</span>
+<span class="k">let</span> animationId = <span class="k">null</span>   <span class="c">// requestAnimationFrame 返回的 id</span>
+<span class="k">let</span> isPaused    = <span class="k">false</span>  <span class="c">// 是否已暂停</span>
+
+<span class="c">// ── 渲染单帧（你的核心动效逻辑写这里）──────────────────────────────────</span>
+<span class="k">function</span> <span class="n">drawFrame</span>(timestamp) {
+  ctx.clearRect(<span class="s">0</span>, <span class="s">0</span>, <span class="s">750</span>, <span class="s">424</span>)
+
+  <span class="c">// ↓↓↓ 你的绘制代码 ↓↓↓</span>
+  ctx.fillStyle = config.theme.bgColor
+  ctx.fillRect(<span class="s">0</span>, <span class="s">0</span>, <span class="s">750</span>, <span class="s">424</span>)
+  <span class="c">// ... 粒子、波纹、光晕等动效 ...</span>
+}
+
+<span class="c">// ── 启动动画循环 ─────────────────────────────────────────────────────────</span>
+<span class="k">function</span> <span class="n">startAnimation</span>() {
+  isPaused = <span class="k">false</span>
+  <span class="k">function</span> loop(ts) {
+    <span class="k">if</span> (isPaused) <span class="k">return</span>          <span class="c">// 暂停时直接退出循环</span>
+    drawFrame(ts)
+    animationId = requestAnimationFrame(loop)
+  }
+  animationId = requestAnimationFrame(loop)
+}
+
+<span class="c">// ── 暂停动画循环 ─────────────────────────────────────────────────────────</span>
+<span class="k">function</span> <span class="n">pauseAnimation</span>() {
+  isPaused = <span class="k">true</span>
+  <span class="k">if</span> (animationId) {
+    cancelAnimationFrame(animationId)
+    animationId = <span class="k">null</span>
+  }
+}
+
+<span class="c">// ── 实时应用新配置（不重启动画）─────────────────────────────────────────</span>
+<span class="k">function</span> <span class="n">applyConfig</span>(newConfig) {
+  <span class="c">// 深合并，不替换整个对象</span>
+  <span class="k">if</span> (newConfig.theme)  config.theme  = { ...config.theme,  ...newConfig.theme }
+  <span class="k">if</span> (newConfig.custom) config.custom = { ...config.custom, ...newConfig.custom }
+  <span class="c">// 动效参数立刻在下一帧生效，不需要重启</span>
+}
+
+<span class="c">// ── 监听消息（工具 → 动效）──────────────────────────────────────────────</span>
+window.addEventListener(<span class="s">'message'</span>, (e) => {
+  <span class="k">const</span> { type, payload } = e.data || {}
+
+  <span class="k">switch</span> (type) {
+
+    <span class="c">// 工具传来新配置（颜色/速度/密度等）</span>
+    <span class="k">case</span> <span class="s">'SG_SET_CONFIG'</span>:
+      applyConfig(payload)
+      <span class="k">break</span>
+
+    <span class="c">// ⚠️ 关键：先暂停 → 截图 → 恢复，否则截到空帧</span>
+    <span class="k">case</span> <span class="s">'SG_EXPORT'</span>:
+      pauseAnimation()
+      drawFrame(<span class="s">0</span>)                           <span class="c">// 确保当前帧已渲染</span>
+      <span class="k">const</span> dataUrl = canvas.toDataURL(<span class="s">'image/png'</span>)
+      window.parent.postMessage({ type: <span class="s">'SG_EXPORT_RESULT'</span>, dataUrl }, <span class="s">'*'</span>)
+      startAnimation()                        <span class="c">// 恢复动画</span>
+      <span class="k">break</span>
+
+    <span class="c">// 工具请求预览截图（不暂停，直接截当前帧）</span>
+    <span class="k">case</span> <span class="s">'SG_PREVIEW'</span>:
+      window.parent.postMessage({
+        type: <span class="s">'SG_PREVIEW_RESULT'</span>,
+        dataUrl: canvas.toDataURL(<span class="s">'image/png'</span>)
+      }, <span class="s">'*'</span>)
+      <span class="k">break</span>
+  }
+})
+
+<span class="c">// ── 页面隐藏时暂停，恢复时继续（节省性能）──────────────────────────────</span>
+document.addEventListener(<span class="s">'visibilitychange'</span>, () => {
+  <span class="k">if</span> (document.hidden) pauseAnimation()
+  <span class="k">else</span> startAnimation()
+})
+
+<span class="c">// ── 启动并通知工具就绪 ───────────────────────────────────────────────────</span>
+window.addEventListener(<span class="s">'load'</span>, () => {
+  startAnimation()   <span class="c">// 先跑起来</span>
+
+  window.parent.postMessage({
+    type: <span class="s">'SG_READY'</span>,
+    meta: {
+      name:   document.querySelector(<span class="s">'meta[name="sg-name"]'</span>).content,
+      id:     document.querySelector(<span class="s">'meta[name="sg-id"]'</span>).content,
+      width:  <span class="s">750</span>,
+      height: <span class="s">424</span>,
+    },
+  }, <span class="s">'*'</span>)
+})
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+  </div>
+
+  <!-- 关键点说明 -->
+  <h2>三个关键点详解</h2>
+
+  <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:8px;">
+
+    <div style="padding:16px 20px;background:var(--surface);border:1px solid rgba(74,222,128,0.2);border-radius:10px;">
+      <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:8px;">① 动画循环：isPaused 标志位控制</div>
+      <div style="font-size:12px;color:var(--text-3);line-height:1.8;">
+        不要用 <code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;font-family:monospace;">clearInterval</code>，用 <code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;font-family:monospace;">cancelAnimationFrame + isPaused</code>。
+        暂停时设 isPaused = true，loop 函数在下一帧检测到就退出，不留僵尸帧。
+      </div>
+    </div>
+
+    <div style="padding:16px 20px;background:var(--surface);border:1px solid rgba(250,217,0,0.2);border-radius:10px;">
+      <div style="font-size:13px;font-weight:700;color:var(--yellow);margin-bottom:8px;">② SG_EXPORT：暂停 → drawFrame(0) → 截图 → 恢复</div>
+      <div style="font-size:12px;color:var(--text-3);line-height:1.8;">
+        收到 SG_EXPORT 时动画可能刚好在两帧之间，canvas 内容不完整。
+        先 <code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;font-family:monospace;">pauseAnimation()</code> →
+        再 <code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;font-family:monospace;">drawFrame(0)</code> 确保完整帧 →
+        再截图，截完后 <code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;font-family:monospace;">startAnimation()</code> 恢复。
+      </div>
+    </div>
+
+    <div style="padding:16px 20px;background:var(--surface);border:1px solid rgba(96,165,250,0.2);border-radius:10px;">
+      <div style="font-size:13px;font-weight:700;color:#60a5fa;margin-bottom:8px;">③ SG_SET_CONFIG：深合并，不重启</div>
+      <div style="font-size:12px;color:var(--text-3);line-height:1.8;">
+        工具实时传颜色/主题变化时，只更新 config 对象，不要重启动画。
+        用 <code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;font-family:monospace;">{ ...config.custom, ...newConfig.custom }</code> 合并，
+        下一个 drawFrame 自动读新值生效。
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 实时演示 -->
+  <h2>效果演示（粒子动效示例）</h2>
+  <div class="demo-label">canvas 输出实时预览 · 750 × 424 px</div>
+  <div class="demo-wrap">
+    <canvas id="demo" width="750" height="424" style="width:100%;height:auto;display:block;"></canvas>
+  </div>
+
+  <div style="margin-top:32px;padding:16px 20px;background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.15);border-radius:10px;font-size:12px;color:rgba(74,222,128,0.7);">
+    ✅ 做好后把 HTML 文件发给朱彦霖，他来接入工具。接口不变的情况下，以后更新只需要替换 HTML 文件。
+  </div>
+
+</div>
+
+<script>
+// ── 复制代码 ──
+function copyCode() {
+  const raw = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="sg-component"       content="true">
+<meta name="sg-name"            content="动效名称">
+<meta name="sg-id"              content="your-anim-id">
+<meta name="sg-canvas-width"    content="750">
+<meta name="sg-canvas-height"   content="424">
+<meta name="sg-version"         content="1.0.0">
+<meta name="sg-author"          content="你的名字">
+<title>动效名称</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; }
+  #canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="canvas" width="750" height="424"></canvas>
+<script>
+const canvas = document.getElementById('canvas')
+const ctx    = canvas.getContext('2d')
+
+let config = {
+  theme:  { primaryColor: '#fad900', bgColor: '#FFD9E5' },
+  custom: { speed: 1.0, density: 50, color: '#ff9ebc', duration: 3 },
+}
+
+let animationId = null
+let isPaused    = false
+
+// ↓ 你的核心动效逻辑
+function drawFrame(timestamp) {
+  ctx.clearRect(0, 0, 750, 424)
+  ctx.fillStyle = config.theme.bgColor
+  ctx.fillRect(0, 0, 750, 424)
+  // ... 你的绘制代码 ...
+}
+
+function startAnimation() {
+  isPaused = false
+  function loop(ts) {
+    if (isPaused) return
+    drawFrame(ts)
+    animationId = requestAnimationFrame(loop)
+  }
+  animationId = requestAnimationFrame(loop)
+}
+
+function pauseAnimation() {
+  isPaused = true
+  if (animationId) { cancelAnimationFrame(animationId); animationId = null }
+}
+
+function applyConfig(newConfig) {
+  if (newConfig.theme)  config.theme  = { ...config.theme,  ...newConfig.theme }
+  if (newConfig.custom) config.custom = { ...config.custom, ...newConfig.custom }
+}
+
+window.addEventListener('message', (e) => {
+  const { type, payload } = e.data || {}
+  switch (type) {
+    case 'SG_SET_CONFIG':
+      applyConfig(payload)
+      break
+    case 'SG_EXPORT':
+      pauseAnimation()
+      drawFrame(0)
+      const dataUrl = canvas.toDataURL('image/png')
+      window.parent.postMessage({ type: 'SG_EXPORT_RESULT', dataUrl }, '*')
+      startAnimation()
+      break
+    case 'SG_PREVIEW':
+      window.parent.postMessage({ type: 'SG_PREVIEW_RESULT', dataUrl: canvas.toDataURL('image/png') }, '*')
+      break
+  }
+})
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) pauseAnimation()
+  else startAnimation()
+})
+
+window.addEventListener('load', () => {
+  startAnimation()
+  window.parent.postMessage({
+    type: 'SG_READY',
+    meta: {
+      name:   document.querySelector('meta[name="sg-name"]').content,
+      id:     document.querySelector('meta[name="sg-id"]').content,
+      width: 750, height: 424,
+    },
+  }, '*')
+})
+<\/script>
+</body>
+</html>`
+
+  navigator.clipboard.writeText(raw).then(() => {
+    const btn = document.querySelector('.btn-copy')
+    const orig = btn.textContent
+    btn.textContent = '已复制 ✓'
+    btn.style.cssText += ';background:rgba(74,222,128,0.15);color:#4ade80;border-color:rgba(74,222,128,0.3)'
+    setTimeout(() => { btn.textContent = orig; btn.style.cssText = '' }, 2000)
+  })
+}
+
+// ── 底部 demo：粒子动效示例 ──
+const c   = document.getElementById('demo')
+const ctx = c.getContext('2d')
+const W = 750, H = 424
+
+// 生成粒子
+const particles = Array.from({ length: 80 }, () => ({
+  x: Math.random() * W,
+  y: Math.random() * H,
+  r: Math.random() * 3 + 1,
+  vx: (Math.random() - 0.5) * 0.8,
+  vy: (Math.random() - 0.5) * 0.8,
+  alpha: Math.random() * 0.6 + 0.2,
+  hue: Math.random() * 60 + 320, // 粉色系
+}))
+
+function drawDemo() {
+  ctx.fillStyle = 'rgba(10,2,20,0.15)'
+  ctx.fillRect(0, 0, W, H)
+
+  particles.forEach(p => {
+    p.x += p.vx
+    p.y += p.vy
+    if (p.x < 0) p.x = W
+    if (p.x > W) p.x = 0
+    if (p.y < 0) p.y = H
+    if (p.y > H) p.y = 0
+
+    ctx.beginPath()
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+    ctx.fillStyle = `hsla(${p.hue}, 100%, 75%, ${p.alpha})`
+    ctx.fill()
+  })
+
+  // 连线
+  particles.forEach((a, i) => {
+    particles.slice(i + 1).forEach(b => {
+      const d = Math.hypot(a.x - b.x, a.y - b.y)
+      if (d < 80) {
+        ctx.beginPath()
+        ctx.moveTo(a.x, a.y)
+        ctx.lineTo(b.x, b.y)
+        ctx.strokeStyle = `rgba(255,160,200,${0.15 * (1 - d / 80)})`
+        ctx.lineWidth = 0.5
+        ctx.stroke()
+      }
+    })
+  })
+
+  requestAnimationFrame(drawDemo)
+}
+
+// 初始化背景
+ctx.fillStyle = '#0a0214'
+ctx.fillRect(0, 0, W, H)
+drawDemo()
+</script>
+
+</body>
+</html>
