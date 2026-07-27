@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- SG 组件协议 -->
+  <meta name="sg-component" content="true">
+  <meta name="sg-name" content="动效工作室">
+  <meta name="sg-id" content="motion-fx">
+  <meta name="sg-canvas-width" content="750">
+  <meta name="sg-canvas-height" content="424">
+  <meta name="sg-version" content="2.1.0">
+  <meta name="sg-author" content="shangou-team">
+
+  <title>动效工作室 V2</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+    #canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="750" height="424"></canvas>
+
+  <script>
+    /**
+     * 动效工作室 V2.0
+     * - 支持外部底图传入 (images.main)
+     * - 可扩展的动效系统
+     * - 完整的 SG_* 协议实现
+     */
+
+    // ============ 配置状态 ============
+    const state = {
+      canvas: null,
+      ctx: null,
+      width: 750,
+      height: 424,
+
+      // 底图
+      baseImage: null,
+      bgColor: '#FFD9E5',
+
+      // 动效配置
+      effects: {
+        active: ['petal'],  // 当前激活的动效
+        config: {
+          speed: 1,      // 0.5 - 2.0
+          density: 1,    // 0.5 - 2.0
+          size: 1        // 0.5 - 2.0
+        }
+      },
+
+      // 粒子系统
+      particles: [],
+      animationId: null,
+      lastTime: 0
+    }
+
+    // ============ 动效注册表（可扩展） ============
+    const EffectRegistry = {
+      // 花瓣飘落
+      petal: {
+        name: '花瓣飘落',
+        init: (count) => {
+          return Array.from({ length: count }, () => ({
+            x: Math.random() * state.width,
+            y: Math.random() * state.height - state.height,
+            size: (5 + Math.random() * 8) * state.effects.config.size,
+            speedY: (1 + Math.random() * 2) * state.effects.config.speed,
+            speedX: (Math.random() - 0.5) * 0.5,
+            rotation: Math.random() * Math.PI * 2,
+            rotationSpeed: (Math.random() - 0.5) * 0.02,
+            opacity: 0.6 + Math.random() * 0.4,
+            color: `hsla(${340 + Math.random() * 40}, 70%, 80%, ${0.6 + Math.random() * 0.4})`
+          }))
+        },
+        update: (p) => {
+          p.y += p.speedY
+          p.x += p.speedX + Math.sin(p.y * 0.01) * 0.3
+          p.rotation += p.rotationSpeed
+
+          // 循环
+          if (p.y > state.height + 20) {
+            p.y = -20
+            p.x = Math.random() * state.width
+          }
+        },
+        draw: (ctx, p) => {
+          ctx.save()
+          ctx.translate(p.x, p.y)
+          ctx.rotate(p.rotation)
+          ctx.globalAlpha = p.opacity
+          ctx.fillStyle = p.color
+
+          // 画花瓣（椭圆）
+          ctx.beginPath()
+          ctx.ellipse(0, 0, p.size, p.size * 0.6, 0, 0, Math.PI * 2)
+          ctx.fill()
+
+          ctx.restore()
+        }
+      },
+
+      // 星光闪烁（示例：gzq 可以扩展更多）
+      sparkle: {
+        name: '星光闪烁',
+        init: (count) => {
+          return Array.from({ length: count }, () => ({
+            x: Math.random() * state.width,
+            y: Math.random() * state.height,
+            size: (2 + Math.random() * 4) * state.effects.config.size,
+            opacity: Math.random(),
+            opacitySpeed: (0.02 + Math.random() * 0.03) * state.effects.config.speed,
+            phase: Math.random() * Math.PI * 2
+          }))
+        },
+        update: (p) => {
+          p.phase += p.opacitySpeed
+          p.opacity = 0.3 + Math.abs(Math.sin(p.phase)) * 0.7
+        },
+        draw: (ctx, p) => {
+          ctx.save()
+          ctx.globalAlpha = p.opacity
+          ctx.fillStyle = '#fff'
+
+          // 画十字星
+          const s = p.size
+          ctx.beginPath()
+          ctx.moveTo(p.x, p.y - s)
+          ctx.lineTo(p.x + s * 0.3, p.y - s * 0.3)
+          ctx.lineTo(p.x + s, p.y)
+          ctx.lineTo(p.x + s * 0.3, p.y + s * 0.3)
+          ctx.lineTo(p.x, p.y + s)
+          ctx.lineTo(p.x - s * 0.3, p.y + s * 0.3)
+          ctx.lineTo(p.x - s, p.y)
+          ctx.lineTo(p.x - s * 0.3, p.y - s * 0.3)
+          ctx.closePath()
+          ctx.fill()
+
+          ctx.restore()
+        }
+      }
+    }
+
+    // ============ 初始化 ============
+    function init() {
+      state.canvas = document.getElementById('canvas')
+      state.ctx = state.canvas.getContext('2d')
+
+      // 通知父窗口已就绪
+      notifyReady()
+
+      // 开始渲染循环
+      requestAnimationFrame(renderLoop)
+    }
+
+    function notifyReady() {
+      window.parent.postMessage({
+        type: 'SG_READY',
+        meta: {
+          name: document.querySelector('meta[name="sg-name"]').content,
+          id: document.querySelector('meta[name="sg-id"]').content,
+          width: state.width,
+          height: state.height,
+          version: document.querySelector('meta[name="sg-version"]').content
+        }
+      }, '*')
+    }
+
+    // ============ 配置处理 ============
+    function applyConfig(config) {
+      console.log('[motion-fx] 接收配置:', config)
+
+      // 处理底图
+      if (config.images?.main) {
+        loadBaseImage(config.images.main)
+      } else {
+        // 无底图，用背景色
+        state.baseImage = null
+        state.bgColor = config.theme?.bgColor || '#FFD9E5'
+      }
+
+      // 处理动效配置
+      if (config.custom) {
+        state.effects.active = config.custom.activeEffects || ['petal']
+        state.effects.config = {
+          speed: config.custom.config?.speed ?? 1,
+          density: config.custom.config?.density ?? 1,
+          size: config.custom.config?.size ?? 1
+        }
+      }
+
+      // 重新初始化粒子
+      initParticles()
+    }
+
+    function loadBaseImage(dataUrl) {
+      const img = new Image()
+      img.onload = () => {
+        state.baseImage = img
+        console.log('[motion-fx] 底图加载成功')
+      }
+      img.onerror = () => {
+        console.error('[motion-fx] 底图加载失败，使用背景色')
+        state.baseImage = null
+      }
+      img.src = dataUrl
+    }
+
+    function initParticles() {
+      state.particles = []
+
+      state.effects.active.forEach(effectId => {
+        const effect = EffectRegistry[effectId]
+        if (!effect) {
+          console.warn(`[motion-fx] 未知动效: ${effectId}`)
+          return
+        }
+
+        const count = Math.floor(30 * state.effects.config.density)
+        const particles = effect.init(count)
+        particles.forEach(p => p.effectId = effectId)
+        state.particles.push(...particles)
+      })
+
+      console.log(`[motion-fx] 初始化 ${state.particles.length} 个粒子`)
+    }
+
+    // ============ 渲染循环 ============
+    function renderLoop(timestamp) {
+      const dt = timestamp - state.lastTime
+      state.lastTime = timestamp
+
+      const ctx = state.ctx
+
+      // 清空画布
+      ctx.clearRect(0, 0, state.width, state.height)
+
+      // 1. 绘制底图
+      if (state.baseImage) {
+        ctx.drawImage(state.baseImage, 0, 0, state.width, state.height)
+      } else {
+        ctx.fillStyle = state.bgColor
+        ctx.fillRect(0, 0, state.width, state.height)
+      }
+
+      // 2. 更新并绘制粒子
+      state.particles.forEach(p => {
+        const effect = EffectRegistry[p.effectId]
+        if (effect) {
+          effect.update(p)
+          effect.draw(ctx, p)
+        }
+      })
+
+      state.animationId = requestAnimationFrame(renderLoop)
+    }
+
+    // ============ 导出功能 ============
+    function exportPNG() {
+      // 直接导出当前 canvas
+      const dataUrl = state.canvas.toDataURL('image/png')
+
+      window.parent.postMessage({
+        type: 'SG_EXPORT_RESULT',
+        dataUrl: dataUrl
+      }, '*')
+
+      console.log('[motion-fx] 已导出 PNG')
+    }
+
+    // ============ 消息监听 ============
+    window.addEventListener('message', (e) => {
+      const { type, payload } = e.data || {}
+
+      switch (type) {
+        case 'SG_SET_CONFIG':
+          applyConfig(payload)
+          break
+
+        case 'SG_EXPORT':
+          exportPNG()
+          break
+
+        case 'SG_PREVIEW':
+          // 预览模式：导出但不返回
+          const previewData = state.canvas.toDataURL('image/png')
+          window.parent.postMessage({
+            type: 'SG_PREVIEW_RESULT',
+            dataUrl: previewData
+          }, '*')
+          break
+      }
+    })
+
+    // ============ 启动 ============
+    window.addEventListener('load', init)
+
+    // ============ 扩展指南（给 gzq） ============
+    /*
+     * 如何添加新动效：
+     *
+     * 1. 在 EffectRegistry 中添加新对象：
+     *    myEffect: {
+     *      name: '我的动效',
+     *      init: (count) => { return [...] },  // 初始化粒子数组
+     *      update: (particle) => { ... },      // 更新粒子状态
+     *      draw: (ctx, particle) => { ... }    // 绘制粒子
+     *    }
+     *
+     * 2. 在工具配置中通过 activeEffects: ['myEffect'] 启用
+     *
+     * 示例参数说明：
+     * - count: 粒子数量（已根据 density 调整）
+     * - speed: 速度系数（0.5-2.0）
+     * - size: 大小系数（0.5-2.0）
+     */
+  </script>
+</body>
+</html>

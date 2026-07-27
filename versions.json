@@ -1,0 +1,11 @@
+{
+  "versions": [
+    {
+      "version": "0.1.0",
+      "timestamp": "2026-07-14T00:00:00.000Z",
+      "manifestUrl": "./releases/0.1.0/manifest.json",
+      "changelog": "初始版本",
+      "stable": true
+    }
+  ]
+}

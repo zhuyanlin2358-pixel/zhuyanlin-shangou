@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>闪购工作台 · 组件开发完整指南</title>
+<style>
+:root {
+  --bg:     #010104; --panel:   #08080e; --surface: #0f0f1a;
+  --border: rgba(235,233,252,0.07);
+  --text-1: #ebe9fc; --text-2:  rgba(235,233,252,0.6);
+  --text-3: rgba(235,233,252,0.38); --text-4: rgba(235,233,252,0.2);
+  --yellow: #fad900; --green: #4ade80; --orange: #ffa203;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text-1); font-family: -apple-system, 'PingFang SC', sans-serif; font-size: 14px; line-height: 1.6; }
+
+/* ── 顶栏 ── */
+.topbar { display: flex; align-items: center; gap: 16px; height: 56px; padding: 0 32px; background: var(--panel); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+.topbar-title { font-size: 14px; font-weight: 700; }
+.topbar-sub   { font-size: 12px; color: var(--text-3); }
+.spacer { flex: 1; }
+.btn-dl { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: 10px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; background: linear-gradient(90deg, #fad900, #ffa203); color: #1a0a00; text-decoration: none; }
+.btn-secondary { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; background: rgba(255,255,255,0.06); color: var(--text-2); border: 1px solid rgba(235,233,252,0.12); text-decoration: none; }
+
+/* ── 主体 ── */
+.main { max-width: 1000px; margin: 0 auto; padding: 40px 32px 80px; }
+h2 { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-4); margin: 36px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 13px; font-weight: 600; color: var(--text-1); margin: 24px 0 12px; }
+.info-row { display: flex; align-items: baseline; gap: 12px; padding: 10px 14px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); margin-bottom: 6px; }
+.info-k { font-size: 11px; color: var(--text-4); min-width: 100px; }
+.info-v { font-size: 13px; color: var(--text-1); font-weight: 600; }
+.tip { padding: 14px 18px; border-radius: 10px; margin: 14px 0; background: rgba(250,217,0,0.05); border: 1px solid rgba(250,217,0,0.12); font-size: 12px; color: rgba(250,217,0,0.65); }
+.tip.warn { background: rgba(239,68,68,0.05); border-color: rgba(239,68,68,0.15); color: rgba(239,68,68,0.7); }
+.tip.success { background: rgba(74,222,128,0.05); border-color: rgba(74,222,128,0.15); color: rgba(74,222,128,0.7); }
+
+/* ── 标签切换 ── */
+.tab-nav { display: flex; gap: 4px; margin-bottom: 24px; flex-wrap: wrap; }
+.tab-btn { flex: 1; min-width: 120px; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; color: var(--text-3); border: 1px solid transparent; transition: all 0.15s; }
+.tab-btn:hover { color: var(--text-1); }
+.tab-btn.active { background: var(--surface); color: var(--yellow); border-color: rgba(250,217,0,0.3); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── 代码块 ── */
+.code-wrap { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0; }
+.code-header { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02); }
+.code-lang { font-size: 11px; color: var(--text-4); font-family: monospace; }
+.btn-copy { margin-left: auto; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; background: rgba(250,217,0,0.1); color: var(--yellow); border: 1px solid rgba(250,217,0,0.2); }
+.btn-copy:hover { background: rgba(250,217,0,0.18); }
+pre { padding: 20px 24px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; line-height: 1.8; color: var(--text-2); overflow-x: auto; white-space: pre; max-height: 480px; overflow-y: auto; }
+pre .c  { color: var(--text-4); }
+pre .k  { color: #c084fc; }
+pre .s  { color: #86efac; }
+pre .n  { color: var(--yellow); }
+pre .t  { color: #60a5fa; }
+
+/* ── 表格 ── */
+table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px; }
+th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+th { color: var(--text-4); font-weight: 600; background: var(--surface); }
+td { color: var(--text-2); }
+tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* ── 步骤 ── */
+.step { display: flex; gap: 16px; margin: 20px 0; padding: 16px; background: var(--surface); border-radius: 10px; border: 1px solid var(--border); }
+.step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--yellow); color: #1a0a00; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step-content { flex: 1; }
+.step-title { font-size: 13px; font-weight: 600; color: var(--text-1); margin-bottom: 6px; }
+.step-desc { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+
+/* ── 颜色卡片 ── */
+.color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin: 16px 0; }
+.color-card { padding: 12px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); }
+.color-preview { width: 100%; height: 40px; border-radius: 6px; margin-bottom: 8px; }
+.color-name { font-size: 11px; color: var(--text-1); font-weight: 600; }
+.color-hex { font-size: 10px; color: var(--text-3); font-family: monospace; }
+
+/* ── 预览区 ── */
+.preview-frame { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-top: 12px; background: #fff; }
+</style>
+</head>
+<body>
+
+<!-- ── 顶栏 ── -->
+<div class="topbar">
+  <div>
+    <div class="topbar-title">组件开发完整指南</div>
+    <div class="topbar-sub">闪购营销设计工作台 · 协作规范 v1.0</div>
+  </div>
+  <div class="spacer"></div>
+  <a class="btn-secondary" href="/">← 返回工具</a>
+</div>
+
+<!-- ── 主体 ── -->
+<div class="main">
+
+  <div class="tip success">
+    👋 本指南面向外部协作者（如gzq）及其AI Agent。<br>
+    <strong>核心原则：</strong>不需要懂React，只需按规范写HTML，即可接入闪购工具。
+  </div>
+
+  <!-- ── 标签切换 ── -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('guide')">📖 开发指南</button>
+    <button class="tab-btn" onclick="switchTab('protocol')">📡 SG协议</button>
+    <button class="tab-btn" onclick="switchTab('design')">🎨 设计规范</button>
+    <button class="tab-btn" onclick="switchTab('template')">📝 代码模板</button>
+  </div>
+
+  <!-- ── 开发指南面板 ── -->
+  <div id="tab-guide" class="tab-panel active">
+
+    <h2>3步完成组件贡献</h2>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">获取模板并开发</div>
+        <div class="step-desc">
+          下载下方「代码模板」标签页的模板文件，或复制基础模板代码。<br>
+          把模板发给你的AI Agent，描述你想要的组件功能，让AI帮你生成完整代码。<br>
+          <strong>自测要点：</strong>在浏览器打开HTML文件，控制台模拟SG_CONFIG消息，看组件是否正确响应。
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">提交审核</div>
+        <div class="step-desc">
+          把HTML文件发给<strong>朱彦霖</strong>，附带以下信息：<br>
+          • 组件ID（英文，如my-component）<br>
+          • 组件名称（中文，如"我的动效组件"）<br>
+          • 画布尺寸（如750×424）<br>
+          • 配置项列表（如bgColor, title等）
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">上线使用</div>
+        <div class="step-desc">
+          朱彦霖审核通过后，会手动放入 <code>public/components/</code> 并注册到 <code>registry.json</code>。<br>
+          组件上线后，你可以在闪购工具的「组件库」中看到并使用它。
+        </div>
+      </div>
+    </div>
+
+    <h2>给你的AI Agent的Prompt</h2>
+    <div class="code-wrap">
+      <div class="code-header">
+        <span class="code-lang">Prompt · 复制发给AI</span>
+        <button class="btn-copy" onclick="copyPrompt()">复制</button>
+      </div>
+      <pre id="promptCode">我需要开发一个闪购工具的外部HTML组件。
+
+【组件功能】：[描述你的组件，如"一个带头图动效的营销组件"]
+【画布尺寸】：[如750×424]
+
+【技术规范】
+1. 使用Canvas API绘制UI（不要用html2canvas）
+2. 画布尺寸必须是声明尺寸的2倍（@2x），导出时用toDataURL
+3. 必须实现SG_*消息协议：
+   - SG_CONFIG：接收配置并更新画面
+   - SG_EXPORT：导出PNG预览图并返回dataURL
+4. 代码必须在一个HTML文件内
+5. 可以引入外部CDN（如GSAP动画库）
+6. 支持深浅色模式切换
+
+【配置项】
+- bgColor: 背景色（字符串，如#FF0000）
+- title: 标题文字（字符串）
+- titleColor: 标题颜色（字符串）
+- [其他你需要的配置项...]
+
+【输出要求】
+生成完整的、可直接运行的HTML文件代码。包含：
+1. 完整的HTML结构
+2. CSS样式（在&lt;style&gt;标签内）
+3. JavaScript代码（在&lt;script&gt;标签内）
+4. 中文注释说明关键逻辑
+5. 测试用的默认配置
+
+参考：http://localhost:5173/component-template.html</pre>
+    </div>
+
+    <h2>常见问题</h2>
+
+    <div class="info-row">
+      <div class="info-k">需要会React吗？</div>
+      <div class="info-v">不需要。你只需要写HTML+JavaScript，工具通过iframe加载你的代码。</div>
+    </div>
+    <div class="info-row">
+      <div class="info-k">怎么调试组件？</div>
+      <div class="info-v">直接用浏览器打开HTML文件，在控制台模拟SG_CONFIG和SG_EXPORT消息。</div>
+    </div>
+    <div class="info-row">
+      <div class="info-k">可以用第三方库吗？</div>
+      <div class="info-v">可以。引入可信CDN，如GSAP：https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js</div>
+    </div>
+    <div class="info-row">
+      <div class="info-k">审核多久？</div>
+      <div class="info-v">通常1-2天。朱彦霖会检查安全、协议、导出功能等。</div>
+    </div>
+  </div>
+
+  <!-- ── SG协议面板 ── -->
+  <div id="tab-protocol" class="tab-panel">
+    <h2>SG_* 消息协议</h2>
+    <div class="tip">
+      这是工具与你的组件通信的标准协议。所有消息都通过 <code>window.postMessage</code> 发送。
+    </div>
+
+    <h3>工具发给你的消息（你必须接收）</h3>
+    <table>
+      <tr>
+        <th>消息类型</th>
+        <th>payload</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td><code>SG_CONFIG</code></td>
+        <td>{ bgColor, title, ... }</td>
+        <td>更新组件配置，你需要根据新配置重绘</td>
+      </tr>
+      <tr>
+        <td><code>SG_EXPORT</code></td>
+        <td>{ format: 'png' }</td>
+        <td>触发导出，你需要返回PNG图片</td>
+      </tr>
+      <tr>
+        <td><code>SG_PREVIEW</code></td>
+        <td>{ readOnly: true }</td>
+        <td>预览模式，组件只读展示</td>
+      </tr>
+    </table>
+
+    <h3>你发给工具的消息（你必须发送）</h3>
+    <table>
+      <tr>
+        <th>消息类型</th>
+        <th>payload</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td><code>SG_EXPORT_RESULT</code></td>
+        <td>{ dataURL, componentId }</td>
+        <td>导出结果，dataURL是base64 PNG</td>
+      </tr>
+      <tr>
+        <td><code>SG_READY</code></td>
+        <td>{ meta: {name, id, width, height} }</td>
+        <td>组件加载完成通知（可选）</td>
+      </tr>
+    </table>
+
+    <h3>代码示例：接收配置</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">JavaScript</span></div>
+      <pre>window.addEventListener('message', (e) => {
+  const { type, payload } = e.data;
+
+  if (type === 'SG_CONFIG') {
+    <span class="c">// 更新配置并重绘</span>
+    config = { ...config, ...payload };
+    draw();
+  }
+
+  if (type === 'SG_EXPORT') {
+    <span class="c">// 导出PNG</span>
+    const canvas = document.getElementById('canvas');
+    const dataURL = canvas.toDataURL('image/png');
+
+    window.parent.postMessage({
+      type: 'SG_EXPORT_RESULT',
+      payload: { dataURL, componentId: 'your-id' }
+    }, '*');
+  }
+});</pre>
+    </div>
+
+    <h3>安全规范（必遵）</h3>
+    <div class="tip warn">
+      ❌ 禁止使用：eval()、new Function()、document.write()、localStorage、sessionStorage<br>
+      ✅ 推荐：Canvas API、可信CDN、window.addEventListener('message', ...)
+    </div>
+  </div>
+
+  <!-- ── 设计规范面板 ── -->
+  <div id="tab-design" class="tab-panel">
+
+    <h2>会场背景色系统（11色）</h2>
+    <div class="tip">
+      你的组件必须支持深浅色模式切换，以下是工具所有的背景色选项。
+    </div>
+
+    <h3>日常活动 · 浅色模式</h3>
+    <div class="color-grid">
+      <div class="color-card"><div class="color-preview" style="background: #FFCCCC;"></div><div class="color-name">红色</div><div class="color-hex">#FFCCCC</div></div>
+      <div class="color-card"><div class="color-preview" style="background: #FFCFEC;"></div><div class="color-name">粉色</div><div class="color-hex">#FFCFEC</div></div>
+      <div class="color-card"><div class="color-preview" style="background: #FFF38F;"></div><div class="color-name">黄色</div><div class="color-hex">#FFF38F</div></div>
+      <div class="color-card"><div class="color-preview" style="background: #F6D5A2;"></div><div class="color-name">橙色</div><div class="color-hex">#F6D5A2</div></div>
+      <div class="color-card"><div class="color-preview" style="background: #AEF380;"></div><div class="color-name">绿色</div><div class="color-hex">#AEF380</div></div>
+      <div class="color-card"><div class="color-preview" style="background: #AAFFBC;"></div><div class="color-name">青绿</div><div class="color-hex">#AAFFBC</div></div>
+      <div class="color-card"><div class="color-preview" style="background: #A5FDF9;"></div><div class="color-name">青蓝</div><div class="color-hex">#A5FDF9</div></div>
+      <div class="color-card"><div class="color-preview" style="background: #CCF0FF;"></div><div class="color-name">蓝色</div><div class="color-hex">#CCF0FF</div></div>
+    </div>
+
+    <h3>大促 & 夜间 · 深色模式</h3>
+    <div class="color-grid">
+      <div class="color-card"><div class="color-preview" style="background: #FB0000;"></div><div class="color-name">大促红</div><div class="color-hex">#FB0000</div></div>
+      <div class="color-card"><div class="color-preview" style="background: #FC1A76;"></div><div class="color-name">玫红</div><div class="color-hex">#FC1A76</div></div>
+      <div class="color-card"><div class="color-preview" style="background: #2D186E;"></div><div class="color-name">夜间</div><div class="color-hex">#2D186E</div></div>
+    </div>
+
+    <h3>深浅色文字规范</h3>
+    <table>
+      <tr><th>背景类型</th><th>主文字色</th><th>次要文字色</th></tr>
+      <tr><td>浅色背景（日常8色）</td><td><code>#1A1A1A</code></td><td><code>rgba(0,0,0,0.6)</code></td></tr>
+      <tr><td>深色背景（大促/夜间）</td><td><code>#FFFFFF</code></td><td><code>rgba(255,255,255,0.8)</code></td></tr>
+    </table>
+
+    <h2>深度编辑页面布局规范</h2>
+    <div class="tip">
+      如果你的组件需要深度编辑功能（如gzq的动效工作室），遵循以下布局规范。
+      <br><br>
+      <b style="color:var(--yellow);">做动效组件?</b> 动效头图有额外的「渲染引擎一致性」要求(标题由 gzq 文字层渲染、drawText:false、text.mainTitle 约束字段、字体同一文件注入、防狂闪),详见
+      <a href="animation-template.html" target="_blank" style="color:var(--yellow);">动效组件模板</a>
+      和 <code>docs/component-spec-motion-fx.md</code>(spec V4.0)。静态组件无需这些。
+    </div>
+
+    <h3>整体布局</h3>
+    <iframe src="ui-tokens.html" style="width: 100%; height: 400px; border: 1px solid var(--border); border-radius: 12px; background: var(--sl-panel);"></iframe>
+    <div class="tip" style="margin-top: 12px;">
+      上图来自 <a href="ui-tokens.html" target="_blank" style="color: var(--yellow);">ui-tokens.html</a>，展示了标准的「左面板 + 中预览 + 右配置」布局结构
+    </div>
+
+    <h3>配置面板规范</h3>
+    <table>
+      <tr><th>区域</th><th>宽度</th><th>内容</th><th>样式</th></tr>
+      <tr><td>面板背景</td><td>260-300px</td><td>—</td><td>var(--surface) #0f0f1a</td></tr>
+      <tr><td>分组标题</td><td>100%</td><td>STEP 1 / 背景选择</td><td>11px 大写 灰色</td></tr>
+      <tr><td>选项卡片</td><td>100%</td><td>可点击选择</td><td>圆角10px 悬停高亮</td></tr>
+      <tr><td>滑块</td><td>100%</td><td>数值调节</td><td>黄色进度条 #FAD900</td></tr>
+      <tr><td>色块</td><td>40×40px</td><td>颜色选择</td><td>圆角8px 选中边框</td></tr>
+    </table>
+
+    <h3>预览区域规范</h3>
+    <table>
+      <tr><th>元素</th><th>规范</th></tr>
+      <tr><td>画布容器</td><td>深色背景 #010104，圆角12px</td></tr>
+      <tr><td>Canvas画布</td><td>居中显示，保持比例</td></tr>
+      <tr><td>尺寸标注</td><td>右上角显示 "750 × 424 px"</td></tr>
+      <tr><td>操作按钮</td><td>底部居中，播放/暂停/导出</td></tr>
+    </table>
+
+    <h2>UI设计令牌</h2>
+    <div class="tip">
+      完整的UI设计令牌见 <a href="ui-tokens.html" target="_blank" style="color: var(--yellow);">ui-tokens.html →</a><br>
+      以下是<strong>深度编辑页面</strong>必需的核心模块。
+    </div>
+
+    <h3>页面结构</h3>
+    <div class="tip">
+      参考 <a href="ui-tokens.html" target="_blank" style="color: var(--yellow);">ui-tokens.html</a> 中的「整体布局」图示：
+    </div>
+    <ul style="color: var(--text-2); font-size: 12px; line-height: 2; margin: 12px 0;">
+      <li><strong>顶栏 56px</strong>：左侧组件名称+返回按钮，右侧导出按钮</li>
+      <li><strong>左侧面板 200px</strong>：组件结构/款式配色/腰封/按钮等选项</li>
+      <li><strong>中间预览区</strong>：flex-1，Canvas画布居中显示</li>
+      <li><strong>右侧面板 260-480px</strong>：配置参数（配色预设/滑块/色块等）</li>
+    </ul>
+
+    <h3>按钮组件</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">Button Styles</span></div>
+      <pre><span class="c">/* 主按钮（CTA）*/</span>
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 16px; border-radius: 10px; border: none;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  background: linear-gradient(90deg, #fad900, #ffa203);
+  color: #1a1000;
+}
+
+<span class="c">/* 次要按钮（幽灵按钮）*/</span>
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 10px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  background: rgba(255,255,255,0.06);
+  color: rgba(235,233,252,0.6);
+  border: 1px solid rgba(235,233,252,0.12);
+}
+
+<span class="c">/* 危险按钮 */</span>
+.btn-danger {
+  background: rgba(239,68,68,0.1);
+  color: rgba(239,68,68,0.8);
+  border: 1px solid rgba(239,68,68,0.2);
+}</pre>
+    </div>
+
+    <h3>配置面板组件</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">Config Panel</span></div>
+      <pre><span class="c">/* 面板容器 */</span>
+.config-panel {
+  width: 260px;
+  background: #08080e;
+  border-right: 1px solid rgba(235,233,252,0.07);
+  padding: 16px;
+}
+
+<span class="c">/* 分组标题（STEP 1）*/</span>
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(235,233,252,0.2);
+  margin-bottom: 12px;
+}
+
+<span class="c">/* 选项卡片 */</span>
+.option-card {
+  padding: 12px;
+  background: #0f0f1a;
+  border: 1px solid rgba(235,233,252,0.07);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.option-card:hover {
+  border-color: rgba(235,233,252,0.12);
+}
+.option-card.active {
+  border-color: rgba(250,217,0,0.3);
+  background: rgba(250,217,0,0.05);
+}</pre>
+    </div>
+
+    <h3>预览区域组件</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">Preview Area</span></div>
+      <pre><span class="c">/* 预览容器 */</span>
+.preview-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #010104;
+}
+
+<span class="c">/* Canvas包装器 */</span>
+.canvas-wrapper {
+  background: #0f0f1a;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.45);
+}
+
+<span class="c">/* 底部控制栏 */</span>
+.controls {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+}</pre>
+    </div>
+
+    <h3>滑块组件</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">Slider</span></div>
+      <pre><span class="c">/* 滑块轨道 */</span>
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  outline: none;
+}
+
+<span class="c">/* 滑块已填充部分（黄色）*/</span>
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: #fad900;
+  border-radius: 50%;
+  cursor: pointer;
+  margin-top: -5px;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  background: linear-gradient(to right, #fad900 0%, #fad900 var(--value), rgba(255,255,255,0.1) var(--value));
+}</pre>
+    </div>
+
+    <h3>颜色选择器</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">Color Picker</span></div>
+      <pre><span class="c">/* 色块网格 */</span>
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+<span class="c">/* 单个色块 */</span>
+.color-swatch {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+}
+.color-swatch:hover {
+  transform: scale(1.05);
+}
+.color-swatch.active {
+  border-color: rgba(255,255,255,0.8);
+  box-shadow: 0 0 0 2px rgba(250,217,0,0.3);
+}</pre>
+    </div>
+
+    <h3>核心CSS变量（必需）</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">CSS Variables</span></div>
+      <pre>:root {
+  <span class="c">/* 背景 */</span>
+  --sl-bg:      #010104;   <span class="c">/* 页面背景 */</span>
+  --sl-panel:   #08080e;   <span class="c">/* 面板背景 */</span>
+  --sl-surface: #0f0f1a;   <span class="c">/* 卡片表面 */</span>
+
+  <span class="c">/* 边框 */</span>
+  --sl-border:    rgba(235,233,252,0.07);
+  --sl-border-md: rgba(235,233,252,0.12);
+
+  <span class="c">/* 文字 */</span>
+  --sl-text-1: #ebe9fc;                    <span class="c">/* 主文字 */</span>
+  --sl-text-2: rgba(235,233,252,0.60);     <span class="c">/* 次要 */</span>
+  --sl-text-3: rgba(235,233,252,0.38);     <span class="c">/* 辅助 */</span>
+  --sl-text-4: rgba(235,233,252,0.20);     <span class="c">/* 禁用 */</span>
+
+  <span class="c">/* 品牌色 */</span>
+  --sl-primary:      #fad900;
+  --sl-accent:       #ffa203;
+  --sl-primary-grad: linear-gradient(90deg, #fad900, #ffa203);
+
+  <span class="c">/* 间距 */</span>
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+
+  <span class="c">/* 圆角 */</span>
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}</pre>
+    </div>
+
+    <h3>完整设计令牌</h3>
+    <div class="tip">
+      更多设计令牌（字体、阴影、间距系统等）请参考：<br>
+      <a href="ui-tokens.html" target="_blank" style="color: var(--yellow); font-weight: 600;">→ 查看完整 ui-tokens.html</a>
+    </div>
+    <table>
+      <tr><th>变量名</th><th>色值</th><th>用途</th></tr>
+      <tr><td><code>--sl-bg</code></td><td>#010104</td><td>页面背景（最底层）</td></tr>
+      <tr><td><code>--sl-panel</code></td><td>#08080e</td><td>面板背景（侧边栏/顶栏）</td></tr>
+      <tr><td><code>--sl-surface</code></td><td>#0f0f1a</td><td>卡片表面（配置项/按钮）</td></tr>
+    </table>
+
+    <h3>边框</h3>
+    <table>
+      <tr><th>变量名</th><th>色值</th><th>用途</th></tr>
+      <tr><td><code>--sl-border</code></td><td>rgba(235,233,252,0.07)</td><td>默认边框</td></tr>
+      <tr><td><code>--sl-border-md</code></td><td>rgba(235,233,252,0.12)</td><td>悬停/激活边框</td></tr>
+    </table>
+
+    <h3>文字层次</h3>
+    <table>
+      <tr><th>变量名</th><th>色值</th><th>用途</th></tr>
+      <tr><td><code>--sl-text-1</code></td><td>#ebe9fc</td><td>主文字（标题）</td></tr>
+      <tr><td><code>--sl-text-2</code></td><td>rgba(235,233,252,0.60)</td><td>次要文字（描述）</td></tr>
+      <tr><td><code>--sl-text-3</code></td><td>rgba(235,233,252,0.38)</td><td>辅助文字（提示）</td></tr>
+      <tr><td><code>--sl-text-4</code></td><td>rgba(235,233,252,0.20)</td><td>禁用/占位符</td></tr>
+    </table>
+
+    <h3>品牌色</h3>
+    <table>
+      <tr><th>变量名</th><th>色值</th><th>用途</th></tr>
+      <tr><td><code>--sl-primary</code></td><td>#fad900</td><td>主按钮/强调色</td></tr>
+      <tr><td><code>--sl-accent</code></td><td>#ffa203</td><td>渐变终点/悬停</td></tr>
+      <tr><td><code>--sl-cta-text</code></td><td>#1a1000</td><td>黄按钮上的文字</td></tr>
+      <tr><td><code>--sl-primary-grad</code></td><td>linear-gradient(90deg, #fad900, #ffa203)</td><td>CTA按钮渐变</td></tr>
+    </table>
+
+    <h3>间距系统（8px基准）</h3>
+    <table>
+      <tr><th>变量名</th><th>值</th><th>用途</th></tr>
+      <tr><td><code>--space-xs</code></td><td>4px</td><td>紧凑间距（图标内边距）</td></tr>
+      <tr><td><code>--space-sm</code></td><td>8px</td><td>小间距（行内元素）</td></tr>
+      <tr><td><code>--space-md</code></td><td>16px</td><td>标准间距（卡片内边距）</td></tr>
+      <tr><td><code>--space-lg</code></td><td>24px</td><td>大间距（区块间距）</td></tr>
+      <tr><td><code>--space-xl</code></td><td>32px</td><td>超大间距（页面边距）</td></tr>
+    </table>
+
+    <h3>字体系统</h3>
+    <table>
+      <tr><th>变量名</th><th>值</th><th>用途</th></tr>
+      <tr><td><code>--font-family</code></td><td>-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', sans-serif</td><td>系统字体栈</td></tr>
+      <tr><td><code>--font-xs</code></td><td>10px</td><td>角标/badge</td></tr>
+      <tr><td><code>--font-sm</code></td><td>12px</td><td>副标签/描述</td></tr>
+      <tr><td><code>--font-base</code></td><td>13px</td><td>面板正文</td></tr>
+      <tr><td><code>--font-md</code></td><td>14px</td><td>组件标题</td></tr>
+      <tr><td><code>--font-lg</code></td><td>16px</td><td>页面标题</td></tr>
+    </table>
+
+    <h3>行高配对</h3>
+    <table>
+      <tr><th>变量名</th><th>值</th></tr>
+      <tr><td><code>--lh-xs</code></td><td>16px</td></tr>
+      <tr><td><code>--lh-sm</code></td><td>20px</td></tr>
+      <tr><td><code>--lh-base</code></td><td>20px</td></tr>
+      <tr><td><code>--lh-md</code></td><td>22px</td></tr>
+      <tr><td><code>--lh-lg</code></td><td>24px</td></tr>
+    </table>
+
+    <h3>字重</h3>
+    <table>
+      <tr><th>变量名</th><th>值</th><th>用途</th></tr>
+      <tr><td><code>--fw-regular</code></td><td>400</td><td>正文</td></tr>
+      <tr><td><code>--fw-medium</code></td><td>500</td><td>标签</td></tr>
+      <tr><td><code>--fw-bold</code></td><td>600</td><td>标题/按钮</td></tr>
+    </table>
+
+    <h3>圆角</h3>
+    <table>
+      <tr><th>变量名</th><th>值</th><th>用途</th></tr>
+      <tr><td><code>--radius-sm</code></td><td>4px</td><td>小标签/输入框</td></tr>
+      <tr><td><code>--radius-md</code></td><td>8px</td><td>卡片/选项</td></tr>
+      <tr><td><code>--radius-lg</code></td><td>12px</td><td>大卡片/面板</td></tr>
+    </table>
+
+    <h3>阴影系统</h3>
+    <table>
+      <tr><th>变量名</th><th>值</th><th>用途</th></tr>
+      <tr><td><code>--shadow-topbar</code></td><td>0 1px 0 rgba(0,0,0,0.55), 0 2px 10px rgba(0,0,0,0.28)</td><td>顶栏阴影</td></tr>
+      <tr><td><code>--shadow-panel-r</code></td><td>2px 0 10px rgba(0,0,0,0.38)</td><td>右侧面板阴影</td></tr>
+      <tr><td><code>--shadow-panel-l</code></td><td>-2px 0 10px rgba(0,0,0,0.38)</td><td>左侧面板阴影</td></tr>
+      <tr><td><code>--shadow-popover</code></td><td>0 6px 20px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.35)</td><td>弹窗/浮层</td></tr>
+      <tr><td><code>--shadow-card</code></td><td>0 2px 16px rgba(0,0,0,0.45)</td><td>卡片悬浮</td></tr>
+    </table>
+
+    <h3>核心CSS变量代码（复制即用）</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">CSS Variables</span></div>
+      <pre>:root {
+  <span class="c">/* 背景层次 */</span>
+  --sl-bg:           #010104;
+  --sl-panel:        #08080e;
+  --sl-surface:      #0f0f1a;
+
+  <span class="c">/* 边框 */</span>
+  --sl-border:       rgba(235,233,252,0.07);
+  --sl-border-md:    rgba(235,233,252,0.12);
+
+  <span class="c">/* 文字层次 */</span>
+  --sl-text-1:       #ebe9fc;
+  --sl-text-2:       rgba(235,233,252,0.60);
+  --sl-text-3:       rgba(235,233,252,0.38);
+  --sl-text-4:       rgba(235,233,252,0.20);
+
+  <span class="c">/* 品牌色 */</span>
+  --sl-primary:      #fad900;
+  --sl-accent:       #ffa203;
+  --sl-cta-text:     #1a1000;
+  --sl-primary-grad: linear-gradient(90deg, #fad900, #ffa203);
+
+  <span class="c">/* 间距（8px 基准）*/</span>
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  <span class="c">/* 字体系统 */</span>
+  --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', sans-serif;
+  --font-xs:    10px;
+  --font-sm:    12px;
+  --font-base:  13px;
+  --font-md:    14px;
+  --font-lg:    16px;
+
+  <span class="c">/* 行高 */</span>
+  --lh-xs:    16px;
+  --lh-sm:    20px;
+  --lh-base:  20px;
+  --lh-md:    22px;
+  --lh-lg:    24px;
+
+  <span class="c">/* 字重 */</span>
+  --fw-regular: 400;
+  --fw-medium:  500;
+  --fw-bold:    600;
+
+  <span class="c">/* 圆角 */</span>
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  <span class="c">/* 阴影 */</span>
+  --shadow-topbar:   0 1px 0 rgba(0,0,0,0.55), 0 2px 10px rgba(0,0,0,0.28);
+  --shadow-panel-r:  2px 0 10px rgba(0,0,0,0.38);
+  --shadow-panel-l: -2px 0 10px rgba(0,0,0,0.38);
+  --shadow-popover:  0 6px 20px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.35);
+  --shadow-card:     0 2px 16px rgba(0,0,0,0.45);
+}</pre>
+    </div>
+
+    <h3>CSS变量（工具提供）</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">CSS Variables</span></div>
+      <pre>:root {
+  --bg:       #010104;    <span class="c">/* 页面背景 */</span>
+  --panel:    #08080e;    <span class="c">/* 面板背景 */</span>
+  --surface:  #0f0f1a;    <span class="c">/* 卡片背景 */</span>
+  --border:   rgba(235,233,252,0.07);  <span class="c">/* 边框 */</span>
+  --text-1:   #ebe9fc;    <span class="c">/* 主文字 */</span>
+  --text-2:   rgba(235,233,252,0.6);   <span class="c">/* 次要文字 */</span>
+  --text-3:   rgba(235,233,252,0.38);  <span class="c">/* 辅助文字 */</span>
+  --yellow:   #fad900;    <span class="c">/* 强调色/按钮 */</span>
+  --orange:   #ffa203;    <span class="c">/* 渐变终点 */</span>
+}</pre>
+    </div>
+
+    <h2>画布尺寸</h2>
+    <table>
+      <tr><th>类型</th><th>尺寸</th><th>Canvas尺寸（@2x）</th><th>用途</th></tr>
+      <tr><td>头图</td><td>750 × 424</td><td>1500 × 848</td><td>顶部大图</td></tr>
+      <tr><td>卡片</td><td>750 × 242</td><td>1500 × 484</td><td>中间组件</td></tr>
+      <tr><td>全屏</td><td>750 × 1600</td><td>1500 × 3200</td><td>蒙层/弹窗</td></tr>
+    </table>
+
+    <h2>颜色系统</h2>
+    <h3>背景色（必须支持深浅色切换）</h3>
+    <div class="color-grid">
+      <div class="color-card">
+        <div class="color-preview" style="background: #FFCCCC;"></div>
+        <div class="color-name">红色·浅</div>
+        <div class="color-hex">#FFCCCC</div>
+      </div>
+      <div class="color-card">
+        <div class="color-preview" style="background: #FFCFEC;"></div>
+        <div class="color-name">粉色·浅</div>
+        <div class="color-hex">#FFCFEC</div>
+      </div>
+      <div class="color-card">
+        <div class="color-preview" style="background: #FFF38F;"></div>
+        <div class="color-name">黄色·浅</div>
+        <div class="color-hex">#FFF38F</div>
+      </div>
+      <div class="color-card">
+        <div class="color-preview" style="background: #CCF0FF;"></div>
+        <div class="color-name">蓝色·浅</div>
+        <div class="color-hex">#CCF0FF</div>
+      </div>
+      <div class="color-card">
+        <div class="color-preview" style="background: #2D186E;"></div>
+        <div class="color-name">夜间·深</div>
+        <div class="color-hex">#2D186E</div>
+      </div>
+      <div class="color-card">
+        <div class="color-preview" style="background: #FB0000;"></div>
+        <div class="color-name">大促红·深</div>
+        <div class="color-hex">#FB0000</div>
+      </div>
+    </div>
+
+    <h3>文字颜色</h3>
+    <table>
+      <tr><th>场景</th><th>色值</th></tr>
+      <tr><td>浅色背景主文字</td><td><code>#1A1A1A</code></td></tr>
+      <tr><td>浅色背景次要文字</td><td><code>rgba(0,0,0,0.6)</code></td></tr>
+      <tr><td>深色背景主文字</td><td><code>#FFFFFF</code></td></tr>
+      <tr><td>深色背景次要文字</td><td><code>rgba(255,255,255,0.8)</code></td></tr>
+    </table>
+
+    <h3>字体规范</h3>
+    <table>
+      <tr><th>用途</th><th>尺寸</th><th>字重</th></tr>
+      <tr><td>大标题</td><td>60px</td><td>bold</td></tr>
+      <tr><td>副标题</td><td>48px</td><td>bold</td></tr>
+      <tr><td>正文</td><td>32px</td><td>normal</td></tr>
+      <tr><td>辅助文字</td><td>24px</td><td>normal</td></tr>
+    </table>
+
+    <h3>圆角</h3>
+    <table>
+      <tr><th>元素</th><th>圆角</th></tr>
+      <tr><td>大卡片</td><td>24px</td></tr>
+      <tr><td>按钮</td><td>40px（全圆角）</td></tr>
+      <tr><td>小标签</td><td>8px</td></tr>
+    </table>
+  </div>
+
+  <!-- ── 代码模板面板 ── -->
+  <div id="tab-template" class="tab-panel">
+    <h2>基础模板（静态组件）</h2>
+    <div class="code-wrap">
+      <div class="code-header">
+        <span class="code-lang">HTML · 完整可复制</span>
+        <button class="btn-copy" onclick="copyTemplate()">复制全部代码</button>
+      </div>
+      <pre id="templateCode">&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+&lt;meta charset="UTF-8"&gt;
+
+&lt;!-- 必填 meta（工具读取这些信息）--&gt;
+&lt;meta name="sg-component"       content="true"&gt;
+&lt;meta name="sg-name"            content="组件中文名"&gt;
+&lt;meta name="sg-id"              content="your-comp-id"&gt;
+&lt;meta name="sg-canvas-width"    content="750"&gt;
+&lt;meta name="sg-canvas-height"   content="424"&gt;
+&lt;meta name="sg-version"         content="1.0.0"&gt;
+&lt;meta name="sg-author"          content="你的名字"&gt;
+
+&lt;title&gt;组件名称&lt;/title&gt;
+&lt;style&gt;
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; }
+  #canvas { display: block; width: 100%; height: 100%; }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;canvas id="canvas" width="1500" height="848"&gt;&lt;/canvas&gt;
+
+&lt;script&gt;
+<span class="c">// ── 当前配置（工具会通过 SG_CONFIG 消息更新）──────────</span>
+let config = {
+  bgColor: '#FFCCCC',
+  title: '默认标题',
+  titleColor: '#1A1A1A',
+}
+
+<span class="c">// ── 绘制函数（核心逻辑写在这里）──────────────────────────</span>
+function draw() {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+
+  <span class="c">// 清空画布</span>
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  <span class="c">// 绘制背景</span>
+  ctx.fillStyle = config.bgColor;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  <span class="c">// 绘制标题</span>
+  ctx.fillStyle = config.titleColor;
+  ctx.font = 'bold 120px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(config.title, 750, 424);
+}
+
+<span class="c">// ── 导出 PNG（不要改这个函数）─────────────────────────────</span>
+function exportPNG() {
+  return document.getElementById('canvas').toDataURL('image/png');
+}
+
+<span class="c">// ── 监听工具消息（不要改这段）────────────────────────────</span>
+window.addEventListener('message', (e) =&gt; {
+  const { type, payload } = e.data || {};
+
+  if (type === 'SG_CONFIG') {
+    config = { ...config, ...payload };
+    draw();
+  }
+
+  if (type === 'SG_EXPORT') {
+    const dataURL = exportPNG();
+    window.parent.postMessage({
+      type: 'SG_EXPORT_RESULT',
+      payload: { dataURL, componentId: 'your-comp-id' }
+    }, '*');
+  }
+});
+
+<span class="c">// ── 初始绘制 ──</span>
+draw();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+    </div>
+
+    <h2>动效组件规范</h2>
+    <div class="tip">
+      动效组件（如粒子、动画）需要自行实现动画逻辑。<br>
+      遵循以下规范，确保能正确接入工具。
+    </div>
+
+    <h3>界面布局规范</h3>
+    <table>
+      <tr><th>区域</th><th>宽度</th><th>内容</th></tr>
+      <tr><td>左侧配置面板</td><td>260-300px</td><td>预设选择、参数调节</td></tr>
+      <tr><td>右侧预览区</td><td>剩余空间</td><td>Canvas画布、实时预览</td></tr>
+      <tr><td>顶部工具栏</td><td>100%</td><td>组件名称、导出按钮</td></tr>
+    </table>
+
+    <h3>组件接入规范</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">双模式支持</span></div>
+      <pre><span class="c">// 通过URL参数判断模式</span>
+const urlParams = new URLSearchParams(window.location.search);
+const mode = urlParams.get('mode') || 'preview'; <span class="c">// 'studio' | 'preview'</span>
+
+if (mode === 'studio') {
+  <span class="c">// 编辑模式：显示完整UI（左侧面板+右侧预览）</span>
+  showConfigPanel();
+  showPreviewArea();
+} else {
+  <span class="c">// 预览模式：只显示结果（用于会场画布）</span>
+  hideConfigPanel();
+  showPreviewOnly();
+}</pre>
+    </div>
+
+    <h3>静态规范</h3>
+    <table>
+      <tr><th>项目</th><th>规范</th></tr>
+      <tr><td>画布尺寸</td><td>750×424（头图）或 750×242（卡片）</td></tr>
+      <tr><td>Canvas实际尺寸</td><td>@2x（即1500×848或1500×484）</td></tr>
+      <tr><td>导出格式</td><td>canvas.toDataURL('image/png')</td></tr>
+      <tr><td>背景</td><td>透明或按配置bgColor绘制</td></tr>
+    </table>
+
+    <h3>动态规范（动画）</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">动画实现建议</span></div>
+      <pre><span class="c">// 方案1：使用GSAP（推荐）</span>
+&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  gsap.to(element, { x: 100, duration: 2, repeat: -1 });
+&lt;/script&gt;
+
+<span class="c">// 方案2：使用requestAnimationFrame</span>
+function animate() {
+  updateParticles(); <span class="c">// 更新粒子位置</span>
+  draw();            <span class="c">// 重绘画布</span>
+  requestAnimationFrame(animate);
+}
+animate();
+
+<span class="c">// 方案3：使用CSS动画（仅非Canvas元素）</span>
+element.style.animation = 'slide 2s infinite';</pre>
+    </div>
+
+    <h3>必需的消息接口</h3>
+    <table>
+      <tr><th>消息</th><th>说明</th></tr>
+      <tr><td>SG_CONFIG</td><td>接收配置（颜色、文字、参数等）</td></tr>
+      <tr><td>SG_EXPORT</td><td>触发导出PNG</td></tr>
+      <tr><td>SG_EXPORT_RESULT</td><td>返回base64图片数据</td></tr>
+    </table>
+  </div>
+
+</div>
+
+<script>
+// ── 标签切换 ──
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector('.tab-btn[onclick="switchTab(\'' + tab + '\')"]').classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+// ── 复制Prompt ──
+function copyPrompt() {
+  const text = document.getElementById('promptCode').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('#tab-guide .btn-copy');
+    btn.textContent = '已复制 ✓';
+    setTimeout(() => btn.textContent = '复制', 2000);
+  });
+}
+
+// ── 复制模板 ──
+function copyTemplate() {
+  const text = document.getElementById('templateCode').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('#tab-template .btn-copy');
+    btn.textContent = '已复制 ✓';
+    setTimeout(() => btn.textContent = '复制全部代码', 2000);
+  });
+}
+</script>
+
+</body>
+</html>

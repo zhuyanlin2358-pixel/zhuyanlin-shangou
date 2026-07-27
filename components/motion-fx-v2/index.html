@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- 闪购工作台 SG 组件协议 meta 标签 -->
+  <meta name="sg-component"     content="true" />
+  <meta name="sg-name"          content="动效合成" />
+  <meta name="sg-id"            content="motion-fx" />
+  <meta name="sg-canvas-width"  content="750" />
+  <meta name="sg-canvas-height" content="424" />
+  <meta name="sg-version"       content="2.0.0" />
+  <meta name="sg-author"        content="gzq" />
+
+  <title>动效合成</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+    body { display: flex; align-items: center; justify-content: center; }
+    #canvas { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="750" height="424"></canvas>
+
+  <!-- 工具函数 -->
+  <script src="src/utils.js"></script>
+
+  <!-- 动效模块 -->
+  <script src="src/effects/petal.js"></script>
+  <script src="src/effects/snow.js"></script>
+  <script src="src/effects/sparkle.js"></script>
+  <script src="src/effects/sweep.js"></script>
+  <script src="src/effects/wave.js"></script>
+  <script src="src/effects/confetti.js"></script>
+  <script src="src/effects/emission.js"></script>
+
+  <!-- 主逻辑 -->
+  <script src="src/main.js"></script>
+</body>
+</html>

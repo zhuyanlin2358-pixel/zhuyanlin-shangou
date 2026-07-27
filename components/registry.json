@@ -1,0 +1,34 @@
+{
+  "_comment": "HTML 组件注册表 —— 朱彦霖维护。加一行 = 审核通过上线,不加 = 未通过。这是协作的审核开关。",
+  "_protocol": "所有组件须遵循 SG_* 消息协议,模板见 /component-template.html",
+  "_submit": "同事提交 HTML → 朱彦霖跑 scripts/audit-component.sh → 人工审核 → 加本文件 + 丢 HTML 进 public/components/",
+  "version": 1,
+  "components": [
+    {
+      "id": "motion-fx",
+      "name": "动效工作室",
+      "file": "motion-fx.html",
+      "category": "动效",
+      "canvasWidth": 750,
+      "canvasHeight": 424,
+      "author": "gzq",
+      "version": "2.0.0",
+      "status": "active",
+      "entry": "studio",
+      "description": "头图动效配置,支持背景/文字/商品/氛围四层动效,导出动画首帧到会场画板"
+    },
+    {
+      "id": "overlay-anim",
+      "name": "蒙层动画",
+      "file": "overlay-anim.html",
+      "category": "动效",
+      "canvasWidth": 740,
+      "canvasHeight": 1600,
+      "author": "gzq",
+      "version": "2.0.0",
+      "status": "active",
+      "entry": "fullscreen",
+      "description": "全屏蒙层动画工具,支持卡片图片配置"
+    }
+  ]
+}
